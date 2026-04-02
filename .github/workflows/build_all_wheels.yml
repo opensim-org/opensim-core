@@ -284,7 +284,6 @@ jobs:
         freeglut-devel libXi-devel libXmu-devel \
         doxygen wget tar gzip patchelf
         PYVER=$($PY -c "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}')")
-        yum -y install "python${PYVER}-devel" || yum -y install python3-devel
 
     - name: Install SWIG
       run: |
@@ -318,20 +317,6 @@ jobs:
       run: |
         PY_PREFIX=$(dirname $(dirname $PY))
         PY_INCLUDE=$($PY -c "import sysconfig; print(sysconfig.get_path('include'))")
-        PY_LIBDIR=$($PY -c "import sysconfig; print(sysconfig.get_config_var('LIBDIR') or '')")
-        PY_LIBPL=$($PY -c "import sysconfig; print(sysconfig.get_config_var('LIBPL') or '')")
-        PY_LDLIBRARY=$($PY -c "import sysconfig; print(sysconfig.get_config_var('LDLIBRARY') or '')")
-        
-        # Prefer LIBDIR, but fall back to LIBPL (common in manylinux builds).
-        if [ -n "$PY_LIBDIR" ] && [ -f "$PY_LIBDIR/$PY_LDLIBRARY" ]; then
-          PY_LIB="$PY_LIBDIR/$PY_LDLIBRARY"
-        elif [ -n "$PY_LIBPL" ] && [ -f "$PY_LIBPL/$PY_LDLIBRARY" ]; then
-          PY_LIB="$PY_LIBPL/$PY_LDLIBRARY"
-        else
-          echo "Could not locate libpython via sysconfig. Dumping sysconfig vars:"
-          $PY -c "import sysconfig; print(sysconfig.get_config_vars())"
-          exit 1
-        fi
         mkdir $GITHUB_WORKSPACE/../build
         cd $GITHUB_WORKSPACE/../build
         OSIM_CMAKE_ARGS=($GITHUB_WORKSPACE -LAH)
@@ -342,8 +327,6 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=off)
         OSIM_CMAKE_ARGS+=(-DPython3_EXECUTABLE=$PY)
         OSIM_CMAKE_ARGS+=(-DPython3_ROOT_DIR=$PY_PREFIX)
-        OSIM_CMAKE_ARGS+=(-DPython3_INCLUDE_DIR=$PY_INCLUDE)
-        OSIM_CMAKE_ARGS+=(-DPython3_LIBRARY=$PY_LIB)
         OSIM_CMAKE_ARGS+=(-DPython3_FIND_STRATEGY=LOCATION)
         OSIM_CMAKE_ARGS+=(-DPython3_FIND_IMPLEMENTATIONS=CPython)
         OSIM_CMAKE_ARGS+=(-DPython3_NumPy_INCLUDE_DIRS=$($PY -c "import numpy; print(numpy.get_include())"))
