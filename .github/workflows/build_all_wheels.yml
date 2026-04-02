@@ -318,10 +318,20 @@ jobs:
       run: |
         PY_PREFIX=$(dirname $(dirname $PY))
         PY_INCLUDE=$($PY -c "import sysconfig; print(sysconfig.get_path('include'))")
-        PY_LIBDIR=$($PY -c "import sysconfig; print(sysconfig.get_config_var('LIBDIR'))")
-        PY_LDLIBRARY=$($PY -c "import sysconfig; print(sysconfig.get_config_var('LDLIBRARY'))")
-        PY_LIB="$PY_LIBDIR/$PY_LDLIBRARY"
+        PY_LIBDIR=$($PY -c "import sysconfig; print(sysconfig.get_config_var('LIBDIR') or '')")
+        PY_LIBPL=$($PY -c "import sysconfig; print(sysconfig.get_config_var('LIBPL') or '')")
+        PY_LDLIBRARY=$($PY -c "import sysconfig; print(sysconfig.get_config_var('LDLIBRARY') or '')")
         
+        # Prefer LIBDIR, but fall back to LIBPL (common in manylinux builds).
+        if [ -n "$PY_LIBDIR" ] && [ -f "$PY_LIBDIR/$PY_LDLIBRARY" ]; then
+          PY_LIB="$PY_LIBDIR/$PY_LDLIBRARY"
+        elif [ -n "$PY_LIBPL" ] && [ -f "$PY_LIBPL/$PY_LDLIBRARY" ]; then
+          PY_LIB="$PY_LIBPL/$PY_LDLIBRARY"
+        else
+          echo "Could not locate libpython via sysconfig. Dumping sysconfig vars:"
+          $PY -c "import sysconfig; print(sysconfig.get_config_vars())"
+          exit 1
+        fi
         mkdir $GITHUB_WORKSPACE/../build
         cd $GITHUB_WORKSPACE/../build
         OSIM_CMAKE_ARGS=($GITHUB_WORKSPACE -LAH)
