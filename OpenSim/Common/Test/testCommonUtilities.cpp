@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Common/CommonUtilities.h>
+#include <OpenSim/Common/Exception.h>
 
 #include <algorithm> // std::transform
 #include <limits> // std::numeric_limits
@@ -306,4 +307,46 @@ TEST_CASE("detectDelimiter") {
         auto delim = detectDelimiter(input, small_delimiters);
         REQUIRE(delim == "");
     }    
+}
+
+TEST_CASE("choose") {
+
+    using Catch::Matchers::ContainsSubstring;
+
+    SECTION("Invalid inputs") {
+        CHECK_THROWS_WITH(choose(-1, 0),
+                ContainsSubstring("n must be non-negative"));
+        CHECK_THROWS_WITH(choose(5, -1),
+                ContainsSubstring("k must be between 0 and n"));
+        CHECK_THROWS_WITH(choose(5, 6),
+                ContainsSubstring("k must be between 0 and n"));
+    }
+
+    SECTION("Valid inputs") {
+        CHECK(choose(5, 0) == 1);
+        CHECK(choose(5, 1) == 5);
+        CHECK(choose(5, 2) == 10);
+        CHECK(choose(5, 3) == 10);
+        CHECK(choose(5, 4) == 5);
+        CHECK(choose(5, 5) == 1);
+
+        CHECK(choose(10, 0) == 1);
+        CHECK(choose(10, 1) == 10);
+        CHECK(choose(10, 2) == 45);
+        CHECK(choose(10, 3) == 120);
+        CHECK(choose(10, 4) == 210);
+        CHECK(choose(10, 5) == 252);
+
+        CHECK(choose(25, 0) == 1);
+        CHECK(choose(25, 1) == 25);
+        CHECK(choose(25, 2) == 300);
+        CHECK(choose(25, 3) == 2300);
+        CHECK(choose(25, 4) == 12650);
+        CHECK(choose(25, 5) == 53130);
+    }
+
+    SECTION("Overflow checking") {
+        CHECK_THROWS_WITH(choose(150, 100), ContainsSubstring("overflow"));
+        CHECK_THROWS_WITH(choose(1000, 500), ContainsSubstring("overflow"));
+    }
 }
