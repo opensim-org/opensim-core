@@ -252,8 +252,8 @@ SimTK::Matrix OpenSim::computeKNearestNeighbors(const SimTK::Matrix& x,
     return distances;
 }
 
-double OpenSim::factorizeMatrixNonNegative(const SimTK::Matrix& A, 
-        int numFactors, int maxIterations, double tolerance, 
+double OpenSim::factorizeMatrixNonNegative(const SimTK::Matrix& A,
+        int numFactors, int maxIterations, double tolerance,
         SimTK::Matrix& W, SimTK::Matrix& H) {
 
     // Initialize W and H.
@@ -287,7 +287,7 @@ double OpenSim::factorizeMatrixNonNegative(const SimTK::Matrix& A,
     SimTK::Matrix error(A.nrow(), A.ncol());
     double normError0 = SimTK::Infinity;
     double normError = SimTK::Infinity;
-    double deltaError = SimTK::Infinity;    
+    double deltaError = SimTK::Infinity;
     for (int j = 0; j < maxIterations; ++j) {
 
         // Alternating least squares.
@@ -300,7 +300,7 @@ double OpenSim::factorizeMatrixNonNegative(const SimTK::Matrix& A,
                 H(i, k) = std::max(0.0, H(i, k));
             }
         }
-        // ~H * ~W = ~A --> ~W = ~H^(-1) * ~A  
+        // ~H * ~W = ~A --> ~W = ~H^(-1) * ~A
         SimTK::FactorSVD svd_H(H.transpose().getAsMatrix());
         svd_H.solve(A.transpose().getAsMatrix(), W.transpose().updAsMatrix());
         for (int i = 0; i < W.nrow(); ++i) {
@@ -320,10 +320,10 @@ double OpenSim::factorizeMatrixNonNegative(const SimTK::Matrix& A,
 
         // Compute error using the Frobenius norm.
         error = A - W * H;
-        normError = std::sqrt(error.scalarNormSqr()) / 
+        normError = std::sqrt(error.scalarNormSqr()) /
                            std::sqrt(A.nelt());
         deltaError = normError0 - normError;
-        log_info("Iteration {} | norm(error) = {} | change in norm(error) = {}", 
+        log_info("Iteration {} | norm(error) = {} | change in norm(error) = {}",
                 j, normError, deltaError);
 
         // Check for convergence.
@@ -336,11 +336,16 @@ double OpenSim::factorizeMatrixNonNegative(const SimTK::Matrix& A,
             log_info("");
             break;
         }
-    
+
         // Update variables.
         normError0 = normError;
         W0 = W;
     }
 
     return normError;
+}
+
+int OpenSim::choose(int n, int k) {
+    if (k == 0) { return 1; }
+    return (n * choose(n - 1, k - 1)) / k;
 }
