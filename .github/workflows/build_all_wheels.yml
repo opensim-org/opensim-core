@@ -369,7 +369,7 @@ jobs:
         export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/opensim_dependencies_install/simbody/lib
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
         # Run the python tests, verbosely.
-        python3 -m unittest discover --start-directory opensim/tests --verbose
+        $PY -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Build wheel
       run: |
@@ -381,8 +381,8 @@ jobs:
     - name: Twine check
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        python -m pip install --upgrade twine
-        python -m twine check dist/*
+        $PY -m pip install --upgrade twine
+        $PY -m twine check dist/*
 
     - name: Capture wheel path
       id: wheel
