@@ -284,7 +284,10 @@ jobs:
         freeglut-devel libXi-devel libXmu-devel \
         doxygen wget tar gzip patchelf
         PYVER=$($PY -c "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}')")
-
+      
+    - name: Install zip
+      run: yum install -y zip
+      
     - name: Install SWIG
       run: |
         mkdir ~/swig-source && cd ~/swig-source
