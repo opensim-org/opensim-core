@@ -269,6 +269,7 @@ jobs:
       run: |
         $PY -m pip install numpy==2.4.2
         $PY -m pip install build
+        $PY -m pip install wheel
         $PY -m pip install cibuildwheel
         $PY -m pip install auditwheel
 
@@ -377,7 +378,7 @@ jobs:
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
         CIBW_MANYLINUX_X86_64_IMAGE=manylinux_2_28
         CIBW_BUILD="cp311-* cp312-* cp313-*"
-        $PY wheel . --wheel-dir dist
+        $PY -m pip wheel . --wheel-dir dist
 
     - name: Twine check
       run: |
