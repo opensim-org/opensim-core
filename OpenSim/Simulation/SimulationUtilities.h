@@ -446,6 +446,16 @@ OSIMSIMULATION_API void appendCoordinateValueDerivativesAsSpeeds(
         TimeSeriesTable& table, const Model& model,
         bool overwriteExistingColumns = true);
 
+/// Find the Joint%s that lie between two PhysicalFrame%s in a Model. The second
+/// frame need not be a descendant of the first frame or vice versa, but the two
+/// frames must be along the same branch of the kinematic tree. Otherwise,
+/// an exception is thrown.
+/// @ingroup simulationutil
+OSIMSIMULATION_API
+std::vector<SimTK::ReferencePtr<const Joint>>
+findJointsBetweenPhysicalFrames(const Model& model,
+        const std::string& firstFramePath, const std::string& secondFramePath);
+
 } // end of namespace OpenSim
 
 

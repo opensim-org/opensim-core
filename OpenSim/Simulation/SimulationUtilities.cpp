@@ -546,3 +546,82 @@ void OpenSim::appendCoordinateValueDerivativesAsSpeeds(TimeSeriesTable& table,
     }
 
 }
+
+std::vector<SimTK::ReferencePtr<const Joint>>
+OpenSim::findJointsBetweenPhysicalFrames(const Model& model,
+        const std::string& firstFramePath, const std::string& secondFramePath) {
+
+    // Get the frames from the model.
+    OPENSIM_THROW_IF(
+            !model.hasComponent<PhysicalFrame>(firstFramePath), Exception,
+            "Expected the model to contain a PhysicalFrame with path '{}', "
+            "but no such component was found.",
+            firstFramePath);
+    OPENSIM_THROW_IF(
+            !model.hasComponent<PhysicalFrame>(secondFramePath), Exception,
+            "Expected the model to contain a PhysicalFrame with path '{}', "
+            "but no such component was found.",
+            secondFramePath);
+    const auto& firstFrame = model.getComponent<PhysicalFrame>(firstFramePath);
+    const auto& secondFrame = model.getComponent<PhysicalFrame>(secondFramePath);
+
+    // Build a map between the model's joints and the base frames of the joint
+    // child frames.
+    std::unordered_map<std::string, const Joint*> childBodyToJoint;
+    for (const auto& joint : model.getComponentList<Joint>()) {
+        const auto& childBase = joint.getChildFrame().findBaseFrame();
+        childBodyToJoint[childBase.getAbsolutePathString()] = &joint;
+    }
+
+    const std::string firstBasePath =
+            firstFrame.findBaseFrame().getAbsolutePathString();
+    const std::string secondBasePath =
+            secondFrame.findBaseFrame().getAbsolutePathString();
+
+    // Case 1: the second frame is an ancestor of the first frame. Trace from
+    // the first frame toward ground; if second frame's base body is
+    // encountered, return the joints collected so far.
+    {
+        std::vector<SimTK::ReferencePtr<const Joint>> joints;
+        const Frame* current = &firstFrame.findBaseFrame();
+        while (true) {
+            if (current->getAbsolutePathString() == secondBasePath) {
+                // Reverse the order of the joints so they are returned in
+                // root-to-leaf order.
+                std::reverse(joints.begin(), joints.end());
+                return joints;
+            }
+            auto it = childBodyToJoint.find(current->getAbsolutePathString());
+            if (it == childBodyToJoint.end()) break; // reached ground
+            joints.emplace_back(it->second);
+            current = &it->second->getParentFrame().findBaseFrame();
+        }
+    }
+
+    // Case 2: the first frame is an ancestor of the second frame. Trace from
+    // the second frame toward ground; if first frame's base body is
+    // encountered, return the joints collected so far.
+    {
+        std::vector<SimTK::ReferencePtr<const Joint>> joints;
+        const Frame* current = &secondFrame.findBaseFrame();
+        while (true) {
+            if (current->getAbsolutePathString() == firstBasePath) {
+                // Reverse the order of the joints so they are returned in
+                // root-to-leaf order.
+                std::reverse(joints.begin(), joints.end());
+                return joints;
+            }
+            auto it = childBodyToJoint.find(current->getAbsolutePathString());
+            if (it == childBodyToJoint.end()) break; // reached ground
+            joints.emplace_back(it->second);
+            current = &it->second->getParentFrame().findBaseFrame();
+        }
+    }
+
+    // Case 3: the frames are not on the same branch of the kinematic tree.
+    OPENSIM_THROW(Exception,
+            "Could not find a path between frames '{}' and '{}': "
+            "neither frame is an ancestor of the other in the kinematic tree.",
+            firstFrame.getAbsolutePathString(),
+            secondFrame.getAbsolutePathString());
+}

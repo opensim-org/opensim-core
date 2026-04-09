@@ -27,6 +27,7 @@
 #include <OpenSim/Simulation/Model/ForceConsumer.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimulationUtilities.h>
 
 #include <optional>
 
@@ -212,6 +213,37 @@ double Scholz2015GeometryPath::computeMomentArm(const SimTK::State& s,
     return _maSolver->solve(s, coord,  *this);
 }
 
+bool Scholz2015GeometryPath::isVisualPath() const {
+    return true;
+}
+
+std::vector<std::string>
+Scholz2015GeometryPath::
+findIndependentCoordinatesBetween(const SimTK::State& s) const {
+    const PhysicalFrame& originFrame = getOrigin().getParentFrame();
+    const PhysicalFrame& insertionFrame = getInsertion().getParentFrame();
+
+    std::vector<SimTK::ReferencePtr<const Joint>>
+    jointsBetweenFrames = findJointsBetweenPhysicalFrames(
+            getModel(),
+            originFrame.getAbsolutePathString(),
+            insertionFrame.getAbsolutePathString());
+
+    std::vector<std::string> coordinatePaths;
+    for (const auto& joint : jointsBetweenFrames) {
+        for (int i = 0; i < joint->numCoordinates(); ++i) {
+            const Coordinate& coord = joint->get_coordinates(i);
+            if (!coord.isConstrained(s)) {
+                coordinatePaths.push_back(coord.getAbsolutePathString());
+            }
+        }
+    }
+    return coordinatePaths;
+}
+
+//=============================================================================
+// FORCE PRODUCER INTERFACE
+//=============================================================================
 void Scholz2015GeometryPath::produceForces(const SimTK::State& state,
         double tension, ForceConsumer& forceConsumer) const {
 

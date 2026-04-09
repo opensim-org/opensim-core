@@ -191,7 +191,10 @@ public:
             double tension,
             ForceConsumer&) const override;
 
-    bool isVisualPath() const override { return false; }
+    bool isVisualPath() const override;
+
+    std::vector<std::string>
+    findIndependentCoordinatesBetween(const SimTK::State&) const override;
 
 private:
     // MODEL COMPONENT INTERFACE

@@ -157,6 +157,13 @@ public:
      */
     virtual bool isVisualPath() const = 0;
 
+    /**
+     * Find the list of independent coordinates associated with the joints that
+     * lie between the origin and insertion of the path.
+     */
+    virtual std::vector<std::string>
+    findIndependentCoordinatesBetween(const SimTK::State&) const = 0;
+
     // DEFAULTED METHODS
     //
     // These are methods that for which AbstractGeometryPath provides default
