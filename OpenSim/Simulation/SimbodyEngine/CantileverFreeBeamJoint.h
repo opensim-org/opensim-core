@@ -41,7 +41,7 @@ class Model;
  * based on the deflection shape of a cantilever-free beam, whose free end is
  * subjected to a transverse point load. Although this shape is inspired by a
  * cantilever-free beam, this joint does not actually model a beam, in that
- * there is no elastic restoring forces/torques when q₀ or q₁ or q₂ ≠ 0. In the
+ * there are no elastic restoring forces/torques when q₀ or q₁ or q₂ ≠ 0. In the
  * undeformed state (when q₀ = q₁ = q₂ = 0), the position from Fo (the child
  * frame F's origin) to Mo (the parent frame M's origin) is L Fz.
  *

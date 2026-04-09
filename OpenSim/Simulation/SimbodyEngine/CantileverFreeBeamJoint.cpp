@@ -66,8 +66,8 @@ void CantileverFreeBeamJoint::extendAddToSystem(
         createMobilizedBody<SimTK::MobilizedBody::CantileverFreeBeam>(system);
 
     OPENSIM_THROW_IF_FRMOBJ(get_beam_length() <= 0, Exception,
-            "Expected the beam length to be positive, but the beam length "
-            "is {} .", get_beam_length());
+            "Expected property 'beam_length' to be positive, but "
+            "beam_length is {}.", get_beam_length());
     mobod.setDefaultLength(get_beam_length());
 }
 
