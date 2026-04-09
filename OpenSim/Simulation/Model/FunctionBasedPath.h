@@ -193,8 +193,7 @@ public:
 
     bool isVisualPath() const override;
 
-    std::vector<std::string>
-    findIndependentCoordinatesBetween(const SimTK::State&) const override;
+    std::vector<std::string> findCoordinates(const SimTK::State&) const override;
 
 private:
     // MODEL COMPONENT INTERFACE

@@ -218,8 +218,7 @@ bool Scholz2015GeometryPath::isVisualPath() const {
 }
 
 std::vector<std::string>
-Scholz2015GeometryPath::
-findIndependentCoordinatesBetween(const SimTK::State& s) const {
+Scholz2015GeometryPath::findCoordinates(const SimTK::State& s) const {
     const PhysicalFrame& originFrame = getOrigin().getParentFrame();
     const PhysicalFrame& insertionFrame = getInsertion().getParentFrame();
 

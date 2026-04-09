@@ -167,8 +167,7 @@ bool FunctionBasedPath::isVisualPath() const
 }
 
 std::vector<std::string>
-FunctionBasedPath::
-findIndependentCoordinatesBetween(const SimTK::State& state) const
+FunctionBasedPath::findCoordinates(const SimTK::State& state) const
 {
     return getCoordinatePaths();
 }

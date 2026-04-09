@@ -578,9 +578,9 @@ OpenSim::findJointsBetweenPhysicalFrames(const Model& model,
     const std::string secondBasePath =
             secondFrame.findBaseFrame().getAbsolutePathString();
 
-    // Case 1: the second frame is an ancestor of the first frame. Trace from
-    // the first frame toward ground; if second frame's base body is
-    // encountered, return the joints collected so far.
+    // The second frame is an ancestor of the first frame. Trace from the first
+    // frame toward ground; if second frame's base body is encountered, return
+    // the joints collected so far.
     {
         std::vector<SimTK::ReferencePtr<const Joint>> joints;
         const Frame* current = &firstFrame.findBaseFrame();
@@ -598,9 +598,9 @@ OpenSim::findJointsBetweenPhysicalFrames(const Model& model,
         }
     }
 
-    // Case 2: the first frame is an ancestor of the second frame. Trace from
-    // the second frame toward ground; if first frame's base body is
-    // encountered, return the joints collected so far.
+    // The first frame is an ancestor of the second frame. Trace from the second
+    // frame toward ground; if first frame's base body is encountered, return
+    // the joints collected so far.
     {
         std::vector<SimTK::ReferencePtr<const Joint>> joints;
         const Frame* current = &secondFrame.findBaseFrame();
@@ -618,7 +618,7 @@ OpenSim::findJointsBetweenPhysicalFrames(const Model& model,
         }
     }
 
-    // Case 3: the frames are not on the same branch of the kinematic tree.
+    // The frames are not on the same branch of the kinematic tree.
     OPENSIM_THROW(Exception,
             "Could not find a path between frames '{}' and '{}': "
             "neither frame is an ancestor of the other in the kinematic tree.",

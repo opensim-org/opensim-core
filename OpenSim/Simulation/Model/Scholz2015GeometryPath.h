@@ -434,8 +434,7 @@ public:
     double computeMomentArm(const SimTK::State& s,
             const Coordinate& coord) const override;
     bool isVisualPath() const override;
-    std::vector<std::string>
-    findIndependentCoordinatesBetween(const SimTK::State& s) const override;
+    std::vector<std::string> findCoordinates(const SimTK::State&) const override;
     // @}
 
     //** @name `ForceProducer` interface */

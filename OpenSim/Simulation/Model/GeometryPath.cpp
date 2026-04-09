@@ -33,6 +33,7 @@
 #include <OpenSim/Simulation/Model/MovingPathPoint.h>
 #include <OpenSim/Simulation/Model/PointForceDirection.h>
 #include <OpenSim/Simulation/Wrap/PathWrap.h>
+#include <OpenSim/Simulation/SimulationUtilities.h>
 
 //=============================================================================
 // STATICS
@@ -469,7 +470,7 @@ bool GeometryPath::isVisualPath() const
 }
 
 std::vector<std::string>
-GeometryPath::findIndependentCoordinatesBetween(const SimTK::State& s) const {
+GeometryPath::findCoordinates(const SimTK::State& s) const {
     const PathPointSet& pps = get_PathPointSet();
     const PhysicalFrame& firstFrame = pps.get(0).getParentFrame();
     const PhysicalFrame& lastFrame = pps.get(pps.getSize() - 1).getParentFrame();
