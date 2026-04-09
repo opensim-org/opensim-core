@@ -98,20 +98,20 @@ public:
      *  <b>C++ example</b>
      *  \code{.cpp}
      *  const auto& rx = myCantileverFreeBeamJoint.getCoordinate(
-     *      CantileverFreeBeamJoint::Coord::RotationX);
+     *      CantileverFreeBeamJoint::Coord::Rotation1X);
      *  \endcode
      *
      *  <b>Python example</b>
      *  \code{.py}
      *  import opensim
      *  rx = myCantileverFreeBeamJoint.getCoordinate(
-     *      opensim.CantileverFreeBeamJoint.Coord_RotationX)
+     *      opensim.CantileverFreeBeamJoint.Coord_Rotation1X)
      *  \endcode
      *
      *  <b>Java example</b>
      *  \code{.java}
      *  rx = myCantileverFreeBeamJoint.getCoordinate(
-     *      CantileverFreeBeamJoint.Coord.RotationX);
+     *      CantileverFreeBeamJoint.Coord.Rotation1X);
      *  \endcode
      *
      *  <b>MATLAB example</b>
