@@ -1,7 +1,7 @@
 #ifndef OPENSIM_EXPONENTIAL_COORDINATE_LIMIT_FORCE_H_
 #define OPENSIM_EXPONENTIAL_COORDINATE_LIMIT_FORCE_H_
 /* -------------------------------------------------------------------------- *
- *                  OpenSim:  ExponentialCoordinateLimitForce.h               *
+ *                OpenSim:  ExponentialCoordinateLimitForce.h                 *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -40,6 +40,11 @@ namespace OpenSim {
  *
  * f = αₗ exp(−βₗ(q − qₗ)) − αᵤ exp(βᵤ(q − qᵤ))
  *
+ * The shape parameters α and β control the shape of the exponential curve and
+ * thus the behavior of the limit force. The α parameter controls the magnitude
+ * of the limit force, while the β parameter controls how quickly the limit force
+ * increases as the coordinate approaches the limit.
+ *
  * For example, if the lower shape parameters are αₗ = 50, βₗ = 75, the upper
  * shape parameters are αᵤ = 20, βᵤ = 25, and the lower and upper coordinate
  * limits are qₗ = -0.2 and qᵤ = 0.3, then the limit force curve will take the
@@ -49,6 +54,13 @@ namespace OpenSim {
  *
  * Note that, depending on the choice of shape parameters, the limit force may
  * start developing prior to reaching the coordinate limits.
+ *
+ * \section Setting shape parameter values
+ *
+ * The shape parameters α and β can be set by the first and second elements,
+ * respectively, of the SimTK::Vec2 properties `lower_shape_parameters` and
+ * `upper_shape_parameters`. Both parameters must be positive values. The values
+ * can be set via the convenience constructor or by using the property setters.
  */
 class OSIMSIMULATION_API ExponentialCoordinateLimitForce : public ForceProducer {
 OpenSim_DECLARE_CONCRETE_OBJECT(ExponentialCoordinateLimitForce, ForceProducer);
@@ -65,10 +77,10 @@ public:
         "The upper limit of the coordinate range of motion.");
     OpenSim_DECLARE_PROPERTY(lower_shape_parameters, SimTK::Vec2,
         "Shape parameters for the exponential function that models the lower "
-        "limit force.");
+        "limit force. Both parameters must be positive values.");
     OpenSim_DECLARE_PROPERTY(upper_shape_parameters, SimTK::Vec2,
         "Shape parameters for the exponential function that models the upper "
-        "limit force.");
+        "limit force. Both parameters must be positive values.");
 
 //=============================================================================
 // METHODS
@@ -85,15 +97,15 @@ public:
      * to which the limit forces are applied.
      * @param[in] lowerLimit The lower limit of the coordinate range of motion.
      * @param[in] upperLimit The upper limit of the coordinate range of motion.
-     * @param[in] shapeParametersLower The shape parameters for the exponential
+     * @param[in] lowerShapeParameters The shape parameters for the exponential
      * function that models the lower limit force.
-     * @param[in] shapeParametersUpper The shape parameters for the exponential
+     * @param[in] upperShapeParameters The shape parameters for the exponential
      * function that models the upper limit force.
      */
     ExponentialCoordinateLimitForce(
         const std::string& coordinateNameOrPath, double lowerLimit,
-        double upperLimit, const SimTK::Vec2& shapeParametersLower,
-        const SimTK::Vec2& shapeParametersUpper);
+        double upperLimit, const SimTK::Vec2& lowerShapeParameters,
+        const SimTK::Vec2& upperShapeParameters);
 
     // COMPUTATIONS
     double calcForce(const SimTK::State& s) const;
@@ -120,4 +132,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // #ifndef OPENSIM_EXPONENTIAL_COORDINATE_FORCE_H_
+#endif // #ifndef OPENSIM_EXPONENTIAL_COORDINATE_LIMIT_FORCE_H_

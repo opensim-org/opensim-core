@@ -2432,7 +2432,7 @@ TEST_CASE("testExponentialCoordinateLimitForce") {
     model.addJoint(slider);
 
     // Add a ExponentialCoordinateLimitForce with symmetrical properties to the
-    // model..
+    // model.
     SimTK::Vec2 shape(50.0, 75.0);
     double lowerLimit = 0.1;
     double upperLimit = 2.0;
@@ -2455,6 +2455,15 @@ TEST_CASE("testExponentialCoordinateLimitForce") {
     SECTION("Copying") {
         auto copiedModel = std::unique_ptr<Model>{model.clone()};
         CHECK(*copiedModel == model);
+    }
+
+    SECTION("Shape parameters must be positive") {
+        limitForce->set_lower_shape_parameters(SimTK::Vec2(0.0, 75.0));
+        REQUIRE_THROWS_AS(model.finalizeConnections(), OpenSim::Exception);
+        limitForce->set_lower_shape_parameters(SimTK::Vec2(50.0, 75.0));
+
+        limitForce->set_upper_shape_parameters(SimTK::Vec2(50.0, -1.0));
+        REQUIRE_THROWS_AS(model.finalizeConnections(), OpenSim::Exception);
     }
 
     SECTION("Within range") {
@@ -2482,7 +2491,7 @@ TEST_CASE("testExponentialCoordinateLimitForce") {
         REQUIRE_THAT(eclf.calcForce(state),
             Catch::Matchers::WithinAbs(shape[0], 1e-6));
         REQUIRE_THAT(eclf.computePotentialEnergy(state),
-            Catch::Matchers::WithinAbs(-shape[0]*shape[1], 1e-6));
+            Catch::Matchers::WithinAbs(-shape[0]/shape[1], 1e-6));
     }
 
     SECTION("At upper limit") {
@@ -2496,7 +2505,7 @@ TEST_CASE("testExponentialCoordinateLimitForce") {
         REQUIRE_THAT(eclf.calcForce(state),
             Catch::Matchers::WithinAbs(-shape[0], 1e-6));
         REQUIRE_THAT(eclf.computePotentialEnergy(state),
-            Catch::Matchers::WithinAbs(-shape[0]*shape[1], 1e-6));
+            Catch::Matchers::WithinAbs(-shape[0]/shape[1], 1e-6));
     }
 
     auto forceFunction = [shape, lowerLimit, upperLimit](double height){
@@ -2505,8 +2514,8 @@ TEST_CASE("testExponentialCoordinateLimitForce") {
     };
 
     auto energyFunction = [shape, lowerLimit, upperLimit](double height) {
-        return -shape[0]*shape[1]*std::exp(-shape[1]*(height - lowerLimit)) +
-               -shape[0]*shape[1]*std::exp(shape[1]*(height - upperLimit));
+        return -(shape[0]/shape[1])*std::exp(-shape[1]*(height - lowerLimit)) +
+               -(shape[0]/shape[1])*std::exp(shape[1]*(height - upperLimit));
     };
 
     SECTION("Exceeding lower limit") {

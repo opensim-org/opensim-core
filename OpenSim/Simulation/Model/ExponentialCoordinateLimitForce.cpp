@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                  OpenSim:  ExponentialCoordinateLimitForce.cpp             *
+ *               OpenSim:  ExponentialCoordinateLimitForce.cpp                *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -38,14 +38,14 @@ ExponentialCoordinateLimitForce::ExponentialCoordinateLimitForce() {
 
 ExponentialCoordinateLimitForce::ExponentialCoordinateLimitForce(
     const std::string& coordinateNameOrPath, double lowerLimit,
-    double upperLimit, const SimTK::Vec2& shapeParametersLower,
-    const SimTK::Vec2& shapeParametersUpper) {
+    double upperLimit, const SimTK::Vec2& lowerShapeParameters,
+    const SimTK::Vec2& upperShapeParameters) {
     constructProperties();
     set_coordinate(coordinateNameOrPath);
     set_lower_limit(lowerLimit);
     set_upper_limit(upperLimit);
-    set_lower_shape_parameters(shapeParametersLower);
-    set_upper_shape_parameters(shapeParametersUpper);
+    set_lower_shape_parameters(lowerShapeParameters);
+    set_upper_shape_parameters(upperShapeParameters);
 }
 
 void ExponentialCoordinateLimitForce::constructProperties() {
@@ -61,6 +61,15 @@ void ExponentialCoordinateLimitForce::constructProperties() {
 //=============================================================================
 void ExponentialCoordinateLimitForce::extendConnectToModel(Model& aModel) {
     Super::extendConnectToModel(aModel);
+
+    const SimTK::Vec2& s_lower = get_lower_shape_parameters();
+    const SimTK::Vec2& s_upper = get_upper_shape_parameters();
+    OPENSIM_THROW_IF_FRMOBJ(s_lower[0] <= 0 || s_lower[1] <= 0,
+        Exception, "Expected both lower shape parameters to be positive "
+        "values, but received ({}, {}).", s_lower[0], s_lower[1]);
+    OPENSIM_THROW_IF_FRMOBJ(s_upper[0] <= 0 || s_upper[1] <= 0,
+        Exception, "Expected both upper shape parameters to be positive "
+        "values, but received ({}, {}).", s_upper[0], s_upper[1]);
 
     const auto& coordinateNameOrPath = get_coordinate();
     if (_model->getCoordinateSet().contains(coordinateNameOrPath)) {
@@ -99,8 +108,8 @@ double ExponentialCoordinateLimitForce::computePotentialEnergy(
     const double& q_lower = get_lower_limit();
     const double& q_upper = get_upper_limit();
 
-    return -s_lower[0]*s_lower[1]*std::exp(-s_lower[1]*(q - q_lower)) +
-           -s_upper[0]*s_upper[1]*std::exp(s_upper[1]*(q - q_upper));
+    return -(s_lower[0]/s_lower[1])*std::exp(-s_lower[1]*(q - q_lower)) +
+           -(s_upper[0]/s_upper[1])*std::exp(s_upper[1]*(q - q_upper));
 }
 
 //=============================================================================
