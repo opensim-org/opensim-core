@@ -447,9 +447,16 @@ OSIMSIMULATION_API void appendCoordinateValueDerivativesAsSpeeds(
         bool overwriteExistingColumns = true);
 
 /// Find the Joint%s that lie between two PhysicalFrame%s in a Model. The second
-/// frame need not be a descendant of the first frame or vice versa, but the two
-/// frames must be along the same branch of the kinematic tree. Otherwise,
-/// an exception is thrown.
+/// frame need not be a descendant of the first frame or vice versa. If the
+/// frames are on different branches of the model, this function will return the
+/// list of joints ordered from the first frame to the second frame. Otherwise,
+/// the list of joint with be ordered promixally to distally, i.e., moving away
+/// from the ground frame.
+///
+/// @note This function uses several passes through the model's topology to form
+/// the list of joints, so avoided repeated calls to this function in
+/// performance critical applications.
+///
 /// @ingroup simulationutil
 OSIMSIMULATION_API
 std::vector<SimTK::ReferencePtr<const Joint>>

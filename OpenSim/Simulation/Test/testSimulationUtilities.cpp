@@ -253,11 +253,49 @@ TEST_CASE("findJointsBetweenPhysicalFrames") {
     }
 
     SECTION("Frames on different branches") {
-        CHECK_THROWS_WITH(
-            findJointsBetweenPhysicalFrames(
-                    model, "/bodyset/b0_l", "/bodyset/b0_r"),
-            Catch::Matchers::ContainsSubstring(
-                    "Could not find a path between frames '/bodyset/b0_l' and "
-                    "'/bodyset/b0_r'"));
+        auto joints = findJointsBetweenPhysicalFrames(
+                model, "/bodyset/b0_l", "/bodyset/b0_r");
+        CHECK(joints.size() == 2);
+        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j0_l");
+        CHECK(joints[1]->getAbsolutePathString() == "/jointset/j0_r");
+
+        joints = findJointsBetweenPhysicalFrames(
+                model, "/bodyset/b0_r", "/bodyset/b0_l");
+        CHECK(joints.size() == 2);
+        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j0_r");
+        CHECK(joints[1]->getAbsolutePathString() == "/jointset/j0_l");
+
+        joints = findJointsBetweenPhysicalFrames(
+                model, "/bodyset/b2_l", "/bodyset/b1_r");
+        CHECK(joints.size() == 5);
+        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j2_l");
+        CHECK(joints[1]->getAbsolutePathString() == "/jointset/j1_l");
+        CHECK(joints[2]->getAbsolutePathString() == "/jointset/j0_l");
+        CHECK(joints[3]->getAbsolutePathString() == "/jointset/j0_r");
+        CHECK(joints[4]->getAbsolutePathString() == "/jointset/j1_r");
+
+        joints = findJointsBetweenPhysicalFrames(
+                model, "/bodyset/b1_r", "/bodyset/b2_l");
+        CHECK(joints.size() == 5);
+        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j1_r");
+        CHECK(joints[1]->getAbsolutePathString() == "/jointset/j0_r");
+        CHECK(joints[2]->getAbsolutePathString() == "/jointset/j0_l");
+        CHECK(joints[3]->getAbsolutePathString() == "/jointset/j1_l");
+        CHECK(joints[4]->getAbsolutePathString() == "/jointset/j2_l");
+    }
+
+    SECTION("One frame is ground") {
+        auto joints = findJointsBetweenPhysicalFrames(
+                model, "/ground", "/bodyset/b2_l");
+        CHECK(joints.size() == 3);
+        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j0_l");
+        CHECK(joints[1]->getAbsolutePathString() == "/jointset/j1_l");
+        CHECK(joints[2]->getAbsolutePathString() == "/jointset/j2_l");
+
+        joints = findJointsBetweenPhysicalFrames(
+                model, "/bodyset/b1_r", "/ground");
+        CHECK(joints.size() == 2);
+        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j0_r");
+        CHECK(joints[1]->getAbsolutePathString() == "/jointset/j1_r");
     }
 }
