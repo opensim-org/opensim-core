@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2026 Stanford University and the Authors                     *
+ * Copyright (c) 2005-2026 Stanford University and the Authors                *
  * Author(s): Nicholas Bianco                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -330,8 +330,11 @@ void computePathLengthsAndMomentArms(
 
     // Determine the number of threads to use for the path length and moment
     // arm computations.
-    int numTimePoints = static_cast<int>(coordinateValues.getNumRows());
-    int numThreads = std::min(numTimePoints, settings.numParallelThreads);
+    const int numTimePoints = static_cast<int>(coordinateValues.getNumRows());
+    OPENSIM_THROW_IF(numTimePoints == 0, Exception,
+            "Tried to compute path lengths and moment arms, but the provided "
+            "coordinate values table is empty.");
+    const int numThreads = std::min(numTimePoints, settings.numParallelThreads);
 
     // Create a StatesTrajectory from the coordinate values.
     auto statesTrajectory = StatesTrajectory::createFromStatesTable(
@@ -551,7 +554,8 @@ void filterSampledData(
                 if (std::abs(column[i] - nominal) > threshold * avgStd) {
                     rejectedTimePoints.push_back(times[i]);
                 }
-                if (i % increment == 0) {
+                if ((i + 1) % increment == 0 &&
+                        currentNominalIndex + increment < column.size()) {
                     currentNominalIndex += increment;
                 }
             }
@@ -1193,6 +1197,9 @@ void PolynomialPathFitter::run() {
     // Load the coordinate values table.
     m_values = loadCoordinateValuesAndValidateModel(
             getDocumentDirectory(), get_coordinate_values(), m_model);
+    OPENSIM_THROW_IF_FRMOBJ(!m_values.getNumRows(), Exception,
+            "Expected the coordinate values table to contain at least one row, "
+            "but it is empty.");
 
     // Get the path-based forces in the model.
     std::vector<std::string> forcePaths;
@@ -1635,6 +1642,9 @@ void PolynomialPathFitter::evaluateFunctionBasedPaths(Model model,
     settings.momentArmTolerance = momentArmTolerance;
     settings.numParallelThreads =
             static_cast<int>(std::thread::hardware_concurrency());
+    OPENSIM_THROW_IF(settings.numParallelThreads == 0, Exception,
+            "Tried to evaluate the FunctionBasedPaths, but no hardware threads "
+            "were found.");
 
     // Initialize the original model.
     model.initSystem();
@@ -1669,10 +1679,13 @@ void PolynomialPathFitter::evaluateFunctionBasedPaths(Model model,
     }
 
     // Get the coordinate values table from the trajectory. This may contain
-    // extra values, but that's okay.
+    // extra columns, but that's okay.
     std::string currentDirectory = IO::getCwd();
     TimeSeriesTable coordinateValues = loadCoordinateValuesAndValidateModel(
             currentDirectory, std::move(trajectory), model);
+    OPENSIM_THROW_IF(coordinateValues.getNumRows() == 0, Exception,
+            "Expected the coordinate values table to contain at least one row, "
+            "but it is empty.");
 
     // Compute path lengths and moment arms for the original and fitted models.
     log_info("");

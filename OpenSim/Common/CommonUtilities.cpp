@@ -346,6 +346,9 @@ double OpenSim::factorizeMatrixNonNegative(const SimTK::Matrix& A,
 }
 
 int OpenSim::choose(int n, int k) {
+    OPENSIM_ASSERT(n >= 0);
+    OPENSIM_ASSERT(0<=k && k<=n);
+
     if (k == 0) { return 1; }
     return (n * choose(n - 1, k - 1)) / k;
 }
