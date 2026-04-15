@@ -18,12 +18,13 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+/** \cond DO_NOT_DOCUMENT */
 #include "ModelProcessor.h"
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/Model/ExternalLoads.h>
 #include "OpenSim/Simulation/TableProcessor.h"
-
+/** \endcond */
 namespace OpenSim {
 
 /// Turn off activation dynamics for all muscles in the model.
@@ -53,7 +54,7 @@ public:
     }
 };
 
-/** Scale the max isometric force for all muscles in the model. */
+/// Scale the max isometric force for all muscles in the model.
 class OSIMACTUATORS_API ModOpScaleMaxIsometricForce : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModOpScaleMaxIsometricForce, ModelOperator);
     OpenSim_DECLARE_PROPERTY(scale_factor, double,
@@ -76,7 +77,7 @@ public:
     }
 };
 
-/** Remove all muscles contained in the model's ForceSet. */
+/// Remove all muscles contained in the model's ForceSet.
 class OSIMACTUATORS_API ModOpRemoveMuscles : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModOpRemoveMuscles, ModelOperator);
 
