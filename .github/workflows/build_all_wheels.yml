@@ -3,6 +3,11 @@ name: Build Python wheels
 on:
   workflow_dispatch:
 
+
+permissions:
+  contents: read
+  id-token: write   # REQUIRED for trusted publishing
+
 jobs:
   build_windows_wheels:
 
