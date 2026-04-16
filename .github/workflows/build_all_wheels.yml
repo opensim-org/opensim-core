@@ -345,6 +345,7 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DOPENSIM_INSTALL_UNIX_FHS=OFF)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off)
         OSIM_CMAKE_ARGS+=(-DCMAKE_INSTALL_LIBDIR=lib)
+        OSIM_CMAKE_ARGS+=(-DBUILD_TESTING=off)
         # TODO: Update to simbody.github.io/latest
         OSIM_CMAKE_ARGS+=(-DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simbody.github.io/simtk.org/api_docs/simbody/latest/")
         OSIM_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-Werror")
@@ -383,19 +384,19 @@ jobs:
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
         CIBW_MANYLINUX_X86_64_IMAGE=manylinux_2_28
         CIBW_BUILD="cp311-* cp312-* cp313-*"
-        $PY -m cibuildwheel --output-dir wheelhouse
+        $PY -m cibuildwheel --output-dir wheelhouse --container-engine none
         
 
     - name: Twine check
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
         $PY -m pip install --upgrade twine
-        $PY -m twine check dist/*
+        $PY -m twine check wheelhouse/*
 
     - name: Capture wheel path
       id: wheel
       run: |
-         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist
+         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/wheelhouse
          ls -al
          echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
 
@@ -409,7 +410,7 @@ jobs:
     - name: Test Python bindings
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        $PY -m pip install /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/${{ steps.wheel.outputs.path }}
+        $PY -m pip install /home/runner/work/opensim-core/opensim-core-install/sdk/Python/wheelhouse/${{ steps.wheel.outputs.path }}
         # Run the python tests, verbosely.
         #python3 -m unittest discover --start-directory opensim/tests --verbose
 
