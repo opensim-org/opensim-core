@@ -399,12 +399,12 @@ jobs:
          ls -al
          echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
 
-    - name: Upload linux wheel
-      uses: actions/upload-artifact@v4
-      with:
-         name: wheels-${{ matrix.python }}-linux
-         path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/opensim*.whl
-         overwrite: true
+    # - name: Upload linux wheel
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #      name: wheels-${{ matrix.python }}-linux
+    #      path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/opensim*.whl
+    #      overwrite: true
 
     - name: Test Python bindings
       run: |
