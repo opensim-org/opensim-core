@@ -256,6 +256,9 @@ OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/__init__.py" opensim)
 
 OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/report.py" opensim)
 
+OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/README.md" opensim)
+
+
 # Test files. If you require more test resource files, list them here.
 foreach(test_file
         "${CMAKE_CURRENT_SOURCE_DIR}/tests/storage.sto"
