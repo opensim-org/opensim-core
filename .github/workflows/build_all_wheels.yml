@@ -411,7 +411,6 @@ jobs:
       needs: 
          - build_windows_wheels
          - build_osx_wheels
-         - build_linux_wheels
 
       runs-on: ubuntu-24.04
 
