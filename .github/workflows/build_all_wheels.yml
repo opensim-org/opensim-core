@@ -401,11 +401,20 @@ jobs:
             echo "=== $whl ==="
             $PY -m auditwheel show "$whl"
           done
-
+          
+    - name: Repair wheels
+      run: |
+          cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+          mkdir -p dist/repaired
+          for whl in dist/*.whl; do
+            echo "Repairing $whl"
+            auditwheel repair "$whl" -w dist/repaired/
+          done
+          
     - name: Capture wheel path
       id: wheel
       run: |
-         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist
+         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist/repaired/
          ls -al
          pwd
          echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
@@ -414,13 +423,13 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
          name: wheels-${{ matrix.python }}-linux
-         path: /__w/opensim-core/opensim-core-install/sdk/Python/dist/opensim*.whl
+         path: /__w/opensim-core/opensim-core-install/sdk/Python/dist/repaired/opensim*.whl
          overwrite: true
 
     - name: Test Python bindings
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        $PY -m pip install dist/${{ steps.wheel.outputs.path }}
+        $PY -m pip install dist/repaired/${{ steps.wheel.outputs.path }}
         # Run the python tests, verbosely.
         #python3 -m unittest discover --start-directory opensim/tests --verbose
 
