@@ -405,17 +405,17 @@ jobs:
          ls -al
          echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
 
-    # - name: Upload linux wheel
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #      name: wheels-${{ matrix.python }}-linux
-    #      path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/opensim*.whl
-    #      overwrite: true
+    - name: Upload linux wheel
+      uses: actions/upload-artifact@v4
+      with:
+         name: wheels-${{ matrix.python }}-linux
+         path: $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist/opensim*.whl
+         overwrite: true
 
     - name: Test Python bindings
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        $PY -m pip install /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/${{ steps.wheel.outputs.path }}
+        $PY -m pip install dist/${{ steps.wheel.outputs.path }}
         # Run the python tests, verbosely.
         #python3 -m unittest discover --start-directory opensim/tests --verbose
 
