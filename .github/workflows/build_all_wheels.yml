@@ -397,6 +397,10 @@ jobs:
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
         $PY -m pip install --upgrade twine
         $PY -m twine check dist/*
+        for whl in dist/*.whl; do
+            echo "=== $whl ==="
+            $PY -m auditwheel show "$whl"
+          done
 
     - name: Capture wheel path
       id: wheel
