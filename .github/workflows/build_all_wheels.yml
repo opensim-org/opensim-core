@@ -386,7 +386,7 @@ jobs:
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
         CIBW_MANYLINUX_X86_64_IMAGE=manylinux_2_28
         CIBW_BUILD="cp311-* cp312-* cp313-*"
-        $PY -m cibuildwheel --output-dir wheelhouse --container-engine none
+        $PY -m cibuildwheel --output-dir wheelhouse
         
 
     - name: Twine check
