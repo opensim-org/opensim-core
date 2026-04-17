@@ -388,20 +388,20 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
         CIBW_MANYLINUX_X86_64_IMAGE=manylinux_2_28
-        CIBW_BUILD="cp311-*"
-        $PY -m cibuildwheel --output-dir wheelhouse
+        CIBW_BUILD="${{ matrix.python }}-*"
+        $PY -m build --wheel .
         
 
     - name: Twine check
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
         $PY -m pip install --upgrade twine
-        $PY -m twine check wheelhouse/*
+        $PY -m twine check dist/*
 
     - name: Capture wheel path
       id: wheel
       run: |
-         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/wheelhouse
+         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist
          ls -al
          echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
 
@@ -415,7 +415,7 @@ jobs:
     - name: Test Python bindings
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        $PY -m pip install /home/runner/work/opensim-core/opensim-core-install/sdk/Python/wheelhouse/${{ steps.wheel.outputs.path }}
+        $PY -m pip install /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/${{ steps.wheel.outputs.path }}
         # Run the python tests, verbosely.
         #python3 -m unittest discover --start-directory opensim/tests --verbose
 
