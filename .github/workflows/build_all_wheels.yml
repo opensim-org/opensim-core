@@ -76,7 +76,7 @@ jobs:
         # TODO: Can remove /WX when we use that in CMakeLists.txt.
         # Set the CXXFLAGS environment variable to turn warnings into errors.
         # Skip timing test section included by default.
-        cmake -E env CXXFLAGS="/WX /MD -DSKIP_TIMING" cmake $env:GITHUB_WORKSPACE -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DOPENSIM_C3D_PARSER=ezc3d -DOPENSIM_WITH_CASADI=on -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=off -DBUILD_PYTHON_WHEELS=on -DPython3_ROOT_DIR=${{ steps.pyroot.outputs.root}}
+        cmake -E env CXXFLAGS="/WX /MD -DSKIP_TIMING" cmake $env:GITHUB_WORKSPACE -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DOPENSIM_C3D_PARSER=ezc3d -DOPENSIM_WITH_CASADI=on -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=off -DBUILD_TESTING=off -DBUILD_PYTHON_WHEELS=on -DPython3_ROOT_DIR=${{ steps.pyroot.outputs.root}}
         $env:match = cmake -L . | Select-String -Pattern OPENSIM_QUALIFIED_VERSION
         $version = $env:match.split('=')[1]
         echo $version
@@ -195,6 +195,7 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=off)
         OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WHEELS=on)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
+        OSIM_CMAKE_ARGS+=(-DBUILD_TESTING=OFF)
         OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_INSTALL_UNIX_FHS=OFF)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off)
