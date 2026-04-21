@@ -36,7 +36,7 @@ class BinaryDistribution(Distribution):
 
 setup(name='opensim',
       version=__version__,
-      options={"bdist_wheel": {"build_number": "1"}}
+      options={"bdist_wheel": {"build_number": "1"}},
       description='OpenSim Simulation Framework',
       long_description=long_description,
       long_description_content_type='text/markdown',
