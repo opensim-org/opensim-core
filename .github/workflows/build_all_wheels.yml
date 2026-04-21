@@ -330,7 +330,7 @@ jobs:
         mkdir $GITHUB_WORKSPACE/../build
         cd $GITHUB_WORKSPACE/../build
         OSIM_CMAKE_ARGS=($GITHUB_WORKSPACE -LAH)
-        OSIM_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/../opensim-core-install;$GITHUB_WORKSPACE/../opensim_dependencies_install)
+        OSIM_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/../opensim_dependencies_install)
         OSIM_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=$GITHUB_WORKSPACE/../opensim_dependencies_install)
         #OSIM_CMAKE_ARGS+=(-DOPENSIM_C3D_PARSER=ezc3d)
