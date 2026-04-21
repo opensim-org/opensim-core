@@ -313,7 +313,7 @@ jobs:
         mkdir $GITHUB_WORKSPACE/../build_deps
         cd $GITHUB_WORKSPACE/../build_deps
         DEP_CMAKE_ARGS=($GITHUB_WORKSPACE/dependencies -LAH)
-        DEP_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install)
+        DEP_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/../opensim_dependencies_install)
         DEP_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
         DEP_CMAKE_ARGS+=(-DSUPERBUILD_ezc3d=ON)
         DEP_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
@@ -332,7 +332,7 @@ jobs:
         OSIM_CMAKE_ARGS=($GITHUB_WORKSPACE -LAH)
         OSIM_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/../opensim-core-install)
         OSIM_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=$HOME/opensim_dependencies_install)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=$GITHUB_WORKSPACE/../opensim_dependencies_install)
         #OSIM_CMAKE_ARGS+=(-DOPENSIM_C3D_PARSER=ezc3d)
         OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=on)
         OSIM_CMAKE_ARGS+=(-DPython3_EXECUTABLE=$PY)
@@ -384,10 +384,10 @@ jobs:
     - name: Build wheel
       env:
         CIBW_CONTAINER_ENGINE: none
-        CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
+        CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_27
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        CIBW_MANYLINUX_X86_64_IMAGE=manylinux_2_28
+        CIBW_MANYLINUX_X86_64_IMAGE=manylinux_2_27
         CIBW_BUILD="${{ matrix.python }}-*"
         $PY -m build --wheel .
         
@@ -439,7 +439,7 @@ jobs:
          - build_osx_wheels
          - build_linux_wheels
 
-      runs-on: ubuntu-24.04
+      runs-on: ubuntu-latest
       
       permissions:
         contents: read
