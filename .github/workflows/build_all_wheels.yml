@@ -339,7 +339,7 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DPython3_ROOT_DIR=$PY_PREFIX)
         OSIM_CMAKE_ARGS+=(-DPython3_NumPy_INCLUDE_DIRS=$($PY -c "import numpy; print(numpy.get_include())"))
         OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WHEELS=on)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=Off)
         OSIM_CMAKE_ARGS+=(-DCMAKE_PREFIX_PATH=$HOME/opensim_dependencies_install)
         OSIM_CMAKE_ARGS+=(-DSWIG_DIR=~/swig/share/swig)
         OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=~/swig/bin/swig)
