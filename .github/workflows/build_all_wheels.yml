@@ -327,9 +327,6 @@ jobs:
       run: |
         PY_PREFIX=$(dirname $(dirname $PY))
         PY_INCLUDE=$($PY -c "import sysconfig; print(sysconfig.get_path('include'))")
-        ls $GITHUB_WORKSPACE/../opensim_dependencies_install
-        echo "checking inside ipopt dir"
-        ls $GITHUB_WORKSPACE/../opensim_dependencies_install/ipopt
         mkdir $GITHUB_WORKSPACE/../build
         cd $GITHUB_WORKSPACE/../build
         OSIM_CMAKE_ARGS=($GITHUB_WORKSPACE -LAH)
@@ -344,7 +341,7 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WHEELS=on)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=On)
         OSIM_CMAKE_ARGS+=(-Dcasadi_DIR=$GITHUB_WORKSPACE/../opensim_dependencies_install/casadi/lib/cmake/casadi)
-        OSIM_CMAKE_ARGS+=(-DIPOPT_DIR=$GITHUB_WORKSPACE/../opensim_dependencies_install/ipopt/lib)
+        # OSIM_CMAKE_ARGS+=(-DIPOPT_DIR=$GITHUB_WORKSPACE/../opensim_dependencies_install/ipopt/lib)
         OSIM_CMAKE_ARGS+=(-DCMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/../opensim_dependencies_install/ipopt)
         OSIM_CMAKE_ARGS+=(-DSWIG_DIR=~/swig/share/swig)
         OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=~/swig/bin/swig)
@@ -382,9 +379,8 @@ jobs:
       run: |
         export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/opensim_dependencies_install/simbody/lib
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        # Run the python tests, verbosely.
-        # disable local testing as moco is not built and will fail for now
-        #$PY -m unittest discover --start-directory opensim/tests --verbose
+        # Run the python tests, verbosely
+        $PY -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Build wheel
       env:
