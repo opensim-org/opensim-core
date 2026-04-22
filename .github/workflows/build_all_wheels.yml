@@ -345,7 +345,7 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=On)
         OSIM_CMAKE_ARGS+=(-Dcasadi_DIR=$GITHUB_WORKSPACE/../opensim_dependencies_install/casadi/lib/cmake/casadi)
         OSIM_CMAKE_ARGS+=(-DIPOPT_DIR=$GITHUB_WORKSPACE/../opensim_dependencies_install/ipopt/lib)
-        OSIM_CMAKE_ARGS+=(-DCMAKE_PREFIX_PATH=$HOME/opensim_dependencies_install)
+        OSIM_CMAKE_ARGS+=(-DCMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/../opensim_dependencies_install/ipopt)
         OSIM_CMAKE_ARGS+=(-DSWIG_DIR=~/swig/share/swig)
         OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=~/swig/bin/swig)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_INSTALL_UNIX_FHS=OFF)
