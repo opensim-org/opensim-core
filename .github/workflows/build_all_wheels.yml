@@ -327,6 +327,9 @@ jobs:
       run: |
         PY_PREFIX=$(dirname $(dirname $PY))
         PY_INCLUDE=$($PY -c "import sysconfig; print(sysconfig.get_path('include'))")
+        ls $GITHUB_WORKSPACE/../opensim_dependencies_install
+        echo "checking inside ipopt dir"
+        ls $GITHUB_WORKSPACE/../opensim_dependencies_install/ipopt
         mkdir $GITHUB_WORKSPACE/../build
         cd $GITHUB_WORKSPACE/../build
         OSIM_CMAKE_ARGS=($GITHUB_WORKSPACE -LAH)
