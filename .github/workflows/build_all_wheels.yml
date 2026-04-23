@@ -442,6 +442,7 @@ jobs:
          - build_linux_wheels
 
       runs-on: ubuntu-latest
+      environment: release
       
       permissions:
         contents: read
