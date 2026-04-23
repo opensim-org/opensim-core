@@ -315,6 +315,7 @@ jobs:
         DEP_CMAKE_ARGS=($GITHUB_WORKSPACE/dependencies -LAH)
         DEP_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/../opensim_dependencies_install)
         DEP_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
+        DEP_CMAKE_ARGS+=(-DCMAKE_INSTALL_LIBDIR=lib)
         DEP_CMAKE_ARGS+=(-DSUPERBUILD_ezc3d=ON)
         DEP_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
         DEP_CMAKE_ARGS+=(-DOPENSIM_DISABLE_LOG_FILE=ON)
@@ -341,7 +342,6 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WHEELS=on)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=On)
         OSIM_CMAKE_ARGS+=(-Dcasadi_DIR=$GITHUB_WORKSPACE/../opensim_dependencies_install/casadi/lib/cmake/casadi)
-        # OSIM_CMAKE_ARGS+=(-DIPOPT_DIR=$GITHUB_WORKSPACE/../opensim_dependencies_install/ipopt/lib)
         OSIM_CMAKE_ARGS+=(-DCMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/../opensim_dependencies_install/ipopt)
         OSIM_CMAKE_ARGS+=(-DSWIG_DIR=~/swig/share/swig)
         OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=~/swig/bin/swig)
@@ -377,7 +377,7 @@ jobs:
 
     - name: Test Python bindings
       run: |
-        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/opensim_dependencies_install/simbody/lib
+        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$GITHUB_WORKSPACE/../opensim_dependencies_install/simbody/lib
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
         # Run the python tests, verbosely
         $PY -m unittest discover --start-directory opensim/tests --verbose
@@ -385,10 +385,10 @@ jobs:
     - name: Build wheel
       env:
         CIBW_CONTAINER_ENGINE: none
-        CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_27
+        CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        CIBW_MANYLINUX_X86_64_IMAGE=manylinux_2_27
+        CIBW_MANYLINUX_X86_64_IMAGE=manylinux_2_28
         CIBW_BUILD="${{ matrix.python }}-*"
         $PY -m build --wheel .
         
@@ -407,6 +407,7 @@ jobs:
       run: |
           cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
           mkdir -p dist/repaired
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$GITHUB_WORKSPACE/../opensim_dependencies_install/simbody/lib
           for whl in dist/*.whl; do
             echo "Repairing $whl"
             auditwheel repair "$whl" -w dist/repaired/
