@@ -618,6 +618,9 @@ function(OpenSimInstallVisualizer DEP_LIBS_DIR_WIN
         else()
             set(simbody_visualizer "${DEP_LIBS_DIR_UNIX}/../libexec/simbody/simbody-visualizer")
             install(FILES ${simbody_visualizer} DESTINATION "${OSIM_DESTINATION}")
+            # On Linux, the visualizer is a dynamically linked executable, we need fix rpath
+            execute_process(COMMAND bash "-c" "patchelf --set-rpath '$ORIGIN/:$ORIGIN/../../lib' '${simbody_visualizer}'" OUTPUT_VARIABLE res)
+            message(STATUS "patchelf --set-rpath '$ORIGIN/:.$ORIGIN/../../lib' '${simbody_visualizer}' '${res}'")
         endif()
     endif()
 endfunction()
