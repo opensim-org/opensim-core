@@ -76,7 +76,7 @@ jobs:
         # TODO: Can remove /WX when we use that in CMakeLists.txt.
         # Set the CXXFLAGS environment variable to turn warnings into errors.
         # Skip timing test section included by default.
-        cmake -E env CXXFLAGS="/WX /MD -DSKIP_TIMING" cmake $env:GITHUB_WORKSPACE -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DOPENSIM_C3D_PARSER=ezc3d -DOPENSIM_WITH_CASADI=on -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=off -DBUILD_TESTING=off -DBUILD_PYTHON_WHEELS=on -DPython3_ROOT_DIR=${{ steps.pyroot.outputs.root}}
+        cmake -E env CXXFLAGS="/WX /MD -DSKIP_TIMING" cmake $env:GITHUB_WORKSPACE -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DOPENSIM_C3D_PARSER=ezc3d -DOPENSIM_WITH_CASADI=ON -DBUILD_PYTHON_WRAPPING=ON -DBUILD_JAVA_WRAPPING=OFF -DBUILD_TESTING=OFF -DBUILD_PYTHON_WHEELS=ON -DPython3_ROOT_DIR=${{ steps.pyroot.outputs.root}}
         $env:match = cmake -L . | Select-String -Pattern OPENSIM_QUALIFIED_VERSION
         $version = $env:match.split('=')[1]
         echo $version
@@ -102,13 +102,6 @@ jobs:
       run: |
         cd ~/opensim-core-install/sdk/Python
         pip wheel . --wheel-dir dist
-
-        
-    - name: Twine check
-      run: |
-        cd ~/opensim-core-install/sdk/Python
-        python -m pip install --upgrade twine
-        python -m twine check dist/*
 
     - name: Capture wheel path
       id: wheel
@@ -192,13 +185,13 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install)
         OSIM_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=11)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_C3D_PARSER=ezc3d)
-        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=off)
-        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WHEELS=on)
+        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=ON -DBUILD_JAVA_WRAPPING=OFF)
+        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WHEELS=ON)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
         OSIM_CMAKE_ARGS+=(-DBUILD_TESTING=OFF)
         OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_INSTALL_UNIX_FHS=OFF)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=OFF)
         # TODO: Update to simbody.github.io/latest
         OSIM_CMAKE_ARGS+=(-DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simbody.github.io/simtk.org/api_docs/simbody/latest/")
         OSIM_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-Werror, -Wdeprecated-copy")
@@ -228,20 +221,11 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
         pip3 wheel . --wheel-dir dist
-        ls -al
-
-    - name: Twine check
-      run: |
-          cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-          python -m pip install --upgrade twine
-          python -m twine check dist/*
-
     - name: Capture wheel path
       id: wheel
       run: |
          cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist
          echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
-   
     - name: Upload osx wheel
       uses: actions/upload-artifact@v4
       with:
@@ -291,7 +275,6 @@ jobs:
         freeglut-devel libXi-devel libXmu-devel \
         doxygen wget tar gzip patchelf
         PYVER=$($PY -c "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}')")
-      
     - name: Install zip
       run: yum install -y zip
       
@@ -335,21 +318,21 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=$GITHUB_WORKSPACE/../opensim_dependencies_install)
         #OSIM_CMAKE_ARGS+=(-DOPENSIM_C3D_PARSER=ezc3d)
-        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=on)
+        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=ON)
         OSIM_CMAKE_ARGS+=(-DPython3_EXECUTABLE=$PY)
         OSIM_CMAKE_ARGS+=(-DPython3_ROOT_DIR=$PY_PREFIX)
         OSIM_CMAKE_ARGS+=(-DPython3_NumPy_INCLUDE_DIRS=$($PY -c "import numpy; print(numpy.get_include())"))
-        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WHEELS=on)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=On)
+        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WHEELS=ON)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
         OSIM_CMAKE_ARGS+=(-Dcasadi_DIR=$GITHUB_WORKSPACE/../opensim_dependencies_install/casadi/lib/cmake/casadi)
         OSIM_CMAKE_ARGS+=(-DCMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/../opensim_dependencies_install/ipopt)
         OSIM_CMAKE_ARGS+=(-DSWIG_DIR=~/swig/share/swig)
         OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=~/swig/bin/swig)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_INSTALL_UNIX_FHS=OFF)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=OFF)
         #OSIM_CMAKE_ARGS+=(-DCMAKE_INSTALL_LIBDIR=lib)
-        OSIM_CMAKE_ARGS+=(-DBUILD_TESTING=off)
-        OSIM_CMAKE_ARGS+=(-DSWIG_DOXYGEN=off)
+        OSIM_CMAKE_ARGS+=(-DBUILD_TESTING=OFF)
+        OSIM_CMAKE_ARGS+=(-DSWIG_DOXYGEN=OFF)
         # TODO: Update to simbody.github.io/latest
         OSIM_CMAKE_ARGS+=(-DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simbody.github.io/simtk.org/api_docs/simbody/latest/")
         OSIM_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-Werror")
@@ -393,7 +376,7 @@ jobs:
         $PY -m build --wheel .
         
 
-    - name: Twine check
+    - name: Twine and audit check
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
         $PY -m pip install --upgrade twine
@@ -402,7 +385,6 @@ jobs:
             echo "=== $whl ==="
             $PY -m auditwheel show "$whl"
           done
-          
     - name: Repair wheels
       run: |
           cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
@@ -412,13 +394,10 @@ jobs:
             echo "Repairing $whl"
             auditwheel repair "$whl" -w dist/repaired/
           done
-          
     - name: Capture wheel path
       id: wheel
       run: |
          cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist/repaired
-         ls -al
-         pwd
          echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
 
     - name: Upload linux wheel
@@ -443,11 +422,10 @@ jobs:
 
       runs-on: ubuntu-latest
       environment: release
-      
       permissions:
         contents: read
         id-token: write
-        
+
       steps:
       - name: Download all wheels
         uses: actions/download-artifact@v4
