@@ -97,7 +97,7 @@ There are many ways in which you can participate in this project. For example:
  - Ask and answer questions on our [Forum](https://simtk.org/plugins/phpBB/indexPhpbb.php?group_id=91&pluginname=phpBB).
  - Review and test new [Pull Requests](https://github.com/opensim-org/opensim-core/pulls).
  - Review the [Documentation](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Documentation) and the [Wiki](https://github.com/opensim-org/opensim-core/wiki) by reporting typos, confusing explanations and adding/suggesting new content.
- - Fix bugs and contribute to OpenSim's source code by creating a [Pull Requests](https://github.com/opensim-org/opensim-core/pulls).
+ - Fix bugs and contribute to OpenSim's source code by creating a [Pull Request](https://github.com/opensim-org/opensim-core/pulls).
 
 Please, read our [Developer's guide](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Developer%27s+Guide), [Developer's Guidelines](https://github.com/opensim-org/opensim-core/blob/master/DEVELOPING.md) and our [Code of Conduct](https://github.com/opensim-org/opensim-core/blob/master/CODE_OF_CONDUCT.md) before making a pull request.
 

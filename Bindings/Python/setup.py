@@ -4,6 +4,7 @@ import os
 import sys
 from setuptools import setup
 from setuptools.dist import Distribution
+from pathlib import Path
 
 # This provides a list of relative paths to all the dependencies in the bin folder.
 # Only when installed locally via "python -m pip install ." in Windows
@@ -20,6 +21,9 @@ if os.path.exists(geometry_path):
     for file in os.listdir(geometry_path):
         geometry_files.append(os.path.join(geometry_path, file).replace(os.sep,'/'))
 
+this_dir = Path(__file__).parent
+long_description = (this_dir / "opensim/README.md").read_text(encoding="utf-8")
+
 # This provides the variable `__version__`.
 if sys.version_info[0] < 3:
     execfile('opensim/version.py')
@@ -32,7 +36,10 @@ class BinaryDistribution(Distribution):
 
 setup(name='opensim',
       version=__version__,
+      options={"bdist_wheel": {"build_number": "3"}},
       description='OpenSim Simulation Framework',
+      long_description=long_description,
+      long_description_content_type='text/markdown',
       author='OpenSim Team',
       author_email='ahabib@stanford.edu',
       url='http://opensim.stanford.edu/',
