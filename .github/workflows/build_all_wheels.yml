@@ -414,7 +414,7 @@ jobs:
         # Run the python tests, verbosely.
         $PY -m unittest discover --start-directory opensim/tests --verbose
 
-  publish_to_testpypi:
+  publish_to_pypi:
       needs: 
          - build_windows_wheels
          - build_osx_wheels
