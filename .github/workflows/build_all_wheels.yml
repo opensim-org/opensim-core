@@ -6,8 +6,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write   # REQUIRED for trusted publishing
-
+ 
 jobs:
   build_windows_wheels:
 
@@ -413,31 +412,3 @@ jobs:
         $PY -m pip install dist/repaired/${{ steps.wheel.outputs.path }}
         # Run the python tests, verbosely.
         $PY -m unittest discover --start-directory opensim/tests --verbose
-
-  publish_to_testpypi:
-      needs: 
-         - build_windows_wheels
-         - build_osx_wheels
-         - build_linux_wheels
-
-      runs-on: ubuntu-latest
-      environment: release
-      permissions:
-        contents: read
-        id-token: write
-
-      steps:
-      - name: Download all wheels
-        uses: actions/download-artifact@v4
-        with:
-          pattern: wheels-*
-          path: dist/
-          merge-multiple: true
-
-      - name: Publish to TestPyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
-          packages-dir: dist
-          skip-existing: true
-          verbose: true
