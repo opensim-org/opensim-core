@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       run_id:
-        description: 'Run ID of the "Build Python wheels" workflow to pull artifacts from'
+        description: 'Run ID of the "Build Python wheels" workflow from which to pull artifacts'
         required: true
         type: string
 
