@@ -602,9 +602,7 @@ DelimFileAdapter<T>::extendWrite(const InputTables& absTables,
     for(const auto& key : table->getTableMetaDataKeys()) {
         try {
             if(key != "header")
-                out_stream << key << "=" 
-                           << table->
-                              template getTableMetaData<std::string>(key) 
+                out_stream << key << "=" << table->getTableMetaDataAsString(key)
                            << "\n";
         } catch(const InvalidTemplateArgument&) {}
     }
