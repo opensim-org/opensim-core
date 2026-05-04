@@ -373,7 +373,6 @@ jobs:
         CIBW_MANYLINUX_X86_64_IMAGE=manylinux_2_28
         CIBW_BUILD="${{ matrix.python }}-*"
         $PY -m build --wheel .
-        
 
     - name: Twine and audit check
       run: |
