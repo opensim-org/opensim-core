@@ -32,6 +32,14 @@ struct Event {
     std::string description;
 };
 
+inline std::ostream& operator<<(std::ostream& os, const Event& e) {
+    os << "{"
+       << "label=" << e.label << ", "
+       << "time=" << e.time << ", "
+       << "frame=" << e.frame << ", "
+       << "description=" << e.description << "}";
+    return os;
+}
 }
 
 #endif

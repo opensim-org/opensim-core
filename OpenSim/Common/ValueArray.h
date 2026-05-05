@@ -121,17 +121,38 @@ private:
         return index >= _values.size();
     }
 
-    template<typename Type,
-             typename = decltype(std::declval<std::ostream&>() <<
-                                 std::declval<Type>())>
+    template <typename Type>
     std::string toString_impl(const Type& value) const {
-        std::ostringstream stream{};
-        stream << value;
-        return stream.str();
-    }
-    template<typename... Types>
-    std::string toString_impl(Types...) const {
-        return "<cannot-convert-to-string>";
+        std::ostringstream stream;
+
+        if constexpr (requires(std::ostream& os, const Type& v) { os << v; }) {
+            // Normal type
+            stream << value;
+            return stream.str();
+        } else if constexpr (requires(const Type& v) { v.toString(); }) {
+            // type with a toString() method
+            return value.toString();
+        } else if constexpr (requires(const Type& v) {
+                                 { v.size() } -> std::convertible_to<size_t>;
+                                 { v[0] };
+                             }) {
+            // Container (e.g., std::vector) which needs recursive serialization
+            stream << "{";
+            const size_t n = value.size();
+            for (size_t i = 0; i < n; ++i) {
+                stream << toString_impl(value[i]);
+                if (i + 1 < n) stream << ",";
+            }
+
+            stream << "}";
+            // Strip newlines
+            std::string input = stream.str();
+            input.erase(
+                    std::remove(input.begin(), input.end(), '\n'), input.end());
+            return input;
+        } else {
+            return "<cannot-convert-to-string>";
+        }
     }
 
     std::vector<Value<T>> _values;
