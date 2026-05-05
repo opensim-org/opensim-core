@@ -84,14 +84,17 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         if (eventDescription.size() > i){
             eventDescriptionStr = eventDescription[i];
         }
-        event_table.push_back(
-                {
-                        c3d.header().eventsLabel(i),
-                        static_cast<double>(c3d.header().eventsTime(i)),
-                        static_cast<int>(
-                                c3d.header().eventsTime(i) / c3d.header().frameRate()),
-                        eventDescriptionStr
-                });
+        const std::string& eventLabel = c3d.header().eventsLabel(i);
+        if (!eventLabel.empty()) {
+            event_table.push_back(
+                    {
+                            eventLabel,
+                            static_cast<double>(c3d.header().eventsTime(i)),
+                            static_cast<int>(
+                                    c3d.header().eventsTime(i) / c3d.header().frameRate()),
+                            eventDescriptionStr
+                    });
+        }
     }
     OutputTables tables{};
 
