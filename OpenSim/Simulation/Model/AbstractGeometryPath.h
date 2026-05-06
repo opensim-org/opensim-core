@@ -157,6 +157,18 @@ public:
      */
     virtual bool isVisualPath() const = 0;
 
+    /**
+     * Find the list of coordinates actuated by the path.
+     *
+     * Internally, this may use a variety of methods to find the list of
+     * actuated coordinates. It may search the kinematic tree to find the joints
+     * lying between the origin and insertion points of the path, or it may use
+     * a user-defined list of coordinates. It is up to concrete implementations
+     * (e.g., `GeometryPath`) to provide a relevant implementation.
+     */
+    virtual std::vector<std::string>
+    findCoordinates(const SimTK::State&) const = 0;
+
     // DEFAULTED METHODS
     //
     // These are methods that for which AbstractGeometryPath provides default

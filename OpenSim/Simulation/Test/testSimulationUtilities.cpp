@@ -23,6 +23,7 @@
 
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
 #include <OpenSim/Actuators/PointActuator.h>
@@ -169,5 +170,132 @@ TEST_CASE("testUpdatePre40KinematicsFor40MotionType") {
         SimTK_TEST_MUST_THROW_EXC(
             updatePre40KinematicsStorageFor40MotionType(updatedModel, origKinematics),
             Exception);
+    }
+}
+
+TEST_CASE("findJointsBetweenPhysicalFrames") {
+
+    using SimTK::Inertia;
+    using SimTK::Vec3;
+
+    // Create a pendulum model with two branches branches in the kinematic tree.
+    Model model;
+    const auto& ground = model.getGround();
+
+    auto addBranch = [&ground](Model& model, int numLinks, std::string name) {
+        const PhysicalFrame* prevBody = &ground;
+        for (int i = 0; i < numLinks; ++i) {
+            const std::string istr = std::to_string(i);
+            auto* bi = new OpenSim::Body(fmt::format("b{}_{}", istr, name),
+                1, Vec3(0), Inertia(1));
+            model.addBody(bi);
+
+            auto* ji = new PinJoint(fmt::format("j{}_{}", istr, name),
+                    *prevBody, Vec3(0), Vec3(0),
+                    *bi, Vec3(-1, 0, 0), Vec3(0));
+            auto& qi = ji->updCoordinate();
+            qi.setName(fmt::format("q{}_{}", istr, name));
+            model.addJoint(ji);
+
+            prevBody = bi;
+        }
+    };
+
+    addBranch(model, 3, "l");
+    addBranch(model, 2, "r");
+    model.finalizeConnections();
+
+    SECTION("Bodies do not exist in the model") {
+        CHECK_THROWS_WITH(
+            findJointsBetweenPhysicalFrames(
+                    model, "/not/a/body", "/bodyset/b1_l"),
+            Catch::Matchers::ContainsSubstring(
+                    "Expected the model to contain a PhysicalFrame with "
+                    "path '/not/a/body'"));
+
+        CHECK_THROWS_WITH(
+                findJointsBetweenPhysicalFrames(
+                        model, "/bodyset/b0_l", "/also/not/a/body"),
+                Catch::Matchers::ContainsSubstring(
+                        "Expected the model to contain a PhysicalFrame with "
+                        "path '/also/not/a/body'"));
+    }
+
+    SECTION("Frames on same branch") {
+        auto joints = findJointsBetweenPhysicalFrames(
+                model, "/bodyset/b0_l", "/bodyset/b1_l");
+        CHECK(joints.size() == 1);
+        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j1_l");
+
+        // Joints should be returned in root-to-leaf order.
+        joints = findJointsBetweenPhysicalFrames(
+                model, "/bodyset/b0_l", "/bodyset/b2_l");
+        CHECK(joints.size() == 2);
+        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j1_l");
+        CHECK(joints[1]->getAbsolutePathString() == "/jointset/j2_l");
+
+        // Flipping the order of the frames should produce the same joints.
+        joints = findJointsBetweenPhysicalFrames(
+                model, "/bodyset/b2_l", "/bodyset/b0_l");
+        CHECK(joints.size() == 2);
+        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j1_l");
+        CHECK(joints[1]->getAbsolutePathString() == "/jointset/j2_l");
+
+        joints = findJointsBetweenPhysicalFrames(
+                model, "/bodyset/b1_l", "/bodyset/b2_l");
+        CHECK(joints.size() == 1);
+        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j2_l");
+
+        joints = findJointsBetweenPhysicalFrames(
+                model, "/bodyset/b0_r", "/bodyset/b1_r");
+        CHECK(joints.size() == 1);
+        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j1_r");
+    }
+
+    SECTION("Frames on different branches") {
+        auto joints = findJointsBetweenPhysicalFrames(
+                model, "/bodyset/b0_l", "/bodyset/b0_r");
+        CHECK(joints.size() == 2);
+        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j0_l");
+        CHECK(joints[1]->getAbsolutePathString() == "/jointset/j0_r");
+
+        joints = findJointsBetweenPhysicalFrames(
+                model, "/bodyset/b0_r", "/bodyset/b0_l");
+        CHECK(joints.size() == 2);
+        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j0_r");
+        CHECK(joints[1]->getAbsolutePathString() == "/jointset/j0_l");
+
+        joints = findJointsBetweenPhysicalFrames(
+                model, "/bodyset/b2_l", "/bodyset/b1_r");
+        CHECK(joints.size() == 5);
+        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j2_l");
+        CHECK(joints[1]->getAbsolutePathString() == "/jointset/j1_l");
+        CHECK(joints[2]->getAbsolutePathString() == "/jointset/j0_l");
+        CHECK(joints[3]->getAbsolutePathString() == "/jointset/j0_r");
+        CHECK(joints[4]->getAbsolutePathString() == "/jointset/j1_r");
+
+        joints = findJointsBetweenPhysicalFrames(
+                model, "/bodyset/b1_r", "/bodyset/b2_l");
+        CHECK(joints.size() == 5);
+        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j1_r");
+        CHECK(joints[1]->getAbsolutePathString() == "/jointset/j0_r");
+        CHECK(joints[2]->getAbsolutePathString() == "/jointset/j0_l");
+        CHECK(joints[3]->getAbsolutePathString() == "/jointset/j1_l");
+        CHECK(joints[4]->getAbsolutePathString() == "/jointset/j2_l");
+    }
+
+    SECTION("One frame is ground") {
+        auto joints = findJointsBetweenPhysicalFrames(
+                model, "/ground", "/bodyset/b2_l");
+        CHECK(joints.size() == 3);
+        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j0_l");
+        CHECK(joints[1]->getAbsolutePathString() == "/jointset/j1_l");
+        CHECK(joints[2]->getAbsolutePathString() == "/jointset/j2_l");
+
+        joints = findJointsBetweenPhysicalFrames(
+                model, "/bodyset/b1_r", "/ground");
+        CHECK(joints.size() == 2);
+        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j0_r");
+        CHECK(joints[1]->getAbsolutePathString() == "/jointset/j1_r");
     }
 }
