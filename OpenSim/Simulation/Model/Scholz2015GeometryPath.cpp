@@ -28,8 +28,6 @@
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
-#include <optional>
-
 using namespace OpenSim;
 
 //=============================================================================
@@ -189,6 +187,15 @@ int Scholz2015GeometryPath::getNumPathElements() const {
     return getProperty_path_elements().size();
 }
 
+void Scholz2015GeometryPath::setNumDecorativeCurvePoints(
+        int numDecorativeCurvePoints) {
+    set_num_decorative_curve_points(numDecorativeCurvePoints);
+}
+
+int Scholz2015GeometryPath::getNumDecorativeCurvePoints() const {
+    return get_num_decorative_curve_points();
+}
+
 //=============================================================================
 // ABSTRACT PATH INTERFACE
 //=============================================================================
@@ -210,6 +217,16 @@ double Scholz2015GeometryPath::computeMomentArm(const SimTK::State& s,
     }
 
     return _maSolver->solve(s, coord,  *this);
+}
+
+void Scholz2015GeometryPath::implForEachDecorativePathPoint(
+    const SimTK::State& state,
+    const std::function<void(const DecorativePathPoint&)>& callback) const
+{
+    getCableSpan().calcResampledDecorativePathPoints(
+        state, get_num_decorative_curve_points(),
+        [&callback](SimTK::Vec3 p) { callback(DecorativePathPoint{p});
+    });
 }
 
 void Scholz2015GeometryPath::produceForces(const SimTK::State& state,
@@ -329,47 +346,12 @@ void Scholz2015GeometryPath::extendAddToSystem(
     _index = cable.getIndex();
 }
 
-void Scholz2015GeometryPath::generateDecorations(
-        bool fixed,
-        const ModelDisplayHints& hints,
-        const SimTK::State& s,
-        SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const {
-
-    if (fixed) { return; }
-    const bool showPathPoints = hints.get_show_path_points();
-    const SimTK::Vec3 color = getColor(s);
-    int index = 0;
-    std::optional<SimTK::Vec3> previous;
-    getCableSpan().calcDecorativePathPoints(s, [&](SimTK::Vec3 x_G) {
-        if (previous) {
-            // Emit line between points
-            geoms.push_back(SimTK::DecorativeLine(*previous, x_G)
-                .setLineThickness(4)
-                .setScaleFactors(SimTK::Vec3{1.0})
-                .setColor(color)
-                .setBodyId(0)
-                .setIndexOnBody(index++)
-            );
-        }
-        if (showPathPoints) {
-            geoms.push_back(SimTK::DecorativeSphere(0.005)
-                .setTransform(x_G)
-                .setScaleFactors(SimTK::Vec3{1.0})
-                .setColor(color)
-                .setBodyId(0)
-                .setIndexOnBody(index++)
-            );
-        }
-
-        previous = x_G;
-    });
-}
-
 //=============================================================================
 // CONVENIENCE METHODS
 //=============================================================================
 void Scholz2015GeometryPath::constructProperties() {
     constructProperty_path_elements();
+    constructProperty_num_decorative_curve_points(5);
 }
 
 const Scholz2015GeometryPathObstacle* Scholz2015GeometryPath::getObstacle(
