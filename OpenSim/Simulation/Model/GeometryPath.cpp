@@ -177,6 +177,35 @@ void GeometryPath::extendFinalizeFromProperties()
     }
 }
 
+void GeometryPath::implForEachDecorativePathPoint(
+    const SimTK::State& state,
+    const std::function<void(const DecorativePathPoint&)>& callback) const
+{
+    const Array<AbstractPathPoint*>& pathPoints = getCurrentPath(state);
+
+    for (int i = 0; i < pathPoints.size(); ++i) {
+        const AbstractPathPoint& p = *pathPoints[i];
+
+        if (auto* pwp = dynamic_cast<const PathWrapPoint*>(&p)) {
+            // A `PathWrapPoint`'s surface points are expressed w.r.t. the wrap
+            // surface's body frame. Ensure they're transformed to ground.
+            const SimTK::Transform& X_BG =
+                    pwp->getParentFrame().getTransformInGround(state);
+
+            // A `PathWrapPoint`'s surface points should be emitted, but not
+            // associated to a component in the model (they are synthetic).
+            const Array<Vec3>& surfacePoints = pwp->getWrapPath(state);
+
+            for (int j = 0; j < surfacePoints.getSize(); ++j) {
+                callback(DecorativePathPoint{X_BG * surfacePoints[j]});
+            }
+        }
+        else {  // Otherwise, it's a regular `PathPoint`, so just emit it.
+            callback(DecorativePathPoint{p.getLocationInGround(state), &p});
+        }
+    }
+}
+
 void GeometryPath::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);
@@ -218,82 +247,6 @@ void GeometryPath::extendConnectToModel(Model& aModel)
 {
     Super::extendInitStateFromProperties(s);
     markCacheVariableValid(s, _colorCV);  // it is OK at its default value
-}
-
-//------------------------------------------------------------------------------
-//                         GENERATE DECORATIONS
-//------------------------------------------------------------------------------
-// The GeometryPath takes care of drawing itself here, using information it
-// can extract from the supplied state, including position information and
-// color information that may have been calculated as late as Stage::Dynamics.
-// For example, muscles may want the color to reflect activation level and 
-// other path-using components might want to use forces (tension). We will
-// ensure that the state has been realized to Stage::Dynamics before looking
-// at it. (It is only guaranteed to be at Stage::Position here.)
-void GeometryPath::
-generateDecorations(bool fixed, const ModelDisplayHints& hints, 
-                    const SimTK::State& state, 
-                    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
-{        
-    // There is no fixed geometry to generate here.
-    if (fixed) { return; }
-
-    const Array<AbstractPathPoint*>& pathPoints = getCurrentPath(state);
-
-    OPENSIM_ASSERT_FRMOBJ(pathPoints.size() > 1);
-
-    const AbstractPathPoint* lastPoint = pathPoints[0];
-    SimTK::MobilizedBodyIndex mbix(0);
-
-    Vec3 lastPos = lastPoint->getLocationInGround(state);
-    if (hints.get_show_path_points())
-        SimTK::DefaultGeometry::drawPathPoint(
-                mbix, lastPos, getColor(state), appendToThis);
-
-    Vec3 pos;
-
-    for (int i = 1; i < pathPoints.getSize(); ++i) {
-        AbstractPathPoint* point = pathPoints[i];
-        PathWrapPoint* pwp = dynamic_cast<PathWrapPoint*>(point);
-
-        if (pwp) {
-            // A PathWrapPoint provides points on the wrapping surface as Vec3s
-            const Array<Vec3>& surfacePoints = pwp->getWrapPath(state);
-            // The surface points are expressed w.r.t. the wrap surface's body frame.
-            // Transform the surface points into the ground reference frame to draw
-            // the surface point as the wrapping portion of the GeometryPath
-            const SimTK::Transform& X_BG =
-                    pwp->getParentFrame().getTransformInGround(state);
-            // Cycle through each surface point and draw it the Ground frame
-            for (int j = 0; j<surfacePoints.getSize(); ++j) {
-                // transform the surface point into the Ground reference frame
-                pos = X_BG*surfacePoints[j];
-                if (hints.get_show_path_points())
-                    SimTK::DefaultGeometry::drawPathPoint(
-                            mbix, pos, getColor(state), appendToThis);
-                // Line segments will be in ground frame
-                appendToThis.push_back(SimTK::DecorativeLine(lastPos, pos)
-                                .setLineThickness(4)
-                                .setColor(getColor(state))
-                                .setBodyId(0)
-                                .setIndexOnBody(j));
-                lastPos = pos;
-            }
-        } 
-        else { // otherwise a regular PathPoint so just draw its location
-            pos = point->getLocationInGround(state);
-            if (hints.get_show_path_points())
-                SimTK::DefaultGeometry::drawPathPoint(
-                        mbix, pos, getColor(state), appendToThis);
-            // Line segments will be in ground frame
-            appendToThis.push_back(SimTK::DecorativeLine(lastPos, pos)
-                            .setLineThickness(4)
-                            .setColor(getColor(state))
-                            .setBodyId(0)
-                            .setIndexOnBody(i));
-            lastPos = pos;
-        }
-    }
 }
 
 //_____________________________________________________________________________

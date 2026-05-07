@@ -425,6 +425,18 @@ public:
      */
     int getNumPathElements() const;
 
+    /**
+     * Set the number of decorative path points per curve segment used when
+     * generating path decorations.
+     */
+    void setNumDecorativeCurvePoints(int numDecorativeCurvePoints);
+
+    /**
+     * Get the number of decorative path points per curve segment used when
+     * generating path decorations (default: 5).
+     */
+    int getNumDecorativeCurvePoints() const;
+
     // @}
 
     //** @name `AbstractGeometryPath` interface */
@@ -434,6 +446,8 @@ public:
     double computeMomentArm(const SimTK::State& s,
             const Coordinate& coord) const override;
     bool isVisualPath() const override { return true; }
+    void implForEachDecorativePathPoint(const SimTK::State&,
+        const std::function<void(const DecorativePathPoint&)>&) const override;
     // @}
 
     //** @name `ForceProducer` interface */
@@ -446,13 +460,13 @@ private:
     // PROPERTIES
     OpenSim_DECLARE_LIST_PROPERTY(path_elements, Scholz2015GeometryPathElement,
         "The list of elements (path points or obstacles) defining the path.");
+    OpenSim_DECLARE_PROPERTY(num_decorative_curve_points, int,
+        "The number of decorative path points per curve segment used when "
+        "generating path decorations (default: 5).");
 
     // MODEL COMPONENT INTERFACE
     void extendConnectToModel(Model& model) override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
-            const SimTK::State& s,
-            SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const override;
 
     // CONVENIENCE METHODS
     void constructProperties();
