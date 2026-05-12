@@ -27,6 +27,7 @@ if(BUILD_API_EXAMPLES)
     add_subdirectory(Moco)
     add_subdirectory(Wrapping)
     add_subdirectory(PolynomialPathFitter)
+    add_subdirectory(ExponentialContactForce)
 
 else()
 
