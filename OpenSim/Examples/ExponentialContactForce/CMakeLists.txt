@@ -1,0 +1,1 @@
+OpenSimAddExampleCXX(NAME exampleExponentialContactForce SUBDIR ExponentialContactForce)

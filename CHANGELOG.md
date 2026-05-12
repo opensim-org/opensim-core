@@ -54,6 +54,7 @@ performance and stability in wrapping solutions.
 - Fixed an issue in `PolynomialPathFitter` where the process would segfault if too few coordinate samples were used. (#4280)
 - Fixed an issue in `PolynomialPathFitter` where the process assign threads to model forces without a wrapping path. (#4280)
 - `PolynomialPathFitter` now gracefully handles model configurations that lead to invalid path computations due to random sampling. (#4280)
+- Added `exampleExponentialContactForce`, including C++, Matlab, and Python variants. (#4318)
 
 
 v4.5.2

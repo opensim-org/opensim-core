@@ -47,6 +47,7 @@
 #include "Model/HuntCrossleyForce.h"
 #include "Model/SmoothSphereHalfSpaceForce.h"
 #include "Model/MeyerFregly2016Force.h"
+#include "Model/ExponentialContactForce.h"
 #include "Model/Ligament.h"
 #include "Model/Blankevoort1991Ligament.h"
 #include "Model/JointSet.h"
@@ -136,6 +137,7 @@
 #include "OpenSense/OpenSenseUtilities.h"
 #include "OpenSense/IMU.h"
 #include "SimulationUtilities.h"
+#include "VisualizerUtilities.h"
 
 #include "RegisterTypes_osimSimulation.h"   // to expose RegisterTypes_osimSimulation
 
