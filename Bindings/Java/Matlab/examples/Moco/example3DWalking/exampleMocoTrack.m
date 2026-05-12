@@ -208,7 +208,7 @@ solver.resetProblem(problem);
 
 % Solve!
 solution = study.solve();
-solution.write("exampleMocoTrack_muscle_driven_tracking_solution.sto");
+solution.write("exampleMocoTrack_muscle_driven_state_tracking_solution.sto");
 
 % Visualize the solution.
 study.visualize(solution);
@@ -261,30 +261,6 @@ problem = study.updProblem();
 effort = MocoControlGoal.safeDownCast(problem.updGoal("control_effort"));
 effort.setWeight(0.1);
 
-% Put larger individual weights on the pelvis CoordinateActuators, which act 
-% as the residual, or 'hand-of-god', forces which we would like to keep as small
-% as possible.
-effort.setWeightForControlPattern('.*pelvis.*', 10);
-
-% Constrain the states and controls to be periodic.
-periodicityGoal = MocoPeriodicityGoal("periodicity");
-model = modelProcessor.process();
-model.initSystem();
-for i = 0:model.getNumStateVariables()-1
-    currentStateName = string(model.getStateVariableNames().getitem(i));
-    if (~contains(currentStateName,"pelvis_tx/value"))
-        periodicityGoal.addStatePair(MocoPeriodicityGoalPair(currentStateName));
-    end
-end
-
-forceSet = model.getForceSet();
-for i = 0:forceSet.getSize()-1
-    forcePath = forceSet.get(i).getAbsolutePathString();
-    periodicityGoal.addControlPair(MocoPeriodicityGoalPair(forcePath));
-end
-
-problem.addGoal(periodicityGoal);
-
 % Add a joint moment tracking goal to the problem.
 jointMomentTracking = MocoGeneralizedForceTrackingGoal(...
         "joint_moment_tracking", 1e-2);
@@ -320,8 +296,8 @@ jointMomentTracking.setIgnoreConstrainedCoordinates(true);
 jointMomentTracking.setWeightForGeneralizedForcePattern(".*pelvis.*", 0);
 
 % Encourage better tracking of the ankle joint moments.
-jointMomentTracking.setWeightForGeneralizedForce("ankle_angle_r_moment", 100);
-jointMomentTracking.setWeightForGeneralizedForce("ankle_angle_l_moment", 100);
+jointMomentTracking.setWeightForGeneralizedForce("ankle_angle_r_moment", 10);
+jointMomentTracking.setWeightForGeneralizedForce("ankle_angle_l_moment", 10);
 
 % Add the joint moment tracking goal to the problem.
 problem.addGoal(jointMomentTracking);
@@ -333,8 +309,8 @@ solver.set_optim_constraint_tolerance(1e-4);
 solver.resetProblem(problem);
 
 % Set the guess, if available.
-if (exist("exampleMocoTrack_muscle_driven_tracking_solution.sto", "file"))
-    solver.setGuessFile("exampleMocoTrack_muscle_driven_tracking_solution.sto");
+if (exist("exampleMocoTrack_muscle_driven_state_tracking_solution.sto", "file"))
+    solver.setGuessFile("exampleMocoTrack_muscle_driven_state_tracking_solution.sto");
 end
 
 % Solve!
@@ -342,6 +318,8 @@ solution = study.solve();
 solution.write("exampleMocoTrack_joint_moment_tracking_solution.sto");
 
 % Save the model to a file.
+model = modelProcessor.process();
+model.initSystem();
 model.print("exampleMocoTrack_model.osim");
 
 % Compute the joint moments and write them to a file.
