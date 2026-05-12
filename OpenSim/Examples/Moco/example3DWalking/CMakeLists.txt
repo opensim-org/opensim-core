@@ -11,7 +11,12 @@ set(EXAMPLE_MOCO_TRACK_FILES
         ik_tasks_walk.xml
         electromyography.sto
         id_walk.sto
-        README.txt)
+        README.txt
+        exampleMocoTrack_torque_driven_marker_tracking_solution.sto
+        exampleMocoTrack_muscle_driven_state_tracking_solution.sto
+        exampleMocoTrack_joint_moment_tracking_solution.sto
+        example3DWalking_torque_driven_tracking_solution.sto
+        example3DWalking_muscle_driven_tracking_solution.sto)
 
 OpenSimAddExampleCXX(NAME example3DWalking SUBDIR Moco
         EXECUTABLES exampleMocoTrack exampleMocoInverse example3DWalking

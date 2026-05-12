@@ -54,6 +54,9 @@ performance and stability in wrapping solutions.
 - Fixed an issue in `PolynomialPathFitter` where the process would segfault if too few coordinate samples were used. (#4280)
 - Fixed an issue in `PolynomialPathFitter` where the process assign threads to model forces without a wrapping path. (#4280)
 - `PolynomialPathFitter` now gracefully handles model configurations that lead to invalid path computations due to random sampling. (#4280)
+- The Matlab and Python versions of the muscle-synergy example in `exampleMocoInverse` now use `CommonUtilities::factorizeMatrixNonNegative()` to perform muscle synergy analysis, now consistent with the C++ version of the example. (#4323)
+- Made simplifications to the joint moment tracking example in exampleMocoTrack to improve performance. (#4323)
+- Reference solution files are now included for `exampleMocoTrack` and `example3DWalking`. (#4323)
 
 
 v4.5.2
