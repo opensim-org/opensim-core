@@ -64,7 +64,7 @@ def torqueDrivenMarkerTracking():
     track.setMarkersReferenceFromTRC("markers_walk.trc")
 
     # Increase the global marker tracking weight, which is the weight
-    # associated with the internal MocoMarkerTrackingCost term.
+    # associated with the internal MocoMarkerTrackingGoal term.
     track.set_markers_global_tracking_weight(10)
 
     # Set the marker weights based on the IKTaskSet from the dataset.
@@ -177,7 +177,7 @@ def muscleDrivenStateTracking():
     
     # Solve!
     solution = study.solve()
-    solution.write('exampleMocoTrack_muscle_driven_tracking_solution.sto')
+    solution.write('exampleMocoTrack_muscle_driven_state_tracking_solution.sto')
 
     # Visualize the solution.
     study.visualize(solution)
@@ -226,27 +226,6 @@ def muscleDrivenJointMomentTracking():
     effort = osim.MocoControlGoal.safeDownCast(problem.updGoal("control_effort"))
     effort.setWeight(0.1)
 
-    # Put larger individual weights on the pelvis CoordinateActuators, which act 
-    # as the residual, or 'hand-of-god', forces which we would like to keep as small
-    # as possible.
-    effort.setWeightForControlPattern('.*pelvis.*', 10)
-
-    # Constrain the states and controls to be periodic.
-    periodicityGoal = osim.MocoPeriodicityGoal('periodicity')
-    model = modelProcessor.process()
-    model.initSystem()
-    for i in range(model.getNumStateVariables()):
-        currentStateName = str(model.getStateVariableNames().getitem(i))
-        if 'pelvis_tx/value' not in currentStateName:
-            periodicityGoal.addStatePair(osim.MocoPeriodicityGoalPair(currentStateName))
-        
-    forceSet = model.getForceSet()
-    for i in range(forceSet.getSize()):
-        forcePath = forceSet.get(i).getAbsolutePathString()
-        periodicityGoal.addControlPair(osim.MocoPeriodicityGoalPair(forcePath))
-    
-    problem.addGoal(periodicityGoal)
-
     # Add a joint moment tracking goal to the problem.
     jointMomentTracking = osim.MocoGeneralizedForceTrackingGoal(
             'joint_moment_tracking', 1e-2)
@@ -282,8 +261,8 @@ def muscleDrivenJointMomentTracking():
     jointMomentTracking.setWeightForGeneralizedForcePattern('.*pelvis.*', 0)
 
     # Encourage better tracking of the ankle joint moments.
-    jointMomentTracking.setWeightForGeneralizedForce('ankle_angle_r_moment', 100)
-    jointMomentTracking.setWeightForGeneralizedForce('ankle_angle_l_moment', 100)
+    jointMomentTracking.setWeightForGeneralizedForce('ankle_angle_r_moment', 10)
+    jointMomentTracking.setWeightForGeneralizedForce('ankle_angle_l_moment', 10)
 
     # Add the joint moment tracking goal to the problem.
     problem.addGoal(jointMomentTracking)
@@ -295,14 +274,16 @@ def muscleDrivenJointMomentTracking():
     solver.resetProblem(problem)
 
     # Set the guess, if available.
-    if os.path.exists('exampleMocoTrack_muscle_driven_tracking_solution.sto'):
-        solver.setGuessFile('exampleMocoTrack_muscle_driven_tracking_solution.sto')
+    if os.path.exists('exampleMocoTrack_muscle_driven_state_tracking_solution.sto'):
+        solver.setGuessFile('exampleMocoTrack_muscle_driven_state_tracking_solution.sto')
     
     # Solve!
     solution = study.solve()
     solution.write('exampleMocoTrack_joint_moment_tracking_solution.sto')
 
     # Save the model to a file.
+    model = modelProcessor.process()
+    model.initSystem()
     model.printToXML('exampleMocoTrack_model.osim')
 
     # Compute the joint moments and write them to a file.
