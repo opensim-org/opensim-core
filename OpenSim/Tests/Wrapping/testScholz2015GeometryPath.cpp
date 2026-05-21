@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Actuators/ModelFactory.h>
+#include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
@@ -963,4 +964,53 @@ TEST_CASE("Changing contact geometry properties") {
     // Check that the path lengths are longer than the original lengths.
     CHECK(newLength1 > length1);
     CHECK(newLength2 > length2);
+}
+
+TEST_CASE("Scaling updates muscle properties") {
+
+    // Create a simple model with a slider joint actuated by a muscle.
+    Model model;
+    model.setName("isometric_muscle");
+    auto* body = new Body("body", 0.5, SimTK::Vec3(0), SimTK::Inertia(0));
+    model.addComponent(body);
+
+    auto* joint = new SliderJoint("joint",
+        model.getGround(), SimTK::Vec3(0), SimTK::Vec3(0),
+        *body, SimTK::Vec3(0.2, 0, 0), SimTK::Vec3(0));
+    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord.setName("slider");
+    model.addComponent(joint);
+
+    auto* muscle = new Millard2012EquilibriumMuscle();
+    muscle->setName("muscle");
+    muscle->set_path(Scholz2015GeometryPath());
+    muscle->set_optimal_fiber_length(0.1);
+    muscle->set_tendon_slack_length(0.1);
+    model.addComponent(muscle);
+
+    // Define the muscle path.
+    Scholz2015GeometryPath& path = muscle->updPath<Scholz2015GeometryPath>();
+    path.appendPathPoint(model.getGround(), SimTK::Vec3(0));
+    path.appendPathPoint(*body, SimTK::Vec3(0));
+
+    model.finalizeConnections();
+    SimTK::State state = model.initSystem();
+    model.realizePosition(state);
+
+    // Scale the model along the x-axis.
+    ScaleSet scaleSet;
+    Scale scale;
+    scale.setSegmentName("body");
+    scale.setScaleFactors(SimTK::Vec3(1.23, 1.0, 1.0));
+    scaleSet.cloneAndAppend(scale);
+    scaleSet.get(scaleSet.getSize() - 1).setName("body");
+    model.scale(state, scaleSet, true);
+    model.finalizeConnections();
+    model.initSystem();
+
+    // Check that the muscle's optimal fiber length and tendon slack length were
+    // scaled.
+    const auto& scaledMuscle = model.getComponent<Muscle>("/muscle");
+    CHECK(scaledMuscle.get_optimal_fiber_length() == 0.123);
+    CHECK(scaledMuscle.get_tendon_slack_length() == 0.123);
 }
