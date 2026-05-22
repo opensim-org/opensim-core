@@ -453,6 +453,8 @@ private:
     void generateDecorations(bool fixed, const ModelDisplayHints& hints,
             const SimTK::State& s,
             SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const override;
+    void extendPreScale(const SimTK::State&, const ScaleSet&) override;
+    void extendPostScale(const SimTK::State&, const ScaleSet&) override;
 
     // CONVENIENCE METHODS
     void constructProperties();

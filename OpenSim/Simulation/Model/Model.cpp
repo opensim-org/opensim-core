@@ -1659,7 +1659,9 @@ bool Model::scale(SimTK::State& s, const ScaleSet& scaleSet,
 
     // Call postScale() on all ModelComponents owned by the model so that
     // components like muscles, ligaments, and path springs can update their
-    // properties based on their new path length.
+    // properties based on their new path length. Realize to velocity so that
+    // path state can be computed.
+    getMultibodySystem().realize(s, SimTK::Stage::Velocity);
     for (ModelComponent& comp : updComponentList<ModelComponent>())
         comp.postScale(s, scaleSet);
 
