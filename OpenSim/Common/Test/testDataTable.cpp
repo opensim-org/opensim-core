@@ -1100,3 +1100,40 @@ TEST_CASE("TimeSeriesTable trim methods") {
         CHECK(table.getNumRows() == 1);
     }
 }
+
+
+TEST_CASE("TableUtilities::concatenate") {
+    TimeSeriesTable_<Vec3> tableVec3{};
+    tableVec3.setColumnLabels({"col0", "col1", "col2"});
+    tableVec3.appendRow(0.1, {{1, 1, 1}, {2, 2, 2}, {3, 3, 3}});
+    tableVec3.appendRow(0.2, {{2, 2, 2}, {1, 1, 1}, {2, 2, 2}});
+    tableVec3.appendRow(0.3, {{3, 3, 3}, {3, 3, 3}, {1, 1, 1}});
+
+    TimeSeriesTable_<Vec3> tableVec3Append{};
+    tableVec3Append.setColumnLabels({"col0", "col1", "col2"});
+    tableVec3Append.appendRow(0.4, {{4, 4 ,4}, {2, 2, 2}, {3, 3, 3}});
+    tableVec3Append.appendRow(0.5, {{5, 5, 5}, {1, 1, 1}, {2, 2, 2}});
+    tableVec3Append.appendRow(0.6, {{6, 6, 6}, {3, 3, 3}, {7, 8, 9}});
+
+    auto combined = TableUtilities::concatenateTable<Vec3>(tableVec3, tableVec3Append);
+    CHECK(combined.getNumRows() == 6);
+    CHECK(combined.getNumColumns() == 3);
+    auto& times = combined.getIndependentColumn();
+    for (int iRow = 0; iRow < 6; ++iRow) { 
+        CHECK(times[iRow] == Approx(0.1 * (iRow+1))); 
+    }
+    auto lastElement = combined.getMatrix().getElt(5, 2);
+    CHECK(lastElement[0] == 7);
+    CHECK(lastElement[1] == 8);
+    CHECK(lastElement[2] == 9);
+
+    // Check can't concatenate tableVec3 with itself since time will not be increasing
+    SimTK_TEST_MUST_THROW(TableUtilities::concatenateTable<Vec3>(
+            tableVec3Append, tableVec3););
+
+    tableVec3Append.setColumnLabels({"col0", "col1", "col3"});
+    // check throw if column labels mismatch
+    SimTK_TEST_MUST_THROW(TableUtilities::concatenateTable<Vec3>(
+            tableVec3, tableVec3Append););
+
+}
