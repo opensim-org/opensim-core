@@ -1,6 +1,6 @@
 /* -------------------------------------------------------------------------- *
-* -------------------------------------------------------------------------- *
-*                     OpenSim:  SimulationUtilities.cpp                      *
+ *                     OpenSim:  SimulationUtilities.cpp                      *
+ * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
  * OpenSim is developed at Stanford University and supported by the US        *

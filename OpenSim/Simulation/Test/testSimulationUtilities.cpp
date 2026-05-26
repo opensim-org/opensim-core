@@ -178,7 +178,7 @@ TEST_CASE("findJointsBetweenPhysicalFrames") {
     using SimTK::Inertia;
     using SimTK::Vec3;
 
-    // Create a pendulum model with two branches branches in the kinematic tree.
+    // Create a pendulum model with two branches in the kinematic tree.
     Model model;
     const auto& ground = model.getGround();
 
