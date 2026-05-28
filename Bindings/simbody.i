@@ -1,5 +1,8 @@
 %feature("director") SimTK::DecorativeGeometryImplementation;
 
+%apply std::string          { SimTK::String };
+%apply const std::string&   { const SimTK::String& };
+
 %include <SimTKcommon.h>
 
 %include <SimTKcommon/Constants.h>
@@ -278,6 +281,7 @@ namespace SimTK {
 }
 %include <SWIGSimTK/common.h>
 %include <SWIGSimTK/Array.h>
+
 namespace SimTK {
 %template(SimTKArrayString) SimTK::Array_<std::string>;
 %template(SimTKArrayDouble) SimTK::Array_<double>;
@@ -321,6 +325,7 @@ namespace SimTK {
 %include <SWIGSimTK/SimbodyMatterSubsystem.h>
 
 %rename(SimTKVisualizer) SimTK::Visualizer;
+
 %include <simbody/internal/Visualizer.h>
 
 // Wrap SimTK::Visualizer and InputSilo to put geometry in Visualizer and
