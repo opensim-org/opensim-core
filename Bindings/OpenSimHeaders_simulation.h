@@ -24,6 +24,7 @@
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
 #include <OpenSim/Simulation/Model/CoordinateLimitForce.h>
 #include <OpenSim/Simulation/Model/ExponentialCoordinateLimitForce.h>
+#include <OpenSim/Simulation/Model/CoordinateLinearStopForce.h>
 #include <OpenSim/Simulation/Model/ExternalForce.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/ContactHalfSpace.h>

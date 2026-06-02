@@ -57,6 +57,9 @@ performance and stability in wrapping solutions.
 - Added `CantileverFreeBeamJoint`, a joint type providing a lightweight way for modeling flexible structures (e.g., the bending of the spinal column in a human or animal skeleton). (#4227)
 - Added `ExponentialCoordinateLimitForce`, a force element for enforcing coordinate limits using exponential spring functions. (#4231)
 - Implemented `extendPreScale` and `extendPostScale` for `Scholz2015GeometryPath`. Now, scaling a model using `Scholz2015GeometryPath` paths will update `Muscle` tendon slack lengths and optimal fiber lengths. (#4325)
+- Added `CoordinateLinearStopForce`, a force element for enforcing coordinate limits using a
+linear spring force and Hunt and Crossley-like damping. (#4329)
+- Updated `ExponentialCoordinateLimitForce` to use `Socket` to define the connection to a particular `Coordinate`. (#4329)
 
 v4.5.2
 ======

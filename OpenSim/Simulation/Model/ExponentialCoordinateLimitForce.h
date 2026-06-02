@@ -65,12 +65,15 @@ namespace OpenSim {
 class OSIMSIMULATION_API ExponentialCoordinateLimitForce : public ForceProducer {
 OpenSim_DECLARE_CONCRETE_OBJECT(ExponentialCoordinateLimitForce, ForceProducer);
 public:
+//=============================================================================
+// SOCKETS
+//=============================================================================
+    OpenSim_DECLARE_SOCKET(coordinate, Coordinate,
+            "The coordinate to which the limit forces are applied.");
+
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_PROPERTY(coordinate, std::string,
-        "The name or full path of the coordinate to which the limit forces are "
-        "applied.");
     OpenSim_DECLARE_PROPERTY(lower_limit, double,
         "The lower limit of the coordinate range of motion.");
     OpenSim_DECLARE_PROPERTY(upper_limit, double,
@@ -93,8 +96,8 @@ public:
     /**
      * Convenience constructor.
      *
-     * @param[in] coordinateNameOrPath The name or full path of the coordinate
-     * to which the limit forces are applied.
+     * @param[in] coordinate The coordinate to which the limit forces are
+     * applied.
      * @param[in] lowerLimit The lower limit of the coordinate range of motion.
      * @param[in] upperLimit The upper limit of the coordinate range of motion.
      * @param[in] lowerShapeParameters The shape parameters for the exponential
@@ -103,8 +106,8 @@ public:
      * function that models the upper limit force.
      */
     ExponentialCoordinateLimitForce(
-        const std::string& coordinateNameOrPath, double lowerLimit,
-        double upperLimit, const SimTK::Vec2& lowerShapeParameters,
+        const Coordinate& coordinate, double lowerLimit, double upperLimit,
+        const SimTK::Vec2& lowerShapeParameters,
         const SimTK::Vec2& upperShapeParameters);
 
     // COMPUTATIONS
@@ -125,8 +128,6 @@ private:
 
     // HELPERS
     void constructProperties();
-
-    SimTK::ReferencePtr<const Coordinate> _coord;
 
 };  // class ExponentialCoordinateLimitForce
 
