@@ -135,21 +135,18 @@ public:
     static TimeSeriesTable_<SimTK::Vec3> convertRotationsToEulerAngles(
             const TimeSeriesTable_<SimTK::Rotation>& rotTable);
 
-    /// Stitch to TimeSeriesTables and produce a new one
-    /// Useful for stitching results segmented by AddBiomechanics
-    /// Assumes secondTable time is greater than last time of firstTable
-    /// Checks that headers are consistent otherwise throws
+    /// Utility to concatenate two TimeSeriesTables into a new table.
+    /// Requires that both tables contain elements of the same type and
+    /// have the same number of columns with the same labels. The initial
+    /// time point in the second table must be greater than the final
+    /// time in the first table.
     template <typename T>
-    static TimeSeriesTable_<T> concatenateTable(
+    static TimeSeriesTable_<T> concatenate(
         const TimeSeriesTable_<T>& firstTable,
         const TimeSeriesTable_<T>& secondTable) {
-        // Checks to perform
-        // Same type, size, labels
-        // times do not overlap so can be merged
-        // initially we can use appendRow but eventually use in memory Matrices
-        // with resizeKeep so cost is not quadratic in regrowth To stitch tables
-        // into a new one, create a clone before calling this function, then
-        // repeatedly concatenate
+        // Check that both tables have the same number of columns with
+        // equal column labels. Verify that the combined time vectors will
+        // be monotonically increasing.
         const auto& labels = firstTable.getColumnLabels();
         const auto& times = firstTable.getIndependentColumn();
         const auto& data = firstTable.getMatrix();
@@ -173,11 +170,11 @@ public:
         int nCols = firstTable.getNumColumns();
         int nTotalRows = nRows1 + nRows2;
 
-        // 1. merge time vectors
+        // Merge the time vectors.
         std::vector<double> mergedTimes(times);
         mergedTimes.insert(mergedTimes.end(), secondTimes.begin(), secondTimes.end());
 
-        // 2. Merge data
+        // Merge the data.
         SimTK::Matrix_<T> mergedMatrix(nTotalRows, nCols);
         mergedMatrix.updBlock(0, 0, nRows1, nCols) = data;
         mergedMatrix.updBlock(nRows1, 0, nRows2, nCols) = secondData;

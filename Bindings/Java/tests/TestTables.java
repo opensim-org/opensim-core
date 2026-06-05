@@ -635,16 +635,16 @@ class TestTables {
         // Append a row to the table.
         RowVector row = new RowVector(4, 1);
         System.out.println(table);
-        // Append another row to the table.        
+        // Append another row to the table.
         row.set(0, 2); row.set(1, 2); row.set(2, 2); row.set(3, 2);
         table.appendRow(0.2, row);
-        // Make second table
+        // Create a second table.
         TimeSeriesTable table2 = new TimeSeriesTable();
         table2.setColumnLabels(labels);
         RowVector row3 = new RowVector(4, 1);
         row3.set(0, 3); row3.set(1, 3); row3.set(2, 3); row3.set(3, 3);
         table2.appendRow(0.3, row3);
-        // combine
+        // Concatenate the tables.
         TimeSeriesTable combined = TableUtilities.concatenateTable(table, table2);
         System.out.println(combined);
         assert combined.getNumRows()             == 2;

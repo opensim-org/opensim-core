@@ -1115,7 +1115,7 @@ TEST_CASE("TableUtilities::concatenate") {
     tableVec3Append.appendRow(0.5, {{5, 5, 5}, {1, 1, 1}, {2, 2, 2}});
     tableVec3Append.appendRow(0.6, {{6, 6, 6}, {3, 3, 3}, {7, 8, 9}});
 
-    auto combined = TableUtilities::concatenateTable<Vec3>(tableVec3, tableVec3Append);
+    auto combined = TableUtilities::concatenate<Vec3>(tableVec3, tableVec3Append);
     CHECK(combined.getNumRows() == 6);
     CHECK(combined.getNumColumns() == 3);
     auto& times = combined.getIndependentColumn();
@@ -1127,13 +1127,19 @@ TEST_CASE("TableUtilities::concatenate") {
     CHECK(lastElement[1] == 8);
     CHECK(lastElement[2] == 9);
 
-    // Check can't concatenate tableVec3 with itself since time will not be increasing
-    SimTK_TEST_MUST_THROW(TableUtilities::concatenateTable<Vec3>(
-            tableVec3Append, tableVec3););
+    // Check that concatenating tableVec3 with itself throws since the time
+    // vector will not be monotonically increasing
+    CHECK_THROWS_WITH(
+        TableUtilities::concatenate<Vec3>(tableVec3Append, tableVec3),
+            Catch::Matchers::ContainsSubstring(
+                    "Cannot concatentate tables of not increasing times"));
 
     tableVec3Append.setColumnLabels({"col0", "col1", "col3"});
-    // check throw if column labels mismatch
-    SimTK_TEST_MUST_THROW(TableUtilities::concatenateTable<Vec3>(
-            tableVec3, tableVec3Append););
+    // Check that concatenating tables with inconsistent columns throws an
+    // exception.
+    CHECK_THROWS_WITH(
+            TableUtilities::concatenate<Vec3>(tableVec3, tableVec3Append),
+            Catch::Matchers::ContainsSubstring(
+                "Cannot concatentate tables of inconsistent column labels"));
 
 }

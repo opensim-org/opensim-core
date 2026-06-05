@@ -389,8 +389,10 @@ DATATABLE_CLONE(double, SimTK::Rotation_<double>)
 %template(StdVectorEvent) std::vector<OpenSim::Event>;
 %shared_ptr(OpenSim::TimeSeriesTableVec3)
 
-%template(concatenateTableVec3) OpenSim::TableUtilities::concatenateTable<SimTK::Vec3>;
-%template(concatenateTable) OpenSim::TableUtilities::concatenateTable<double>;
+%template(concatenateVec3) OpenSim::TableUtilities::concatenate<SimTK::Vec3>;
+%template(concatenate) OpenSim::TableUtilities::concatenate<double>;
+%template(concatenateRotation) OpenSim::TableUtilities::concatenate<SimTK:::Rotation_<double> >;
+%template(concatenateQuaternion) OpenSim::TableUtilities::concatenate<SimTK::Quaternion_<double> >;
 
 %shared_ptr(OpenSim::DataAdapter)
 %shared_ptr(OpenSim::FileAdapter)
