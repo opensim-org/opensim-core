@@ -645,7 +645,7 @@ class TestTables {
         row3.set(0, 3); row3.set(1, 3); row3.set(2, 3); row3.set(3, 3);
         table2.appendRow(0.3, row3);
         // Concatenate the tables.
-        TimeSeriesTable combined = TableUtilities.concatenateTable(table, table2);
+        TimeSeriesTable combined = TableUtilities.concatenate(table, table2);
         System.out.println(combined);
         assert combined.getNumRows()             == 2;
         assert combined.getColumnLabels().size() == 4;
