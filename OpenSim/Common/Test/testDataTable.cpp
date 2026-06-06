@@ -1132,7 +1132,7 @@ TEST_CASE("TableUtilities::concatenate") {
     CHECK_THROWS_WITH(
         TableUtilities::concatenate<Vec3>(tableVec3Append, tableVec3),
             Catch::Matchers::ContainsSubstring(
-                    "Cannot concatentate tables of not increasing times"));
+                    "led to time vector that is not monotonically increasing."));
 
     tableVec3Append.setColumnLabels({"col0", "col1", "col3"});
     // Check that concatenating tables with inconsistent columns throws an
@@ -1140,6 +1140,6 @@ TEST_CASE("TableUtilities::concatenate") {
     CHECK_THROWS_WITH(
             TableUtilities::concatenate<Vec3>(tableVec3, tableVec3Append),
             Catch::Matchers::ContainsSubstring(
-                "Cannot concatentate tables of inconsistent column labels"));
+                "Cannot concatentate tables with inconsistent column labels."));
 
 }

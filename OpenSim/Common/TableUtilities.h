@@ -156,14 +156,17 @@ public:
         const auto& secondData = secondTable.getMatrix();
 
         OPENSIM_THROW_IF(labels.size() != secondLabels.size(), Exception,
-                "Cannot concatentate tables of inconsistent column labels..");
+                "Cannot concatentate tables with inconsistent column labels.");
         OPENSIM_THROW_IF(!(labels == secondLabels), Exception,
-                "Cannot concatentate tables of inconsistent column labels..");
+                "Cannot concatentate tables with inconsistent column labels.");
         OPENSIM_THROW_IF(data.ncol() != secondData.ncol(), Exception,
                 "Cannot concatentate tables of inconsistent number of "
                 "columns..");
         OPENSIM_THROW_IF(times[times.size() - 1] > secondTimes[0], Exception,
-                "Cannot concatentate tables of not increasing times..");
+                "Expected the final time point of the second point to be "
+                "greater than the last time point of the first table, "
+                "but concatenating the tables "
+                "led to time vector that is not monotonically increasing.");
 
         int nRows1 = firstTable.getNumRows();
         int nRows2 = secondTable.getNumRows();
