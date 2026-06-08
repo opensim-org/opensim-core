@@ -3,6 +3,10 @@
 %include "typemaps.i"
 %include "std_string.i"
 
+namespace SimTK {
+    typedef std::string String;
+}
+
 %include "std_vector.i"
 %template(StdVectorUnsigned) std::vector<unsigned>;
 %template(StdVectorInt)      std::vector<int>;
