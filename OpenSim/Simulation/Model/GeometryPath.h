@@ -158,9 +158,11 @@ public:
     void produceForces(const SimTK::State& state,
         double tension,
         ForceConsumer& forceConsumer) const override;
-    
-    bool isVisualPath() const override { return true; }
-    
+
+    bool isVisualPath() const override;
+
+    std::vector<std::string> findCoordinates(const SimTK::State&) const override;
+
     //--------------------------------------------------------------------------
     // COMPUTATIONS
     //--------------------------------------------------------------------------

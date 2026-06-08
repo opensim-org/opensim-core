@@ -33,6 +33,7 @@
 #include <OpenSim/Simulation/Model/MovingPathPoint.h>
 #include <OpenSim/Simulation/Model/PointForceDirection.h>
 #include <OpenSim/Simulation/Wrap/PathWrap.h>
+#include <OpenSim/Simulation/SimulationUtilities.h>
 
 //=============================================================================
 // STATICS
@@ -461,6 +462,35 @@ void GeometryPath::produceForces(const SimTK::State& s,
             forceConsumer.consumePointForce(s, currentPoint.getParentFrame(), currentPoint.getLocation(s), force);
         }
     }
+}
+
+bool GeometryPath::isVisualPath() const
+{
+    return true;
+}
+
+std::vector<std::string>
+GeometryPath::findCoordinates(const SimTK::State& s) const {
+    const PathPointSet& pps = get_PathPointSet();
+    const PhysicalFrame& firstFrame = pps.get(0).getParentFrame();
+    const PhysicalFrame& lastFrame = pps.get(pps.getSize() - 1).getParentFrame();
+
+    std::vector<SimTK::ReferencePtr<const Joint>>
+    jointsBetweenFrames = findJointsBetweenPhysicalFrames(
+            getModel(),
+            firstFrame.getAbsolutePathString(),
+            lastFrame.getAbsolutePathString());
+
+    std::vector<std::string> coordinatePaths;
+    for (const auto& joint : jointsBetweenFrames) {
+        for (int i = 0; i < joint->numCoordinates(); ++i) {
+            const Coordinate& coord = joint->get_coordinates(i);
+            if (!coord.isConstrained(s)) {
+                coordinatePaths.push_back(coord.getAbsolutePathString());
+            }
+        }
+    }
+    return coordinatePaths;
 }
 
 //_____________________________________________________________________________
