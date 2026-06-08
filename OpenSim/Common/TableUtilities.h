@@ -135,6 +135,56 @@ public:
     static TimeSeriesTable_<SimTK::Vec3> convertRotationsToEulerAngles(
             const TimeSeriesTable_<SimTK::Rotation>& rotTable);
 
+    /// Utility to concatenate two TimeSeriesTables into a new table.
+    /// Requires that both tables contain elements of the same type and
+    /// have the same number of columns with the same labels. The initial
+    /// time point in the second table must be greater than the final
+    /// time in the first table.
+    template <typename T>
+    static TimeSeriesTable_<T> concatenate(
+        const TimeSeriesTable_<T>& firstTable,
+        const TimeSeriesTable_<T>& secondTable) {
+        // Check that both tables have the same number of columns with
+        // equal column labels. Verify that the combined time vectors will
+        // be monotonically increasing.
+        const auto& labels = firstTable.getColumnLabels();
+        const auto& times = firstTable.getIndependentColumn();
+        const auto& data = firstTable.getMatrix();
+
+        const auto& secondLabels = secondTable.getColumnLabels();
+        const auto& secondTimes = secondTable.getIndependentColumn();
+        const auto& secondData = secondTable.getMatrix();
+
+        OPENSIM_THROW_IF(labels.size() != secondLabels.size(), Exception,
+                "Cannot concatentate tables with inconsistent column labels.");
+        OPENSIM_THROW_IF(!(labels == secondLabels), Exception,
+                "Cannot concatentate tables with inconsistent column labels.");
+        OPENSIM_THROW_IF(data.ncol() != secondData.ncol(), Exception,
+                "Cannot concatentate tables of inconsistent number of "
+                "columns..");
+        OPENSIM_THROW_IF(times[times.size() - 1] > secondTimes[0], Exception,
+                "Expected the final time point of the second point to be "
+                "greater than the last time point of the first table, "
+                "but concatenating the tables "
+                "led to time vector that is not monotonically increasing.");
+
+        int nRows1 = firstTable.getNumRows();
+        int nRows2 = secondTable.getNumRows();
+        int nCols = firstTable.getNumColumns();
+        int nTotalRows = nRows1 + nRows2;
+
+        // Merge the time vectors.
+        std::vector<double> mergedTimes(times);
+        mergedTimes.insert(mergedTimes.end(), secondTimes.begin(), secondTimes.end());
+
+        // Merge the data.
+        SimTK::Matrix_<T> mergedMatrix(nTotalRows, nCols);
+        mergedMatrix.updBlock(0, 0, nRows1, nCols) = data;
+        mergedMatrix.updBlock(nRows1, 0, nRows2, nCols) = secondData;
+
+        return TimeSeriesTable_<T>(mergedTimes, mergedMatrix, labels);
+    }
+
 private:
     static int findStateLabelIndexInternal(const std::string* begin,
             const std::string* end, const std::string& desired);

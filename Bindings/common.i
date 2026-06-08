@@ -389,6 +389,12 @@ DATATABLE_CLONE(double, SimTK::Rotation_<double>)
 %template(StdVectorEvent) std::vector<OpenSim::Event>;
 %shared_ptr(OpenSim::TimeSeriesTableVec3)
 
+%template(concatenateVec3) OpenSim::TableUtilities::concatenate<SimTK::Vec3>;
+%template(concatenate) OpenSim::TableUtilities::concatenate<double>;
+// Current version of SWIG 4.2 fails to digest SimTK::Rotation or SimTK::Rotation_<double>
+//%template(concatenateRotation) OpenSim::TableUtilities::concatenate<SimTK:::Rotation >;
+%template(concatenateQuaternion) OpenSim::TableUtilities::concatenate<SimTK::Quaternion >;
+
 %shared_ptr(OpenSim::DataAdapter)
 %shared_ptr(OpenSim::FileAdapter)
 %shared_ptr(OpenSim::DelimFileAdapter)

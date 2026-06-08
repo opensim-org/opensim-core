@@ -436,7 +436,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ~/opensim_dependencies_install
-        key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
+        key: ${{ runner.os }}-${{ github.job }}-dependencies-${{ hashFiles('dependencies/*') }}
 
     - name: Build dependencies
       if: steps.cache-dependencies.outputs.cache-hit != 'true'
