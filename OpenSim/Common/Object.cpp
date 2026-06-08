@@ -1597,8 +1597,8 @@ makeObjectFromFile(const std::string &aFileName)
         newObject->_document = std::move(doc);
         if (newFormat) {
             newObject->updateFromXMLNode(*newObject->_document->getRootElement().element_begin(), newObject->_document->getDocumentVersion());
-        } else {
-            SimTK::Xml::Element e = doc->getRootElement();
+        } else { // use newObject->_document since doc is now null
+            SimTK::Xml::Element e = newObject->_document->getRootElement();
             newObject->updateFromXMLNode(e, 10500);
         }
 
