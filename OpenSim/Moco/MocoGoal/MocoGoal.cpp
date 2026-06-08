@@ -50,12 +50,17 @@ void MocoGoal::printDescription() const {
 }
 
 double MocoGoal::calcSystemDisplacement(const GoalInput& input) const {
+    // TODO: instead use squared norm for convexity.
+    return calcSystemDisplacementVector(input).norm();
+}
+
+SimTK::Vec3 MocoGoal::calcSystemDisplacementVector(
+    const GoalInput& input) const {
     const SimTK::Vec3 comInitial =
             getModel().calcMassCenterPosition(input.initial_state);
     const SimTK::Vec3 comFinal =
             getModel().calcMassCenterPosition(input.final_state);
-    // TODO: Use distance squared for convexity.
-    return (comFinal - comInitial).norm();
+    return comFinal - comInitial;
 }
 
 double MocoGoal::calcDuration(const GoalInput& input) const {

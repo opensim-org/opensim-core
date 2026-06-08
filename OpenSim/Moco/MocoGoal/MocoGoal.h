@@ -473,9 +473,14 @@ protected:
         return m_model.getRef();
     }
 
-    /// Calculate the displacement of the system's center of mass over the
-    /// phase.
+    /// Calculate the displacement of the system's center of mass
+    /// (i.e., the norm of the difference between the initial and
+    /// final center of mass position) over the phase.
     double calcSystemDisplacement(const GoalInput& input) const;
+    /// Calculate the displacement vector of the system's center of mass
+    /// (i.e., the difference between the initial and final center of
+    /// mass position) over the phase.
+    SimTK::Vec3 calcSystemDisplacementVector(const GoalInput& input) const;
     /// Calculate the duration of the phase.
     double calcDuration(const GoalInput& input) const;
     /// Calculate the mass of the system.
@@ -579,6 +584,9 @@ class MocoAverageSpeedGoal : public MocoGoal {
 public:
     OpenSim_DECLARE_PROPERTY(desired_average_speed, double,
             "The desired average speed of the system (m/s). Default: 0.");
+    OpenSim_DECLARE_PROPERTY(displacement_axis, int,
+            "Specify an axis to compute the average desired speed. "
+            "Accepted values are 0, 1, 2 or -1 (norm - default).");
     MocoAverageSpeedGoal() { constructProperties(); }
     MocoAverageSpeedGoal(std::string name) : MocoGoal(std::move(name)) {
         constructProperties();
@@ -592,17 +600,31 @@ protected:
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& values) const override {
         // Calculate average gait speed.
-        const double displacement = calcSystemDisplacement(input);
+        double displacement;
+        if (get_displacement_axis() == -1) {
+            displacement = calcSystemDisplacement(input);
+        } else {
+            SimTK::Vec3 displacementVector =
+                    calcSystemDisplacementVector(input);
+            displacement =
+                    displacementVector[get_displacement_axis()];
+        }
         const double duration = calcDuration(input);
         values[0] = get_desired_average_speed() - (displacement / duration);
         if (getModeIsCost()) { values[0] = SimTK::square(values[0]); }
     }
     void initializeOnModelImpl(const Model&) const override {
         setRequirements(0, 1);
+
+        checkPropertyValueIsInSet(getProperty_displacement_axis(),
+            {-1, 0, 1, 2});
     }
 
 private:
-    void constructProperties() { constructProperty_desired_average_speed(0); }
+    void constructProperties() { 
+        constructProperty_desired_average_speed(0);
+        constructProperty_displacement_axis(-1);
+    }
 };
 
 } // namespace OpenSim
