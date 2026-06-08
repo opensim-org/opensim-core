@@ -9,6 +9,7 @@ NUM_JOBS=4
 MOCO="on"
 CORE_BRANCH="main"
 GENERATOR="Unix Makefiles"
+REPO="${HOME}"
 
 Help() {
     echo
@@ -24,12 +25,13 @@ Help() {
     echo "    -s         Simple build without moco (Casadi disabled)."
     echo "    -c         Branch for opensim-core repository."
     echo "    -n         Use the Ninja generator to build opensim-core. If not set, Unix Makefiles is used."
+    echo "    -r         Repository where all files are going to be downloaded and built (default $HOME)"
     echo
     exit
 }
 
 # Get flag values if any.
-while getopts 'j:d:s:c:n' flag
+while getopts 'j:d:s:c:n:r:' flag
 do
     case "${flag}" in
         j) NUM_JOBS=${OPTARG};;
@@ -37,6 +39,7 @@ do
         s) MOCO="off";;
         c) CORE_BRANCH=${OPTARG};;
         n) GENERATOR="Ninja";;
+        r) REPO=${OPTARG};;
         *) Help;
     esac
 done
@@ -59,6 +62,7 @@ echo "NUM_JOBS="$NUM_JOBS
 echo "MOCO="$MOCO
 echo "CORE_BRANCH="$CORE_BRANCH
 echo "GENERATOR="$GENERATOR
+echo "REPOSITORY="$REPO
 echo ""
 
 # Check OS.
@@ -81,7 +85,7 @@ echo
 # Install dependencies from package manager.
 echo "LOG: INSTALLING DEPENDENCIES..."
 sudo apt-get update && sudo apt-get install --yes build-essential cmake autotools-dev autoconf pkg-config automake libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen python3 python3-dev python3-numpy python3-setuptools git libssl-dev libpcre3 libpcre3-dev libpcre2-dev libtool gfortran ninja-build patchelf || ( echo "Installation of dependencies using apt-get failed." && exit )
-echo 
+echo
 
 # If byacc available, install it (issue #3578)
 if apt-cache show byacc &> /dev/null; then
@@ -118,7 +122,7 @@ fi
 echo
 
 # Create workspace folder.
-mkdir ~/opensim-workspace || true
+mkdir -p ${REPO}/opensim-workspace || true
 
 # Check cmake version installed by apt. If < 3.15, build it from source.
 echo "LOG: INSTALLING CMAKE >=3.15..."
@@ -130,11 +134,11 @@ cmake_major_less=$(( ${cmake_version_split[0]} < ${min_cmake_version_split[0]} )
 cmake_major_equal=$(( ${cmake_version_split[0]} == ${min_cmake_version_split[0]} ))
 cmake_minor_less=$(( ${cmake_version_split[1]} < ${min_cmake_version_split[1]} ))
 if [[ $cmake_major_less == 1 ]] || $( [[ $cmake_major_equal == 1 ]] && [[ $cmake_minor_less == 1 ]] ); then
-    mkdir ~/opensim-workspace/cmake-3.23.3-source || true
-    cd ~/opensim-workspace/cmake-3.23.3-source
-    wget -nc -q --show-progress https://github.com/Kitware/CMake/releases/download/v3.23.3/cmake-3.23.3.tar.gz 
+    mkdir ${REPO}/opensim-workspace/cmake-3.23.3-source || true
+    cd ${REPO}/opensim-workspace/cmake-3.23.3-source
+    wget -nc -q --show-progress https://github.com/Kitware/CMake/releases/download/v3.23.3/cmake-3.23.3.tar.gz
     tar -zxvf cmake-3.23.3.tar.gz
-    cd ~/opensim-workspace/cmake-3.23.3-source/cmake-3.23.3
+    cd ${REPO}/opensim-workspace/cmake-3.23.3-source/cmake-3.23.3
     ./bootstrap
     make -j$NUM_JOBS && sudo make install
     source ~/.bashrc && cmake --version
@@ -153,11 +157,11 @@ python_major_less=$(( ${python_version_split[0]} < ${min_python_version_split[0]
 python_major_equal=$(( ${python_version_split[0]} == ${min_python_version_split[0]} ))
 python_minor_less=$(( ${python_version_split[1]} < ${min_python_version_split[1]} ))
 if [[ $python_major_less == 1 ]] || $( [[ $python_major_equal == 1 ]] && [[ $python_minor_less == 1 ]] ); then
-    mkdir ~/opensim-workspace/Python-3.6.9-source || true
-    cd ~/opensim-workspace/Python-3.6.9-source
+    mkdir ${REPO}/opensim-workspace/Python-3.6.9-source || true
+    cd ${REPO}/opensim-workspace/Python-3.6.9-source
     wget -nc -q --show-progress https://www.python.org/ftp/python/3.6.9/Python-3.6.9.tgz
     tar -xvzf Python-3.6.9.tgz
-    cd ~/opensim-workspace/Python-3.6.9-source/Python-3.6.9
+    cd ${REPO}/opensim-workspace/Python-3.6.9-source/Python-3.6.9
     ./configure
     make -j$NUM_JOBS
     sudo make altinstall
@@ -169,48 +173,48 @@ echo
 
 # Download and install SWIG 4.1.1.
 echo "LOG: INSTALLING SWIG 4.1.1..."
-mkdir -p ~/opensim-workspace/swig-source || true && cd ~/opensim-workspace/swig-source
+mkdir -p ${REPO}/opensim-workspace/swig-source || true && cd ${REPO}/opensim-workspace/swig-source
 wget -nc -q --show-progress https://github.com/swig/swig/archive/refs/tags/v4.1.1.tar.gz
 tar xzf v4.1.1.tar.gz && cd swig-4.1.1
-sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
-make && make -j$NUM_JOBS install  
+sh autogen.sh && ./configure --prefix=${REPO}/swig --disable-ccache
+make && make -j$NUM_JOBS install
 echo
 
 # Get opensim-core.
 echo "LOG: CLONING OPENSIM-CORE..."
-git -C ~/opensim-workspace/opensim-core-source pull || git clone https://github.com/opensim-org/opensim-core.git ~/opensim-workspace/opensim-core-source
-cd ~/opensim-workspace/opensim-core-source
+git -C ${REPO}/opensim-workspace/opensim-core-source pull || git clone https://github.com/opensim-org/opensim-core.git ${REPO}/opensim-workspace/opensim-core-source
+cd ${REPO}/opensim-workspace/opensim-core-source
 git checkout $CORE_BRANCH
 echo
 
 # Build opensim-core dependencies.
 echo "LOG: BUILDING OPENSIM-CORE DEPENDENCIES..."
-mkdir -p ~/opensim-workspace/opensim-core-dependencies-build || true
-cd ~/opensim-workspace/opensim-core-dependencies-build
-cmake ~/opensim-workspace/opensim-core-source/dependencies -DCMAKE_INSTALL_PREFIX=~/opensim-workspace/opensim-core-dependencies-install/ -DSUPERBUILD_ezc3d=on -DOPENSIM_WITH_CASADI=$MOCO
+mkdir -p ${REPO}/opensim-workspace/opensim-core-dependencies-build || true
+cd ${REPO}/opensim-workspace/opensim-core-dependencies-build
+cmake ${REPO}/opensim-workspace/opensim-core-source/dependencies -DCMAKE_INSTALL_PREFIX=${REPO}/opensim-workspace/opensim-core-dependencies-install/ -DSUPERBUILD_ezc3d=on -DOPENSIM_WITH_CASADI=$MOCO
 cmake . -LAH
 cmake --build . --config $DEBUG_TYPE -j$NUM_JOBS
 echo
 
 # Build opensim-core.
 echo "LOG: BUILDING OPENSIM-CORE..."
-mkdir -p ~/opensim-workspace/opensim-core-build || true
-cd ~/opensim-workspace/opensim-core-build
-cmake ~/opensim-workspace/opensim-core-source -G"$GENERATOR" -DOPENSIM_DEPENDENCIES_DIR=~/opensim-workspace/opensim-core-dependencies-install/ -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DOPENSIM_C3D_PARSER=ezc3d -DBUILD_TESTING=off -DCMAKE_INSTALL_PREFIX=~/opensim-core -DOPENSIM_INSTALL_UNIX_FHS=off -DSWIG_DIR=~/swig/share/swig -DSWIG_EXECUTABLE=~/swig/bin/swig -DOPENSIM_WITH_CASADI=$MOCO
+mkdir -p ${REPO}/opensim-workspace/opensim-core-build || true
+cd ${REPO}/opensim-workspace/opensim-core-build
+cmake ${REPO}/opensim-workspace/opensim-core-source -G"$GENERATOR" -DOPENSIM_DEPENDENCIES_DIR=${REPO}/opensim-workspace/opensim-core-dependencies-install/ -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DOPENSIM_C3D_PARSER=ezc3d -DBUILD_TESTING=off -DCMAKE_INSTALL_PREFIX=${REPO}/opensim-core -DOPENSIM_INSTALL_UNIX_FHS=off -DSWIG_DIR=${REPO}/swig/share/swig -DSWIG_EXECUTABLE=${REPO}/swig/bin/swig -DOPENSIM_WITH_CASADI=$MOCO
 cmake . -LAH
 cmake --build . --config $DEBUG_TYPE -j$NUM_JOBS
 echo
 
 # Test opensim-core.
 echo "LOG: TESTING OPENSIM-CORE..."
-cd ~/opensim-workspace/opensim-core-build
+cd ${REPO}/opensim-workspace/opensim-core-build
 # TODO: Temporary for python to find Simbody libraries.
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/opensim-workspace/opensim-core-dependencies-install/simbody/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${REPO}/opensim-workspace/opensim-core-dependencies-install/simbody/lib
 ctest --parallel $NUM_JOBS --output-on-failure
 
 # Install opensim-core.
 echo "LOG: INSTALL OPENSIM-CORE..."
-cd ~/opensim-workspace/opensim-core-build
+cd ${REPO}/opensim-workspace/opensim-core-build
 cmake --install .
 
-cd ~/opensim-core/bin && echo -e "yes" | ./opensim-install-command-line.sh
+cd ${REPO}/opensim-core/bin && echo -e "yes" | ./opensim-install-command-line.sh
