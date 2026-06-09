@@ -1595,10 +1595,11 @@ makeObjectFromFile(const std::string &aFileName)
         // properly
         IO::CwdChanger cwd = IO::CwdChanger::changeToParentOf(aFileName);
         newObject->_document = std::move(doc);
+        // doc is nullptr after this line
         if (newFormat) {
             newObject->updateFromXMLNode(*newObject->_document->getRootElement().element_begin(), newObject->_document->getDocumentVersion());
-        } else {
-            SimTK::Xml::Element e = doc->getRootElement();
+        } else { // Old format
+            SimTK::Xml::Element e = newObject->_document->getRootElement();
             newObject->updateFromXMLNode(e, 10500);
         }
 
