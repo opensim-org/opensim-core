@@ -141,6 +141,20 @@ int main(int argc,char **argv)
     log_info("Constructing tool from setup file {}.", setupFileName);
     InverseKinematicsTool ik(setupFileName);
 
+    // Adaptive accuracy announcement
+    if (ik.get_adaptiveAccuracy())
+        log_info("Adaptive accuracy enabled with step {} and threshold {}.",
+                std::to_string(ik.get_adaptiveAccuracyStep()),
+                std::to_string(ik.get_adaptiveAccuracyThreshold()));
+    else
+        log_info("Adaptive accuracy not enabled.");
+
+    // Ignoring convergence errors announcement
+    if (ik.get_ignoreConvergenceErrors())
+        log_info("Ignoring convergence errors.");
+    else
+        log_info("Ignoring convergence not enabled.");
+
     // start timing
     std::clock_t startTime = std::clock();
 
