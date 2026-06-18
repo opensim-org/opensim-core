@@ -1,9 +1,9 @@
 
-option(BUILD_API_EXAMPLES
-    "Build examples that are used for the APIExamples distribution" ON)
-
 if(BUILD_API_EXAMPLES)
+    set(INSTALL_API_EXAMPLES ON CACHE BOOL "" FORCE)
+endif()
 
+if(INSTALL_API_EXAMPLES)
   install(DIRECTORY ExampleMain
         ExampleHopperDevice
         ExampleLuxoMuscle
@@ -18,7 +18,9 @@ if(BUILD_API_EXAMPLES)
         DataTable
         DataAdapter
         DESTINATION "${OPENSIM_INSTALL_CPPEXDIR}")
+endif()
 
+if(BUILD_API_EXAMPLES)
     add_subdirectory(ExampleHopperDevice)
     add_subdirectory(ExampleSimpleElbow)
     add_subdirectory(SymbolicExpressionReporter)
@@ -27,9 +29,6 @@ if(BUILD_API_EXAMPLES)
     add_subdirectory(Moco)
     add_subdirectory(Wrapping)
     add_subdirectory(PolynomialPathFitter)
-
-else()
-
     add_subdirectory(ControllerExample)
     add_subdirectory(ExampleLuxoMuscle)
     add_subdirectory(ExampleMain)
@@ -38,7 +37,6 @@ else()
     add_subdirectory(MuscleExample)
     add_subdirectory(checkEnvironment)
     add_subdirectory(DataAdapter)
-
 endif()
 
 # We do not install the BuildDynamicWalker example, because it is assigned to

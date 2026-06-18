@@ -200,6 +200,13 @@ option(OPENSIM_BUILD_INDIVIDUAL_APPS
     ${OPENSIM_BUILD_INDIVIDUAL_APPS_DEFAULT})
 mark_as_advanced(OPENSIM_BUILD_INDIVIDUAL_APPS)
 
+# These options are pulled up from the Examples folder for visibility
+option(BUILD_API_EXAMPLES
+    "Build examples that are used for the APIExamples distribution" ON)
+
+option(INSTALL_API_EXAMPLES
+    "Copy code that is used for the APIExamples to the distribution" ON)
+
 
 # Moco settings.
 # --------------
