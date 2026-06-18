@@ -31,6 +31,7 @@
 #include <OpenSim/Simulation/Model/ExponentialContactForce.h>
 
 #include <catch2/catch_all.hpp>
+#include <OpenSim/Tools/InverseKinematicsTool.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -180,11 +181,13 @@ TEST_CASE("Serialize OpenSim objects") {
 }
 
 TEST_CASE("Test unrecognized types") {
-    bool caughtException = false;
-    try {
-        Object* newObject = Object::newInstanceOfType("Unrecognized");
-    } catch (Exception&) {
-        caughtException = true;
-    }
-    CHECK(caughtException);
+        REQUIRE_THROWS(Object::newInstanceOfType("Unrecognized"));
+}
+
+TEST_CASE("Test old format no enclosing tags") {
+    { InverseKinematicsTool m; }
+    
+    OpenSim::Object* obj = nullptr;
+    REQUIRE_NOTHROW(obj = OpenSim::Object::makeObjectFromFile("ikToolNoDocumentTag.xml"));
+    REQUIRE(obj->getConcreteClassName() == "InverseKinematicsTool");
 }

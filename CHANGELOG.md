@@ -59,6 +59,7 @@ performance and stability in wrapping solutions.
 - Made simplifications to the joint moment tracking example in exampleMocoTrack to improve performance. (#4323)
 - Reference solution files are now included for `exampleMocoTrack` and `example3DWalking`. (#4323)
 - Implemented `extendPreScale` and `extendPostScale` for `Scholz2015GeometryPath`. Now, scaling a model using `Scholz2015GeometryPath` paths will update `Muscle` tendon slack lengths and optimal fiber lengths. (#4325)
+- Fix crash deserializing xml files that are missing OpenSimDocument tags. (#4336)
 
 v4.5.2
 ======
