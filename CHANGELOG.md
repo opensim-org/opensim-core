@@ -78,6 +78,7 @@ performance and stability in wrapping solutions.
 - The Matlab and Python versions of the muscle-synergy example in `exampleMocoInverse` now use `CommonUtilities::factorizeMatrixNonNegative()` to perform muscle synergy analysis, now consistent with the C++ version of the example. (#4323)
 - Made simplifications to the joint moment tracking example in exampleMocoTrack to improve performance. (#4323)
 - Reference solution files are now included for `exampleMocoTrack` and `example3DWalking`. (#4323)
+- Added the property `use_warm_start` and accessors `set/getWarmStart()` in `Scholz2015GeometryPath` to enable toggling on and off warm starts, where the wrapper solver from the previous time step as an initial guess for the path at the next time step. By default, `Scholz2015GeometryPath` now has warm starts disabled, meaning that paths are always computed from wrap obstacle contact hints (previously, warm starts were always enabled). (#4342)
 
 
 v4.5.2

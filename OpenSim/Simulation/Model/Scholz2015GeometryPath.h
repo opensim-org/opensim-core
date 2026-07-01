@@ -162,8 +162,7 @@ public:
  * can touchdown on the obstacle if the surface obstructs the straight line
  * segment again.
  *
- * The path is computed as an optimization problem using the previous optimal
- * path as the warm start. This is done by computing natural geodesic
+ * The path is computed as an optimization problem by computing natural geodesic
  * corrections for each curve segment to compute the locally shortest path,
  * as described in the following publication:
  *
@@ -172,7 +171,10 @@ public:
  *     System Dynamics 36, 195–219.
  *
  * The overall path is locally the shortest, allowing winding over an obstacle
- * multiple times, without flipping to the other side.
+ * multiple times, without flipping to the other side. The wrapping solver can
+ * optionally use the solution from the previous time step as a warm start to
+ * improve performance during forward dynamics simulations (see method
+ * `getUseWarmStart()` for more information).
  *
  * This class encapsulates `SimTK::CableSpan`, the Simbody implementation of
  * this algorithm. For the full details concerning this class, see the Simbody
@@ -425,6 +427,28 @@ public:
      */
     int getNumPathElements() const;
 
+     /**
+     * Set whether the path uses the solution from the previous time step as a
+     * warm start for the wrapping solver.
+     *
+     * Enable this setting when performing forward dyanmics simulations or any
+     * simulation where path solutions will be computed sequentially in time
+     * reasonable small time steps. In other scenarios where the configuration
+     * of the model, and therefore path solutions, may change rapidly, it is
+     * recommended to disable this setting to avoid inconsistent path solutions.
+     * If false, the path will always be computed from the curve contact hints
+     * when realizing to SimTK::Stage::Position. Default: false.
+     */
+    void setUseWarmStart(bool useWarmStart);
+
+    /**
+     * Get whether the path uses the solution from the previous time step as a
+     * warm start for the wrapping solver.
+     *
+     * @see setUseWarmStart()
+     */
+    bool getUseWarmStart() const;
+
     // @}
 
     //** @name `AbstractGeometryPath` interface */
@@ -466,6 +490,11 @@ private:
     // PROPERTIES
     OpenSim_DECLARE_LIST_PROPERTY(path_elements, Scholz2015GeometryPathElement,
         "The list of elements (path points or obstacles) defining the path.");
+    OpenSim_DECLARE_PROPERTY(use_warm_start, bool,
+        "Whether to use the path solution from the previous time step as a "
+        "warm start for the wrapping solver. If false, the path will always be "
+        "computed from the curve contact hints when realizing to "
+        "SimTK::Stage::Position. Default: false.");
 
     // MODEL COMPONENT INTERFACE
     void extendConnectToModel(Model& model) override;
