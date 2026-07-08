@@ -49,7 +49,7 @@ set(OPENSIM_RELEASE_VERSION
 #   For example: 4.2-2020-07-01-5c10b4176
 set(QUALIFIED_VERSION "")
 find_package(Git)
-if(Git_FOUND)
+if(0) #Git_FOUND
     # This command provides the annotated tag for the current commit, if it
     # exists, and returns an error if a tag does not exist.
     execute_process(
