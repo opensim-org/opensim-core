@@ -82,7 +82,7 @@ if(0) #Git_FOUND
                 "${OPENSIM_RELEASE_VERSION}-${GIT_COMMIT_DATE}-${GIT_COMMIT_HASH}")
     endif()
 else()
-    set(QUALIFIED_VERSION "${OPENSIM_RELEASE_VERSION}?")
+    set(QUALIFIED_VERSION "${OPENSIM_RELEASE_VERSION}")
 endif()
 set(OPENSIM_QUALIFIED_VERSION "${QUALIFIED_VERSION}" CACHE STRING
         "Qualified version string, containing git commit date/hash suffix." FORCE)
