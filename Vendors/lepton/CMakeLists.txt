@@ -1,9 +1,5 @@
 file(GLOB SOURCE_FILES src/*.cpp)
 
-if(WIN32)
-    add_definitions("-DLEPTON_BUILDING_SHARED_LIBRARY")
-endif(WIN32)
-
 OpenSimAddLibrary(VENDORLIB LOWERINCLUDEDIRNAME
     KIT Lepton
     AUTHORS "Peter_Eastman"
@@ -14,6 +10,19 @@ OpenSimAddLibrary(VENDORLIB LOWERINCLUDEDIRNAME
     INCLUDEDIRS include include/lepton
     INCLUDEINSTALLREL include/lepton
     )
+
+if(WIN32)
+    # Lepton uses its own build-type symbols (see windowsIncludes.h).
+    # Set them based on the actual target type so static and shared builds
+    # both work without manual preprocessor flags.
+    target_compile_definitions(osimLepton
+        PRIVATE
+            $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>:LEPTON_BUILDING_SHARED_LIBRARY>
+            $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,STATIC_LIBRARY>:LEPTON_BUILDING_STATIC_LIBRARY>
+        PUBLIC
+            $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,STATIC_LIBRARY>:LEPTON_USE_STATIC_LIBRARIES>
+    )
+endif()
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     # Avoid clang's warning:
