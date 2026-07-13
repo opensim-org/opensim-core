@@ -24,10 +24,10 @@ MocoAddSandboxExecutable(NAME sandboxContact
 MocoAddSandboxExecutable(NAME sandboxMuscle
         LIB_DEPENDS osimMoco)
 MocoAddSandboxExecutable(NAME sandboxCasADi
-        LIB_DEPENDS osimMoco casadi)
+        LIB_DEPENDS osimMoco casadi::casadi)
 
 MocoAddSandboxExecutable(NAME sandboxCasADiParallelMap
-        LIB_DEPENDS SimTKcommon casadi)
+        LIB_DEPENDS SimTKcommon casadi::casadi)
 
 MocoAddSandboxExecutable(NAME sandboxSimTKMotion
         LIB_DEPENDS SimTKsimbody)

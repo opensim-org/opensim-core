@@ -780,7 +780,7 @@ include_directories("${Simbody_INCLUDE_DIR}")
 # CasADi
 # ------
 if(OPENSIM_WITH_CASADI)
-    find_package(casadi 3.6.5 REQUIRED)
+    find_package(casadi 3.7.2 REQUIRED)
     set_package_properties(casadi PROPERTIES
             URL https://web.casadi.org
             TYPE REQUIRED

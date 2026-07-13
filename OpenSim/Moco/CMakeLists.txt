@@ -143,7 +143,7 @@ OpenSimAddLibrary(
     )
 
 if (OPENSIM_WITH_CASADI)
-    target_link_libraries(osimMoco PRIVATE casadi)
+    target_link_libraries(osimMoco PRIVATE casadi::casadi)
 endif()
 
 target_include_directories(osimMoco INTERFACE

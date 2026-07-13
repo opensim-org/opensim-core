@@ -9,6 +9,7 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.6.1
 ======
+- Updated Moco stack to use CasADi `3.7.2` (previously `3.6.5`). CasADi's exported CMake target is now namespaced as `casadi::casadi`; downstream projects linking against the bare `casadi` target must update accordingly.
 - Added `CantileverFreeBeamJoint`, a joint type providing a lightweight way for modeling flexible structures (e.g., the bending of the spinal column in a human or animal skeleton). (#4227)
 - Added `ExponentialCoordinateLimitForce`, a force element for enforcing coordinate limits using exponential spring functions. (#4231)
 - Added `CoordinateLinearStopForce`, a force element for enforcing coordinate limits using a
