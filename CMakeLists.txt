@@ -116,6 +116,12 @@ link_directories(${CMAKE_BINARY_DIR})
 # OpenSim options.
 # ----------------
 
+# Default to shared libraries (historical behavior before BUILD_SHARED_LIBS
+# was made explicit). Users who want a static build pass -DBUILD_SHARED_LIBS=OFF.
+if(NOT DEFINED BUILD_SHARED_LIBS)
+    set(BUILD_SHARED_LIBS ON)
+endif()
+
 # Specify number of cores to run tests.
 include(ProcessorCount)
 ProcessorCount(PROCESSOR_COUNT)
