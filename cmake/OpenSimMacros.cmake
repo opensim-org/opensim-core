@@ -203,7 +203,8 @@ function(OpenSimAddLibrary)
     # These next few lines are the most important:
 
     # Create the library using the provided source and include files.
-    add_library(${OSIMADDLIB_LIBRARY_NAME} SHARED
+    # No explicit SHARED/STATIC keyword -- respects BUILD_SHARED_LIBS.
+    add_library(${OSIMADDLIB_LIBRARY_NAME}
         ${OSIMADDLIB_SOURCES} ${OSIMADDLIB_INCLUDES})
 
     target_include_directories(${OSIMADDLIB_LIBRARY_NAME} 
@@ -227,16 +228,31 @@ function(OpenSimAddLibrary)
         )
     endif()
 
-    # This is for exporting classes on Windows.
+    # Set DLL export/import defines based on actual target type so that
+    # both shared and static builds work without manual preprocessor flags.
     if(OSIMADDLIB_VENDORLIB)
         set(OSIMADDLIB_FOLDER "Vendor Libraries")
+        # Vendor libs keep DEFINE_SYMBOL for the conventional dllexport path.
+        set_target_properties(${OSIMADDLIB_LIBRARY_NAME} PROPERTIES
+            DEFINE_SYMBOL OSIM${OSIMADDLIB_UKIT}_EXPORTS
+            FOLDER "${OSIMADDLIB_FOLDER}"
+        )
     else()
         set(OSIMADDLIB_FOLDER "Libraries")
+        set_target_properties(${OSIMADDLIB_LIBRARY_NAME} PROPERTIES
+            FOLDER "${OSIMADDLIB_FOLDER}"
+        )
+        # SHARED build: define the _EXPORTS symbol only while building this
+        # target (PRIVATE), so its classes are annotated __declspec(dllexport).
+        # STATIC build: propagate _TYPE_STATIC to all consumers (PUBLIC) so
+        # they suppress __declspec(dllimport) in the API headers.
+        target_compile_definitions(${OSIMADDLIB_LIBRARY_NAME}
+            PRIVATE
+                $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>:OSIM${OSIMADDLIB_UKIT}_EXPORTS>
+            PUBLIC
+                $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,STATIC_LIBRARY>:OPENSIM_${OSIMADDLIB_UKIT}_TYPE_STATIC>
+        )
     endif()
-    set_target_properties(${OSIMADDLIB_LIBRARY_NAME} PROPERTIES
-       DEFINE_SYMBOL OSIM${OSIMADDLIB_UKIT}_EXPORTS
-       FOLDER "${OSIMADDLIB_FOLDER}" # For Visual Studio.
-    )
 
     # Install.
     # --------
