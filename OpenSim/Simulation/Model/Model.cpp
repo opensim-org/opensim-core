@@ -223,7 +223,7 @@ Model::Model(const string &aFileName) :
     try {
         finalizeFromProperties();
     }
-    catch(const InvalidPropertyValue& err) {
+    catch(const std::exception& err) {
         log_error("Model was unable to finalizeFromProperties."
                   "Update the model file and reload OR update the property and "
                   "call finalizeFromProperties() on the model."
@@ -240,7 +240,7 @@ Model* Model::clone() const
     try {
         clone->finalizeFromProperties();
     }
-    catch (const InvalidPropertyValue& err) {
+    catch (const std::exception& err) {
         log_error(
                 "clone() was unable to finalizeFromProperties."
                 "Update the model and call clone() again OR update the clone's "
@@ -768,10 +768,10 @@ std::string Model::getWarningMesssageForMotionTypeInconsistency() const
     for (auto& coord : coordinates) {
         const Coordinate::MotionType oldMotionType =
             coord.getUserSpecifiedMotionTypePriorTo40();
+        if (oldMotionType == Coordinate::MotionType::Undefined)
+            continue;
         const Coordinate::MotionType motionType = coord.getMotionType();
-
-        if( (oldMotionType != Coordinate::MotionType::Undefined ) &&
-            (oldMotionType != motionType) ){
+        if (oldMotionType != motionType) {
             message += "Coordinate '" + coord.getName() +
                 "' was labeled as '" + enumToString(oldMotionType) +
                 "' but was found to be '" + enumToString(motionType) + "' based on the joint definition.\n";
@@ -1128,7 +1128,12 @@ void Model::addModelComponent(ModelComponent* component)
 {
     if(component){
         upd_ComponentSet().adoptAndAppend(component);
-        finalizeFromProperties();
+        try {
+            finalizeFromProperties();
+        } catch (...) {
+            upd_ComponentSet().remove(component);
+            return;
+        }
         prependComponentPathToConnecteePath(*component);
     }
 }

@@ -32,8 +32,8 @@
 #include "SimmIO.h"
 #include "SimmMacros.h"
 #include "Storage.h"
-#include "OpenSim/Auxiliary/auxiliaryTestFunctions.h"
 #include "OpenSim/Common/STOFileAdapter.h"
+#include <regex>
 
 //=============================================================================
 // STATICS
@@ -45,6 +45,25 @@ using SimTK::Vec3;
 //=============================================================================
 // HELPER FUNCTIONS
 //=============================================================================
+// Rewrite a version-2 STO file as version-1. Returns true if the version was
+// changed. This function can be removed when Storage class is removed.
+inline bool revertToVersionNumber1(const std::string& filenameOld,
+                                   const std::string& filenameNew) {
+    std::regex versionline{ R"([ \t]*version[ \t]*=[ \t]*2[ \t]*)" };
+    std::ifstream fileOld{ filenameOld };
+    std::ofstream fileNew{ filenameNew };
+    std::string line{};
+    bool changedVersion{false};
+    while (std::getline(fileOld, line)) {
+        if (std::regex_match(line, versionline)) {
+            fileNew << "version=1\n";
+            changedVersion = true;
+        } else
+            fileNew << line << "\n";
+    }
+    return changedVersion;
+}
+
 // Add number of rows (nRows) and number of columns (nColumns) to the header of
 // the STO file. Note that nColumns will include time, so it will be number of
 // columns in the matrix plus 1 (for time).
