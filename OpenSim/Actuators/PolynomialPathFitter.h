@@ -75,29 +75,24 @@ private:
  *
  * # Settings
  * Various settings can be adjusted to control the path fitting process. The
- * `setMomentArmsThreshold` method determines whether or not a path depends on a
- * model coordinate. In other words, the absolute value the moment arm of a with
- * respect to a particular coordinate must be greater than this value to be
- * included during path fitting. The `setMinimumPolynomialOrder` and
- * `setMaximumPolynomialOrder` methods specify the minimum and maximum order of
- * the polynomial used to fit each path. The `setGlobalCoordinateSamplingBounds`
- * property specifies the global bounds (in degrees) that determine the minimum
- * and maximum coordinate values sampled at each time point. The method
- * `appendCoordinateSamplingBounds` can be used to override the global bounds
- * for a specific coordinate. The `setMomentArmTolerance` and
- * `setPathLengthTolerance` methods specify the tolerance on the
- * root-mean-square (RMS) error (in meters) between the moment arms and path
- * lengths computed from the original model paths and the fitted polynomial
- * paths. The `setNumSamplesPerFrame` method specifies the number of samples
- * taken per time frame in the coordinate values table used to fit each path.
- * The `setNumParallelThreads` method specifies the number of threads used to
- * parallelize the path fitting process. The `setLatinHypercubeAlgorithm` method
- * specifies the Latin hypercube sampling algorithm used to sample coordinate
- * values for path fitting.
+ * `setMinimumPolynomialOrder` and `setMaximumPolynomialOrder` methods specify
+ * the minimum and maximum order of the polynomial used to fit each path. The
+ * `setGlobalCoordinateSamplingBounds` property specifies the global bounds (in
+ * degrees) that determine the minimum and maximum coordinate values sampled at
+ * each time point. The method `appendCoordinateSamplingBounds` can be used to
+ * override the global bounds for a specific coordinate. The
+ * `setMomentArmTolerance` and `setPathLengthTolerance` methods specify the
+ * tolerance on the root-mean-square (RMS) error (in meters) between the moment
+ * arms and path lengths computed from the original model paths and the fitted
+ * polynomial paths. The `setNumSamplesPerFrame` method specifies the number of
+ * samples taken per time frame in the coordinate values table used to fit each
+ * path. The `setNumParallelThreads` method specifies the number of threads used
+ * to parallelize the path fitting process. The `setLatinHypercubeAlgorithm`
+ * method specifies the Latin hypercube sampling algorithm used to sample
+ * coordinate values for path fitting.
  *
  * The default settings are as follows:
  *
- *    - Moment arm threshold: 1e-3 meters
  *    - Minimum polynomial order: 2
  *    - Maximum polynomial order: 6
  *    - Global coordinate sampling bounds: [-10, 10] degrees
@@ -298,18 +293,6 @@ public:
     bool getUseStepwiseRegression() const;
 
     /**
-     * The moment arm threshold value that determines whether or not a path
-     * depends on a model coordinate. In other words, the moment arm of a path
-     * with respect to a particular coordinate must be greater than this value
-     * to be included during path fitting.
-     *
-     * @note The default moment arm threshold is set to 1e-3 meters.
-     */
-    void setMomentArmThreshold(double threshold);
-    /// @copydoc setMomentArmThreshold()
-    double getMomentArmThreshold() const;
-
-    /**
      * The minimum order of the polynomial used to fit each path. The order of
      * a polynomial is the highest power of the independent variable(s) in the
      * polynomial.
@@ -492,6 +475,15 @@ public:
         return get_include_lengthening_speed_function();
     }
 
+    /// <b>(Deprecated)</b> Moment arms associated with a path are now
+    /// automatically detected based on the model's topology.
+    [[deprecated("Path moment arms are now detected based on model topology.")]]
+    void setMomentArmThreshold(double) {}
+    /// <b>(Deprecated)</b> Moment arms associated with a path are now
+    /// automatically detected based on the model's topology.
+    [[deprecated("Path moment arms are now detected based on model topology.")]]
+    double getMomentArmThreshold() const { return -1; }
+
     // HELPER FUNCTIONS
     /**
      * Print out a summary of the path fitting results, including information
@@ -530,11 +522,6 @@ private:
     OpenSim_DECLARE_PROPERTY(use_stepwise_regression, bool,
             "Whether or not to use stepwise regression to fit a minimal set of "
             "polynomial coefficients.");
-    OpenSim_DECLARE_PROPERTY(moment_arm_threshold, double,
-            "The moment arm threshold value that determines whether or not a "
-            "path depends on a model coordinate. In other words, the moment "
-            "arm of a path with respect to a coordinate must be greater than "
-            "this value to be included during path fitting.");
     OpenSim_DECLARE_PROPERTY(minimum_polynomial_order, int,
             "The minimum order of the polynomial used to fit each path. The "
             "order of a polynomial is the highest power of the independent "
