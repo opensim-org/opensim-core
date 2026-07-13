@@ -38,7 +38,9 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
-#ifdef OSIMACTUATORS_EXPORTS
+#if defined(OPENSIM_ACTUATORS_TYPE_STATIC)
+#define OSIMACTUATORS_API
+#elif defined(OSIMACTUATORS_EXPORTS)
 #define OSIMACTUATORS_API __declspec(dllexport)
 #else
 #define OSIMACTUATORS_API __declspec(dllimport)

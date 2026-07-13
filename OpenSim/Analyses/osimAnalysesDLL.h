@@ -34,7 +34,9 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
-#ifdef OSIMANALYSES_EXPORTS
+#if defined(OPENSIM_ANALYSES_TYPE_STATIC)
+#define OSIMANALYSES_API
+#elif defined(OSIMANALYSES_EXPORTS)
 #define OSIMANALYSES_API __declspec(dllexport)
 #else
 #define OSIMANALYSES_API __declspec(dllimport)

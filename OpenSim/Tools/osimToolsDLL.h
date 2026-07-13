@@ -37,7 +37,9 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
-#ifdef OSIMTOOLS_EXPORTS
+#if defined(OPENSIM_TOOLS_TYPE_STATIC)
+#define OSIMTOOLS_API
+#elif defined(OSIMTOOLS_EXPORTS)
 #define OSIMTOOLS_API __declspec(dllexport)
 #else
 #define OSIMTOOLS_API __declspec(dllimport)
