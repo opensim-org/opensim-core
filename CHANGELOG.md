@@ -22,6 +22,8 @@ the model's topology (e.g., `GeometryPath`) or via a user-defined list of coordi
 (e.g., `FunctionBasedPath`). (#4301)
 - The macOS version targeted by OpenSim is now 13.3 (Ventura; previously: 11, Big Sur) so that newer C++ library
   features can be used by the project (specifically, `std::format`, #4367).
+- `PolynomialPathFitter` now detects which coordinates should belong to a path based on the model topology by finding the joints that lie between the path's origin and insertion, and computes moment arms only for these coordinates.
+The property `moment_arm_threshold` has been removed, and the methods `get/setMomentArmThreshold()` have been deprecated. (#4352)
 
 
 v4.6
