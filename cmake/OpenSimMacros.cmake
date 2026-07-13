@@ -246,11 +246,14 @@ function(OpenSimAddLibrary)
         # target (PRIVATE), so its classes are annotated __declspec(dllexport).
         # STATIC build: propagate _TYPE_STATIC to all consumers (PUBLIC) so
         # they suppress __declspec(dllimport) in the API headers.
+        # Note: PUBLIC expressions are evaluated in the consuming target's
+        # context, so the library name must be referenced explicitly to test
+        # *this* target's type rather than the consumer's type.
         target_compile_definitions(${OSIMADDLIB_LIBRARY_NAME}
             PRIVATE
                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>:OSIM${OSIMADDLIB_UKIT}_EXPORTS>
             PUBLIC
-                $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,STATIC_LIBRARY>:OPENSIM_${OSIMADDLIB_UKIT}_TYPE_STATIC>
+                $<$<STREQUAL:$<TARGET_PROPERTY:${OSIMADDLIB_LIBRARY_NAME},TYPE>,STATIC_LIBRARY>:OPENSIM_${OSIMADDLIB_UKIT}_TYPE_STATIC>
         )
     endif()
 
