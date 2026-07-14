@@ -53,7 +53,8 @@ using std::cout; using std::endl;
 void scaleGait2354();
 void scaleGait2354_GUI(bool useMarkerPlacement);
 void scaleModelWithLigament();
-bool compareStdScaleToComputed(const ScaleSet& standard, const ScaleSet& comparison);
+bool compareStdScaleToComputed(
+        const ScaleSet& standard, const ScaleSet& comparison);
 
 // Test scaling PhysicalOffsetFrames and models with atypical ownership trees.
 void scalePhysicalOffsetFrames();
@@ -316,14 +317,11 @@ void scaleModelWithLigament()
                            std_scaledModelFile, 1.0e-6);
 }
 
-bool compareStdScaleToComputed(const ScaleSet& standard,
-                               const ScaleSet& comparison)
-{
+bool compareStdScaleToComputed(
+        const ScaleSet& standard, const ScaleSet& comparison) {
     if (standard.getSize() != comparison.getSize()) {
-        std::cout << "ScaleSet sizes differ. Standard: "
-                  << standard.getSize()
-                  << ", Comparison: "
-                  << comparison.getSize() << '\n';
+        std::cout << "ScaleSet sizes differ. Standard: " << standard.getSize()
+                  << ", Comparison: " << comparison.getSize() << '\n';
         return false;
     }
 
@@ -345,13 +343,13 @@ bool compareStdScaleToComputed(const ScaleSet& standard,
         }
 
         const SimTK::Vec3& expectedScales = expected.getScaleFactors();
-        const SimTK::Vec3& actualScales   = actual->getScaleFactors();
+        const SimTK::Vec3& actualScales = actual->getScaleFactors();
 
         constexpr double tol = 1e-5;
         if (expected.getSegmentName() != actual->getSegmentName()) {
             std::cout << "Segment name mismatch.\n"
-                    << "Expected: " << expected.getSegmentName() << '\n'
-                    << "Actual:   " << actual->getSegmentName() << '\n';
+                      << "Expected: " << expected.getSegmentName() << '\n'
+                      << "Actual:   " << actual->getSegmentName() << '\n';
             return false;
         }
 
@@ -359,13 +357,15 @@ bool compareStdScaleToComputed(const ScaleSet& standard,
             const double diff = std::abs(expectedScales[i] - actualScales[i]);
             if (diff > tol) {
                 std::cout << "Scale mismatch for segment "
-                        << expected.getSegmentName()
-                        << " at index " << i << '\n'
-                        << "Expected: " << expectedScales[i] << '\n'
-                        << "Actual:   " << actualScales[i] << '\n'
-                        << "Difference: " << diff << '\n'
-                        << "Full expected:\n" << expected.dump() << '\n'
-                        << "Full actual:\n" << actual->dump() << '\n';
+                          << expected.getSegmentName() << " at index " << i
+                          << '\n'
+                          << "Expected: " << expectedScales[i] << '\n'
+                          << "Actual:   " << actualScales[i] << '\n'
+                          << "Difference: " << diff << '\n'
+                          << "Full expected:\n"
+                          << expected.dump() << '\n'
+                          << "Full actual:\n"
+                          << actual->dump() << '\n';
                 return false;
             }
         }

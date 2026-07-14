@@ -81,8 +81,7 @@ void GenericModelMaker::registerTypes()
  *
  * @return Pointer to the Model that is constructed.
  */
-Model* GenericModelMaker::processModel(
-        const string& aPathToSubject) const {
+Model* GenericModelMaker::processModel(const string& aPathToSubject) const {
     log_info("Step 1: Loading generic model");
     try
     {

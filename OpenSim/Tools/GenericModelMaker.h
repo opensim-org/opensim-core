@@ -74,8 +74,7 @@ public:
     GenericModelMaker();
     virtual ~GenericModelMaker();
 
-    Model* processModel(
-            const std::string& aPathToSubject = "") const;
+    Model* processModel(const std::string& aPathToSubject = "") const;
 
     /* Register types to be used when reading a GenericModelMaker object from xml file. */
     static void registerTypes();

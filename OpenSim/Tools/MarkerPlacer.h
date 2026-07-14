@@ -114,14 +114,14 @@ OpenSim_DECLARE_PROPERTY(move_model_markers, bool,
         "preview the static pose)");
 
 protected:
-    // This is cached during processModel() so the GUI can access it.
-    mutable SimTK::ResetOnCopy<std::unique_ptr<Storage>> _outputStorage;
-    //=============================================================================
-    // METHODS
-    //=============================================================================
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
+// This is cached during processModel() so the GUI can access it.
+mutable SimTK::ResetOnCopy<std::unique_ptr<Storage>> _outputStorage;
+//=============================================================================
+// METHODS
+//=============================================================================
+//--------------------------------------------------------------------------
+// CONSTRUCTION
+//--------------------------------------------------------------------------
 public:
     MarkerPlacer();
     virtual ~MarkerPlacer();
