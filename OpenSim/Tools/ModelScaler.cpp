@@ -115,7 +115,7 @@ void ModelScaler::setMeasurementSet(const MeasurementSet& measurementSet) {
 //_____________________________________________________________________________
 /**
  * This method scales a model based on user-specified XYZ body scale factors
- * and/or a set of marker-to-marker distributionance measurements.
+ * and/or a set of marker-to-marker distance measurements.
  *
  * @param aModel the model to scale.
  * @param aSubjectMass the final mass of the model after scaling.
@@ -197,7 +197,7 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject,
                     const auto& scale = get_ScaleSet()[j];
                     if (scale.getApply()) {
                         const string& bodyName = scale.getSegmentName();
-                        const auto& factors = scale.get_scale_factors();
+                        const auto& factors = scale.get_scales();
                         for (int k = 0; k < theScaleSet.getSize(); k++) {
                             if (theScaleSet[k].getSegmentName() == bodyName)
                                 theScaleSet[k].setScaleFactors(factors);

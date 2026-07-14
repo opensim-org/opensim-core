@@ -53,7 +53,7 @@ using std::cout; using std::endl;
 void scaleGait2354();
 void scaleGait2354_GUI(bool useMarkerPlacement);
 void scaleModelWithLigament();
-bool compareStdScaleToComputed(const ScaleSet& std, const ScaleSet& comp);
+bool compareStdScaleToComputed(const ScaleSet& standard, const ScaleSet& comparison);
 
 // Test scaling PhysicalOffsetFrames and models with atypical ownership trees.
 void scalePhysicalOffsetFrames();
@@ -316,26 +316,37 @@ void scaleModelWithLigament()
                            std_scaledModelFile, 1.0e-6);
 }
 
-bool compareStdScaleToComputed(const ScaleSet& std, const ScaleSet& comp) {
-    for (int i = 0; i < std.getSize(); ++i) {
-        const Scale& scaleStd = std[i];
+bool compareStdScaleToComputed(const ScaleSet& standard, const ScaleSet& comparison) {
+    if (standard.getSize() != comparison.getSize()) {
+        std::cout << "ScaleSet sizes differ. Standard: "
+                  << standard.getSize() << ", Computed: "
+                  << comparison.getSize() << std::endl;
+        return false;
+    }
+
+    for (int i = 0; i < standard.getSize(); ++i) {
+        const Scale& scaleStandard = standard[i];
+
         int fix = -1;
-        //find corresponding scale factor by segment name
-        for (int j = 0 ; j < comp.getSize(); ++j) {
-            if (comp[j].getSegmentName() == scaleStd.getSegmentName()) {
+        // Find corresponding scale factor by segment name
+        for (int j = 0; j < comparison.getSize(); ++j) {
+            if (comparison[j].getSegmentName() == scaleStandard.getSegmentName()) {
                 fix = j;
                 break;
             }
         }
+
         if (fix < 0) {
-            cout << "Computed ScaleSet does not contain factors for ";
-            cout << std[i].getSegmentName() << "." << endl;
+            std::cout << "Computed ScaleSet does not contain factors for "
+                      << scaleStandard.getSegmentName() << "." << std::endl;
             return false;
         }
-        if (!(scaleStd == comp[fix])) {
+
+        if (!(scaleStandard == comparison[fix])) {
             return false;
         }
     }
+
     return true;
 }
 

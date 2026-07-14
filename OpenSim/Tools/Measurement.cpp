@@ -114,7 +114,7 @@ void Measurement::applyScaleFactor(double aFactor, ScaleSet& aScaleSet) const {
         for (int j = 0; j < aScaleSet.getSize(); j++) {
             if (aScaleSet[j].getSegmentName() == bodyName)
             {
-                auto& factors = aScaleSet[j].upd_scale_factors();
+                auto& factors = aScaleSet[j].upd_scales();
                 for (int k = 0; k < axisNames.size(); k++) {
                     if (axisNames[k] == "x" || axisNames[k] == "X")
                         factors[0] = aFactor;

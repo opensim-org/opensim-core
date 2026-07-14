@@ -81,7 +81,7 @@ void GenericModelMaker::registerTypes()
  *
  * @return Pointer to the Model that is constructed.
  */
-std::unique_ptr<Model> GenericModelMaker::processModel(
+Model* GenericModelMaker::processModel(
         const string& aPathToSubject) const {
     log_info("Step 1: Loading generic model");
     try
@@ -89,7 +89,6 @@ std::unique_ptr<Model> GenericModelMaker::processModel(
         std::string modelPath = SimTK::Pathname::
                 getAbsolutePathnameUsingSpecifiedWorkingDirectory(
                         aPathToSubject, get_model_file());
-        std::cout << modelPath << std::endl;
         auto model = std::make_unique<Model>(get_model_file());
         model->initSystem();
 
@@ -102,7 +101,7 @@ std::unique_ptr<Model> GenericModelMaker::processModel(
             MarkerSet markerSet = MarkerSet(markerSetPath);
             model->updateMarkerSet(markerSet);
         }
-        return model;
+        return model.release();
     }
     catch (const Exception& x)
     {

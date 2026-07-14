@@ -72,7 +72,7 @@ public:
         return get_markers(i);
     }
     void setMarkerName(int i, const std::string& aName) {
-        // _markerNames.set(i,aName);
+        upd_markers(i) = aName;
     }
 
 protected:

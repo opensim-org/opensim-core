@@ -67,6 +67,198 @@
 				<segment>torso</segment>
 				<apply>true</apply>
 			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>ground_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>pelvis_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>pelvis_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>femur_r_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>femur_r_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>tibia_r_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>tibia_r_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>talus_r_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>talus_r_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>calcn_r_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>calcn_r_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>toes_r_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>pelvis_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>femur_l_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>femur_l_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>tibia_l_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>tibia_l_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>talus_l_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>talus_l_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>calcn_l_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>calcn_l_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>toes_l_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>pelvis_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
+			<Scale>
+				<!--scale factors-->
+				<scales>1 1 1</scales>
+				<!--segment name-->
+				<segment>torso_offset</segment>
+				<!--whether or not to apply the scale-->
+				<apply>true</apply>
+			</Scale>
 		</objects>
 		<groups />
 	</ScaleSet>

@@ -90,7 +90,7 @@ public:
     ScaleTool(const std::string& aFileName) SWIG_DECLARE_EXCEPTION;
     virtual ~ScaleTool();
 
-    std::unique_ptr<Model> createModel() const;
+    Model* createModel() const;
     /* Query the subject for different parameters */
     const GenericModelMaker& getGenericModelMaker() const {
         return get_generic_model_maker();

@@ -61,8 +61,8 @@ Scale::Scale(const string& scaleFileName) : Object(scaleFileName, false) {
 void Scale::constructProperties() {
     // scale factors
     SimTK::Vec3 one3(1.0);
-    constructProperty_scale_factors(one3);
+    constructProperty_scales(one3);
 
-    constructProperty_segment_name("unnamed_segment");
+    constructProperty_segment("unnamed_segment");
     constructProperty_apply(true);
 }

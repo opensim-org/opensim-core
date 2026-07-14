@@ -109,7 +109,7 @@ void ScaleTool::setPrintResultFiles(bool aToWrite) {
  *
  * @return Pointer to the Model that is created.
  */
-std::unique_ptr<Model> ScaleTool::createModel() const {
+Model* ScaleTool::createModel() const {
     log_info("Processing subject {}...", getName());
 
     if (isDefaultGenericModelMaker()) {
@@ -134,7 +134,7 @@ std::unique_ptr<Model> ScaleTool::createModel() const {
 }
 
 bool ScaleTool::run() const {
-    std::unique_ptr<Model> model = createModel();
+    auto model = std::unique_ptr<Model>(createModel());
 
     if (!model) {
         string msg = "ScaleTool: No model specified.";

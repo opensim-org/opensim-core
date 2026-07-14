@@ -47,8 +47,8 @@ OpenSim_DECLARE_CONCRETE_OBJECT(Scale, Object);
 // DATA
 //=============================================================================
 public:
-OpenSim_DECLARE_PROPERTY(scale_factors, SimTK::Vec3, "scale factors");
-OpenSim_DECLARE_PROPERTY(segment_name, std::string, "segment name");
+OpenSim_DECLARE_PROPERTY(scales, SimTK::Vec3, "scale factors");
+OpenSim_DECLARE_PROPERTY(segment, std::string, "segment name");
 OpenSim_DECLARE_PROPERTY(apply, bool, "whether or not to apply the scale");
 
 //=============================================================================
@@ -69,14 +69,14 @@ public:
     //--------------------------------------------------------------------------
     // SET AND GET
     //--------------------------------------------------------------------------
-    const std::string& getSegmentName() const { return get_segment_name(); };
+    const std::string& getSegmentName() const { return get_segment(); };
     void setSegmentName(const std::string& aSegmentName) {
-        set_segment_name(aSegmentName);
+        set_segment(aSegmentName);
     };
 
-    const SimTK::Vec3& getScaleFactors() const { return get_scale_factors(); }
+    const SimTK::Vec3& getScaleFactors() const { return get_scales(); }
     void setScaleFactors(const SimTK::Vec3& aScaleFactors) {
-        set_scale_factors(aScaleFactors);
+        set_scales(aScaleFactors);
     };
     bool getApply(void) const { return get_apply(); }
     void setApply(bool state) { set_apply(state); }
