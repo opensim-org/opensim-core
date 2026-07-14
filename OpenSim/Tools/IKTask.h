@@ -51,7 +51,7 @@ public:
     bool getApply() const { return get_apply(); }
     void setApply(bool aApply) { upd_apply() = aApply; }
 
-    double getWeight() { return get_weight(); }
+    double getWeight() const { return get_weight(); }
     void setWeight(double weight) { upd_weight() = weight; }
 
 private:

@@ -34,6 +34,7 @@
 #include <memory>
 #include <optional>
 #include <utility>
+#include "OpenSim/Common/PropertyStr.h"
 
 //=============================================================================
 // STATICS

@@ -27,14 +27,9 @@
  * Author:  
  */
 
-
-#include "osimCommonDLL.h"
 #include "Object.h"
-#include "PropertyStr.h"
-#include "PropertyDblArray.h"
-#include "PropertyDbl.h"
-#include "PropertyBool.h"
-#include "PropertyDblVec.h"
+#include "Property.h"
+#include "osimCommonDLL.h"
 
 //=============================================================================
 /*
@@ -51,19 +46,10 @@ OpenSim_DECLARE_CONCRETE_OBJECT(Scale, Object);
 //=============================================================================
 // DATA
 //=============================================================================
-protected:
-    // PROPERTIES
-    /** A list of 3 scale factors */
-    PropertyDblVec3 _propScaleFactors;
-    /** Name of object to scale */
-    PropertyStr     _propSegmentName;
-    /** Whether or not to apply this scale */
-    PropertyBool        _propApply;
-
-    // REFERENCES
-    SimTK::Vec3&    _scaleFactors;
-    std::string&        _segmentName;
-    bool&                   _apply;
+public:
+OpenSim_DECLARE_PROPERTY(scale_factors, SimTK::Vec3, "scale factors");
+OpenSim_DECLARE_PROPERTY(segment_name, std::string, "segment name");
+OpenSim_DECLARE_PROPERTY(apply, bool, "whether or not to apply the scale");
 
 //=============================================================================
 // METHODS
@@ -73,32 +59,27 @@ public:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
     Scale();
-    Scale(const Scale &aMarker);
     Scale( const std::string& scaleFileName);
     virtual ~Scale(void);
 
-    //--------------------------------------------------------------------------
-    // OPERATORS
-    //--------------------------------------------------------------------------
-#ifndef SWIG
-    Scale& operator=(const Scale &aMarker);
-#endif  
 private:
-    void setNull();
-    void setupProperties();
+    void constructProperties();
 
 public:
     //--------------------------------------------------------------------------
     // SET AND GET
     //--------------------------------------------------------------------------
-    const std::string& getSegmentName() const;
-    void setSegmentName(const std::string& aSegmentName);
+    const std::string& getSegmentName() const { return get_segment_name(); };
+    void setSegmentName(const std::string& aSegmentName) {
+        set_segment_name(aSegmentName);
+    };
 
-    void getScaleFactors(SimTK::Vec3& aScaleFactors) const;
-    SimTK::Vec3& getScaleFactors() { return _scaleFactors; }
-    void setScaleFactors(const SimTK::Vec3& aScaleFactors);
-    bool getApply(void) const { return _apply; }
-    void setApply(bool state) { _apply = state; }
+    const SimTK::Vec3& getScaleFactors() const { return get_scale_factors(); }
+    void setScaleFactors(const SimTK::Vec3& aScaleFactors) {
+        set_scale_factors(aScaleFactors);
+    };
+    bool getApply(void) const { return get_apply(); }
+    void setApply(bool state) { set_apply(state); }
 };
 
 }; //namespace

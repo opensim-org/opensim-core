@@ -24,16 +24,19 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <fstream>
-#include <math.h>
-#include <float.h>
 #include "MarkerData.h"
+
+#include "OpenSim/Auxiliary/auxiliaryTestFunctions.h"
+#include "OpenSim/Common/MarkerFrame.h"
+#include "OpenSim/Common/STOFileAdapter.h"
 #include "SimmIO.h"
 #include "SimmMacros.h"
 #include "Storage.h"
-#include "OpenSim/Auxiliary/auxiliaryTestFunctions.h"
-#include "OpenSim/Common/STOFileAdapter.h"
+#include <float.h>
+#include <fstream>
+#include <iostream>
+#include <math.h>
+#include <memory>
 
 //=============================================================================
 // STATICS
@@ -197,7 +200,8 @@ void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
 #endif
       }
 
-        MarkerFrame *frame = new MarkerFrame(aSMD._numMarkers, frameNum, time, aSMD._units);
+      auto& frame = aSMD._frames.emplace_back(std::make_shared<MarkerFrame>(
+              aSMD._numMarkers, frameNum, time, aSMD._units));
 
       /* keep reading sets of coordinates until the end of the line is
        * reached. If more coordinates were read than there are markers,
@@ -238,7 +242,6 @@ void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
          goto cleanup;
 #endif
       }
-        aSMD._frames.append(frame);
    }
 
    if (aSMD._frames.getSize() < aSMD._numFrames)
@@ -552,14 +555,14 @@ void MarkerData::readStoFile(const string& aFileName)
         StateVector* nextRow = store.getStateVector(i);
         time = nextRow->getTime();
         int frameNum = i+1;
-        MarkerFrame *frame = new MarkerFrame(_numMarkers, frameNum, time, _units);
+        auto& frame = _frames.emplace_back(std::make_shared<MarkerFrame>(
+                _numMarkers, frameNum, time, _units));
         const Array<double>& rowData = nextRow->getData();
         // Cycle through map and add Marker coordinates to the frame. Same order as header.
         for (iter = markerIndices.begin(); iter != markerIndices.end(); iter++) {
             int startIndex = iter->first; // startIndex includes time but data doesn't!
             frame->addMarker(SimTK::Vec3(rowData[startIndex-1], rowData[startIndex], rowData[startIndex+1]));
         }
-        _frames.append(frame);
    }
 }
 /**
@@ -680,10 +683,11 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
         return;
 
     int startIndex = 0, endIndex = 1;
-    double *minX = NULL, *minY = NULL, *minZ = NULL, *maxX = NULL, *maxY = NULL, *maxZ = NULL;
+    std::vector<double> minX, minY, minZ;
+    std::vector<double> maxX, maxY, maxZ;
 
     findFrameRange(aStartTime, aEndTime, startIndex, endIndex);
-    MarkerFrame *averagedFrame = new MarkerFrame(*_frames[startIndex]);
+    auto averagedFrame = std::make_shared<MarkerFrame>(*_frames[startIndex]);
 
     /* If aThreshold is greater than zero, then calculate
      * the movement of each marker so you can check if it
@@ -691,12 +695,12 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
      */
     if (aThreshold > 0.0)
     {
-        minX = new double [_numMarkers];
-        minY = new double [_numMarkers];
-        minZ = new double [_numMarkers];
-        maxX = new double [_numMarkers];
-        maxY = new double [_numMarkers];
-        maxZ = new double [_numMarkers];
+        minX.resize(_numMarkers);
+        minY.resize(_numMarkers);
+        minZ.resize(_numMarkers);
+        maxX.resize(_numMarkers);
+        maxY.resize(_numMarkers);
+        maxZ.resize(_numMarkers);
         for (int i = 0; i < _numMarkers; i++)
         {
             minX[i] = minY[i] = minZ[i] =  SimTK::Infinity;
@@ -755,7 +759,7 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
     int endUserIndex = _frames[endIndex]->getFrameNumber();
 
     /* Now delete all the existing frames and insert the averaged one. */
-    _frames.clearAndDestroy();
+    _frames.clear();
     _frames.append(averagedFrame);
     _numFrames = 1;
     _firstFrameNumber = _frames[0]->getFrameNumber();
@@ -787,16 +791,6 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
 
     log_info("Averaged frames from time {} to {} in {} (frames {} to {})",
             aStartTime, aEndTime, _fileName, startUserIndex, endUserIndex);
-
-    if (aThreshold > 0.0)
-    {
-        delete [] minX;
-        delete [] minY;
-        delete [] minZ;
-        delete [] maxX;
-        delete [] maxY;
-        delete [] maxZ;
-    }
 }
 
 //_____________________________________________________________________________

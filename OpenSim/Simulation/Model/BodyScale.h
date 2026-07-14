@@ -23,11 +23,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyStrArray.h>
+#include <OpenSim/Common/Property.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
 
 namespace OpenSim {
 
@@ -46,40 +45,35 @@ OpenSim_DECLARE_CONCRETE_OBJECT(BodyScale, Object);
 //=============================================================================
 // DATA
 //=============================================================================
-protected:
-    PropertyStrArray _axisNamesProp;
-    Array<std::string>& _axisNames;
-
-//=============================================================================
-// METHODS
-//=============================================================================
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
 public:
-    BodyScale();
-    BodyScale(const BodyScale &aBodyScale);
+OpenSim_DECLARE_LIST_PROPERTY_SIZE(axes, std::string, 3,
+        "Axes (X Y Z) along which to scale a body. "
+        "For example, 'X Y Z' scales along all three axes, and 'Y' scales "
+        "just along the Y axis.")
+
+        //=============================================================================
+        // METHODS
+        //=============================================================================
+        //--------------------------------------------------------------------------
+        // CONSTRUCTION
+        //--------------------------------------------------------------------------
+        public : BodyScale();
     virtual ~BodyScale();
 
-    void copyData(const BodyScale &aBodyScale);
+    
+    const Array<std::string> getAxisNames() const {
+       return  Array<std::string>{get_axes(0), get_axes(1), get_axes(2)};
+    }
 
-#ifndef SWIG
-    BodyScale& operator=(const BodyScale &aBodyScale);
-    const Array<std::string>& getAxisNames() const { return _axisNames; }
-#endif
-    Array<std::string>& getAxisNames() { return _axisNames; }
-
-    void setAxisNames(const Array<std::string> &aAxisNames) { 
-        _axisNames = aAxisNames;
-        _axisNamesProp.setValueIsDefault(false);
+    void setAxisNames(const Array<std::string>& aAxisNames) {
+        set_axes(aAxisNames);
     }
 
 protected:
 
 private:
-    void setNull();
-    void setupProperties();
-//=============================================================================
+    void constructProperties();
+    //=============================================================================
 };  // END of class BodyScale
 //=============================================================================
 //=============================================================================
