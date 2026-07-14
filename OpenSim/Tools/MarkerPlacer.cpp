@@ -85,7 +85,7 @@ void MarkerPlacer::constructProperties() {
     constructProperty_output_model_file("");
     constructProperty_output_marker_file("");
     constructProperty_max_marker_movement(-1.0);
-    constructProperty_print_result_files(false);
+    constructProperty_print_result_files(true);
     constructProperty_move_model_markers(true);
 }
 

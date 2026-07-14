@@ -81,7 +81,7 @@ void ModelScaler::constructProperties() {
     constructProperty_preserve_mass_distribution(true);
     constructProperty_output_model_file("");
     constructProperty_output_scale_file("");
-    constructProperty_print_result_files(false);
+    constructProperty_print_result_files(true);
 }
 
 //_____________________________________________________________________________
