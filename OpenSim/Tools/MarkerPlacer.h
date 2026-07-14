@@ -126,7 +126,8 @@ public:
     MarkerPlacer();
     virtual ~MarkerPlacer();
 
-    bool processModel(Model* aModel, const std::string& aPathToSubject = "") const;
+    bool processModel(
+            Model* aModel, const std::string& aPathToSubject = "") const;
 
     /* Register types to be used when reading object from xml file. */
     static void registerTypes();
@@ -145,11 +146,13 @@ public:
         set_marker_file(aFileName);
     }
 
-    const Array<double> getTimeRange() const { return Array<double>{get_time_range(0), get_time_range(1)}; }
+    const Array<double> getTimeRange() const {
+        return Array<double>{get_time_range(0), get_time_range(1)};
+    }
     void setTimeRange(const Array<double>& timeRange) {
         set_time_range(timeRange);
     }
-    const IKTaskSet &getIKTaskSet() const { return get_IKTaskSet(); }
+    const IKTaskSet& getIKTaskSet() const { return get_IKTaskSet(); }
 
     const std::string& getCoordinateFileName() const {
         return get_coordinate_file();
@@ -165,7 +168,9 @@ public:
         set_marker_file(aMarkerFileName);
     }
 
-    const double& getMaxMarkerMovement() const { return get_max_marker_movement(); }
+    const double& getMaxMarkerMovement() const {
+        return get_max_marker_movement();
+    }
     void setMaxMarkerMovement(double aMaxMarkerMovement)
     {
         set_max_marker_movement(aMaxMarkerMovement);

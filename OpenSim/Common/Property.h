@@ -589,14 +589,13 @@ public:
             + std::string(SimTK::NiceTypeName<T>::name()));
     }
 
-
     bool isValidFileName() const {
         if constexpr (std::is_same_v<T, std::string>) {
             return !getValue().empty() && !getValueIsDefault();
         } else {
             return false;
         }
-    }    
+    }
 
 protected:
     Property() = default;

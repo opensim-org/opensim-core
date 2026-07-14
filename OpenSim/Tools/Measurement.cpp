@@ -106,8 +106,7 @@ const MarkerPair& Measurement::getMarkerPair(int aIndex) const {
  * @param aFactor the scale factor to apply
  * @param aScaleSet the set of scale factors to modify
  */
-void Measurement::applyScaleFactor(
-        double aFactor, ScaleSet& aScaleSet) const {
+void Measurement::applyScaleFactor(double aFactor, ScaleSet& aScaleSet) const {
     for (int i = 0; i < get_BodyScaleSet().getSize(); i++) {
         const auto& bodyScale = get_BodyScaleSet()[i];
         const string& bodyName = bodyScale.getName();

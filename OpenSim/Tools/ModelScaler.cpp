@@ -95,7 +95,6 @@ void ModelScaler::registerTypes()
     Measurement::registerTypes();
 }
 
-
 void ModelScaler::addMeasurement(Measurement* aMeasurement) {
     upd_MeasurementSet().adoptAndAppend(aMeasurement);
 }
@@ -106,8 +105,7 @@ void ModelScaler::addScale(Scale* aScale) {
 void ModelScaler::setScaleSetFile(const std::string& aScaleSetFilename) {
     updProperty_ScaleSet() = ScaleSet(aScaleSetFilename);
 }
-void ModelScaler::setMeasurementSet(
-        const MeasurementSet& measurementSet) {
+void ModelScaler::setMeasurementSet(const MeasurementSet& measurementSet) {
     upd_MeasurementSet() = measurementSet;
 }
 
@@ -123,8 +121,8 @@ void ModelScaler::setMeasurementSet(
  * @param aSubjectMass the final mass of the model after scaling.
  * @return Whether the scaling process was successful or not.
  */
-bool ModelScaler::processModel(
-        Model* aModel, const string& aPathToSubject, double aSubjectMass) const {
+bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject,
+        double aSubjectMass) const {
     if (!getApply()) return false;
 
     int i;
@@ -163,8 +161,8 @@ bool ModelScaler::processModel(
                 std::unique_ptr<MarkerData> markerData;
                 if (!get_marker_file().empty() &&
                         !getProperty_marker_file().getValueIsDefault()) {
-                    markerData = 
-                            std::make_unique<MarkerData>(aPathToSubject + get_marker_file());
+                    markerData = std::make_unique<MarkerData>(
+                            aPathToSubject + get_marker_file());
                     markerData->convertToUnits(aModel->getLengthUnits());
                 }
 
@@ -180,15 +178,14 @@ bool ModelScaler::processModel(
                                             " not set but measurements are "
                                             "used",
                                     __FILE__, __LINE__);
-                        double scaleFactor = computeMeasurementScaleFactor(s,
-                                *aModel, *markerData, measurement);
+                        double scaleFactor = computeMeasurementScaleFactor(
+                                s, *aModel, *markerData, measurement);
                         if (!SimTK::isNaN(scaleFactor))
                             measurement.applyScaleFactor(
                                     scaleFactor, theScaleSet);
                         else
                             log_warn("'{}' measurement not used to scale {}",
-                                    measurement.getName(),
-                                    aModel->getName());
+                                    measurement.getName(), aModel->getName());
                     }
                 }
             }
@@ -199,10 +196,8 @@ bool ModelScaler::processModel(
                 for (int j = 0; j < get_ScaleSet().getSize(); j++) {
                     const auto& scale = get_ScaleSet()[j];
                     if (scale.getApply()) {
-                        const string& bodyName =
-                                scale.getSegmentName();
-                        const auto& factors =
-                                scale.get_scale_factors();
+                        const string& bodyName = scale.getSegmentName();
+                        const auto& factors = scale.get_scale_factors();
                         for (int k = 0; k < theScaleSet.getSize(); k++) {
                             if (theScaleSet[k].getSegmentName() == bodyName)
                                 theScaleSet[k].setScaleFactors(factors);
@@ -222,7 +217,7 @@ bool ModelScaler::processModel(
         /* Now scale the model. */
         aModel->scale(
                 s, theScaleSet, get_preserve_mass_distribution(), aSubjectMass);
-        
+
         if (get_print_result_files()) {
             auto cwd = IO::CwdChanger::changeTo(aPathToSubject);
 

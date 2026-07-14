@@ -120,14 +120,20 @@ public:
     bool getApply() const { return get_apply(); }
     void setApply(bool aApply) { set_apply(aApply); }
 
-    const MeasurementSet& getMeasurementSet() const { return get_MeasurementSet(); };
+    const MeasurementSet& getMeasurementSet() const {
+        return get_MeasurementSet();
+    };
     void setMeasurementSet(const MeasurementSet& measurementSet);
 
     const ScaleSet& getScaleSet() const { return get_ScaleSet(); };
     void setScaleSetFile(const std::string& aScaleSetFilename);
 
-    const Array<double> getTimeRange() const { return Array<double>{get_time_range(0), get_time_range(1)}; }
-    void setTimeRange(const Array<double>& timeRange) { set_time_range(timeRange); }
+    const Array<double> getTimeRange() const {
+        return Array<double>{get_time_range(0), get_time_range(1)};
+    }
+    void setTimeRange(const Array<double>& timeRange) {
+        set_time_range(timeRange);
+    }
 
     bool getPreserveMassDist() const {
         return get_preserve_mass_distribution();
@@ -136,13 +142,12 @@ public:
         set_preserve_mass_distribution(preserveMassDist);
     }
 
-    const Array<std::string> getScalingOrder() const { 
+    const Array<std::string> getScalingOrder() const {
         Array<std::string> array;
-        for(int i = 0; i < getProperty_scaling_order().size(); ++i) {
+        for (int i = 0; i < getProperty_scaling_order().size(); ++i) {
             array.append(get_scaling_order(i));
         }
         return array;
-    
     }
     void setScalingOrder(Array<std::string>& scalingOrder) {
         set_scaling_order(scalingOrder);

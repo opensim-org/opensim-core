@@ -25,6 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include "BodyScale.h"
+
 #include <string>
 
 //=============================================================================
@@ -57,4 +58,6 @@ BodyScale::~BodyScale()
 /**
  * Connect properties to local pointers.
  */
-void BodyScale::constructProperties() { constructProperty_axes(Array<std::string>{"X","Y","Z"}); }
+void BodyScale::constructProperties() {
+    constructProperty_axes(Array<std::string>{"X", "Y", "Z"});
+}

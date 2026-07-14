@@ -77,8 +77,10 @@ public:
     Measurement();
     virtual ~Measurement();
 
-    const BodyScaleSet &getBodyScaleSet() const { return get_BodyScaleSet(); }
-     const MarkerPairSet& getMarkerPairSet() const { return get_MarkerPairSet(); }
+    const BodyScaleSet& getBodyScaleSet() const { return get_BodyScaleSet(); }
+    const MarkerPairSet& getMarkerPairSet() const {
+        return get_MarkerPairSet();
+    }
 
     int getNumMarkerPairs() const;
     const MarkerPair& getMarkerPair(int aIndex) const;

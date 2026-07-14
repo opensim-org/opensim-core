@@ -110,7 +110,8 @@ void MarkerPlacer::registerTypes() {
  * @param aModel the model to use for the marker placing process.
  * @return Whether the marker placing process was successful or not.
  */
-bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject) const {
+bool MarkerPlacer::processModel(
+        Model* aModel, const string& aPathToSubject) const {
 
     if (!getApply()) return false;
 
@@ -132,12 +133,11 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject) con
     // range, since the TimeSeriesTable will correctly throw that the
     // desired time exceeds the data range.
     const auto time_range = getTimeRange();
-    if (time_range[0] < timeCol.front())
-        time_range[0] = timeCol.front();
+    if (time_range[0] < timeCol.front()) time_range[0] = timeCol.front();
     if (time_range[1] > timeCol.back()) time_range[1] = timeCol.back();
 
     const auto avgRow =
-            staticPoseTable.averageRow(time_range[0],time_range[1]);
+            staticPoseTable.averageRow(time_range[0], time_range[1]);
     for (size_t r = staticPoseTable.getNumRows(); r-- > 0;)
         staticPoseTable.removeRowAtIndex(r);
     staticPoseTable.appendRow(time_range[0], avgRow);
@@ -178,7 +178,8 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject) con
     // Create references and WeightSets needed to initialize
     // InverseKinemaicsSolver
     Set<MarkerWeight> markerWeightSet;
-    get_IKTaskSet().createMarkerWeightSet(markerWeightSet); // order in tasks file
+    get_IKTaskSet().createMarkerWeightSet(
+            markerWeightSet); // order in tasks file
     // MarkersReference takes ownership of marker data (staticPose)
     auto markersReference = std::make_shared<MarkersReference>(
             staticPoseTable, markerWeightSet);
@@ -277,7 +278,8 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject) con
     StatesReporter statesReporter(aModel);
     statesReporter.begin(s);
 
-    _outputStorage = std::make_unique<Storage>(statesReporter.updStatesStorage());
+    _outputStorage =
+            std::make_unique<Storage>(statesReporter.updStatesStorage());
     _outputStorage->setName("static pose");
     _outputStorage->getStateVector(0)->setTime(s.getTime());
 

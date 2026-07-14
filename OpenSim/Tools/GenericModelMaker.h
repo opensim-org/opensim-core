@@ -74,7 +74,8 @@ public:
     GenericModelMaker();
     virtual ~GenericModelMaker();
 
-    std::unique_ptr<Model> processModel(const std::string& aPathToSubject = "") const;
+    std::unique_ptr<Model> processModel(
+            const std::string& aPathToSubject = "") const;
 
     /* Register types to be used when reading a GenericModelMaker object from xml file. */
     static void registerTypes();

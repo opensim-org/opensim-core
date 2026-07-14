@@ -48,9 +48,11 @@ public:
     IKTaskSet(const std::string &aFileName) : Set<IKTask>(aFileName) { }
     void createMarkerWeightSet(Set<MarkerWeight>& aWeights) const {
         for(int i=0; i< getSize(); i++){
-            if(const IKMarkerTask *nextTask = dynamic_cast<const IKMarkerTask *>(&get(i))){
+            if (const IKMarkerTask* nextTask =
+                            dynamic_cast<const IKMarkerTask*>(&get(i))) {
                 if(nextTask->getApply()){
-                    aWeights.cloneAndAppend(MarkerWeight(nextTask->getName(), nextTask->getWeight()));
+                    aWeights.cloneAndAppend(MarkerWeight(
+                            nextTask->getName(), nextTask->getWeight()));
                 }
             }
         }
