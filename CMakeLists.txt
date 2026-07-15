@@ -122,6 +122,15 @@ if(NOT DEFINED BUILD_SHARED_LIBS)
     set(BUILD_SHARED_LIBS ON)
 endif()
 
+# Plugin example targets are always SHARED regardless of BUILD_SHARED_LIBS.
+# When building static, the OpenSim libs they link against must be compiled
+# with -fPIC so that local-exec TLS symbols (e.g. thread_local in
+# Component.cpp) do not cause a link error when pulled into a shared object.
+# Shared libs already receive -fPIC from CMake automatically.
+if(NOT BUILD_SHARED_LIBS AND NOT DEFINED CMAKE_POSITION_INDEPENDENT_CODE)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+endif()
+
 # Specify number of cores to run tests.
 include(ProcessorCount)
 ProcessorCount(PROCESSOR_COUNT)
