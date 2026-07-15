@@ -123,6 +123,9 @@ set(PROCESSOR_COUNT "${PROCESSOR_COUNT}" CACHE STRING
     "Number of concurrent jobs when running tests via RUN_TESTS_PARALLEL target.")
 mark_as_advanced(PROCESSOR_COUNT)
 
+option(OPENSIM_BUILD_DISTRIBUTION "If ON include all documentation and examples 
+to be distributed to users in the installation" OFF)
+
 # Try to use MathJax for Doxygen equations.
 option(OPENSIM_DOXYGEN_USE_MATHJAX "Try to use MathJax to render Doxygen
 equations. If OFF, LATEX is used instead if you have it; otherwise we use

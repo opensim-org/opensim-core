@@ -223,154 +223,154 @@ macro(OpenSimAddPythonModule)
 
 endmacro()
 
-
-# Build python modules (generate binding source code and compile it).
-# ===================================================================
-OpenSimAddPythonModule(MODULE simbody)
-OpenSimAddPythonModule(MODULE common)
-OpenSimAddPythonModule(MODULE simulation)
-OpenSimAddPythonModule(MODULE actuators)
-OpenSimAddPythonModule(MODULE analyses)
-OpenSimAddPythonModule(MODULE tools)
-OpenSimAddPythonModule(MODULE examplecomponents)
-OpenSimAddPythonModule(MODULE moco)
-
-
-# Copy files to create complete package in the build tree.
-# ========================================================
-# This allows us to test the python package with ctest.
-# Note: some of the commands to do this copying (for the swig-generated py
-# files) appear above.
-
-# Configure version.py.
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.py.in
-    "${CMAKE_CURRENT_BINARY_DIR}/version.py" @ONLY)
-
-# Copy the configured version.py for each build configuration.
-OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_BINARY_DIR}/version.py" opensim)
-
-# Copy setup.py for each build configuration.
-OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/setup.py" ".")
-# __init__.py.
-OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/__init__.py" opensim)
-
-OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/report.py" opensim)
-
-OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/README.md" opensim)
+if (BUILD_PYTHON_WRAPPING)
+    # Build python modules (generate binding source code and compile it).
+    # ===================================================================
+    OpenSimAddPythonModule(MODULE simbody)
+    OpenSimAddPythonModule(MODULE common)
+    OpenSimAddPythonModule(MODULE simulation)
+    OpenSimAddPythonModule(MODULE actuators)
+    OpenSimAddPythonModule(MODULE analyses)
+    OpenSimAddPythonModule(MODULE tools)
+    OpenSimAddPythonModule(MODULE examplecomponents)
+    OpenSimAddPythonModule(MODULE moco)
 
 
-# Test files. If you require more test resource files, list them here.
-foreach(test_file
-        "${CMAKE_CURRENT_SOURCE_DIR}/tests/storage.sto"
-        "${CMAKE_CURRENT_SOURCE_DIR}/tests/gait2392_setup_forward_empty_model.xml"
-        "${CMAKE_CURRENT_SOURCE_DIR}/tests/gait2392_cmc_actuators_empty_model.xml"
-        "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"
-        "${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim"
-        "${CMAKE_SOURCE_DIR}/OpenSim/Sandbox/futureOrientationInverseKinematics.trc"
-        "${CMAKE_SOURCE_DIR}/OpenSim/Common/Test/dataWithNaNsOfDifferentCases.trc"
-        "${CMAKE_SOURCE_DIR}/Applications/Analyze/test/subject02_grf_HiFreq.mot"
-        "${CMAKE_SOURCE_DIR}/Applications/IK/test/std_subject01_walk1_ik.mot"
-        "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/walking2.c3d"
-        "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/walking5.c3d"
-        "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/orientation_quats.sto"
-        "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/calibrated_model_imu.osim"
-        )
+    # Copy files to create complete package in the build tree.
+    # ========================================================
+    # This allows us to test the python package with ctest.
+    # Note: some of the commands to do this copying (for the swig-generated py
+    # files) appear above.
 
-    OpenSimPutFileInPythonPackage("${test_file}" opensim/tests)
+    # Configure version.py.
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.py.in
+        "${CMAKE_CURRENT_BINARY_DIR}/version.py" @ONLY)
 
-endforeach()
+    # Copy the configured version.py for each build configuration.
+    OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_BINARY_DIR}/version.py" opensim)
 
+    # Copy setup.py for each build configuration.
+    OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/setup.py" ".")
+    # __init__.py.
+    OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/__init__.py" opensim)
 
-# Umbrella target for assembling the python bindings in the build tree.
-# =====================================================================
-# This command must come *after* all calls to OpenSimPutFileInPythonPackage, as
-# that macro assembles the OPENSIM_PYTHON_PACKAGE_FILES list.
-add_custom_target(PythonBindings ALL DEPENDS ${OPENSIM_PYTHON_PACKAGE_FILES})
+    OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/report.py" opensim)
 
-# Require the libraries to be built.
-add_dependencies(PythonBindings ${OPENSIM_PYTHON_PACKAGE_LIBRARY_TARGETS})
-
-set_target_properties(PythonBindings PROPERTIES
-    PROJECT_LABEL "Python - umbrella target"
-    FOLDER "Bindings")
+    OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/README.md" opensim)
 
 
-# Test.
-# =====
-# This test runs all the python tests in the tests directory from the
-# source tree. It's important to run the tests in the source tree so that
-# one can edit the tests and immediately re-run the tests without any
-# intermediate file copying.
-# It so happens that ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG> is the same as
-# ${OPENSIM_PYTHON_BINARY_DIR}, but the former avoids an `if(MSVC OR XCODE)`.
-add_test(NAME python_tests
-    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
-    COMMAND "${Python3_EXECUTABLE}" -m unittest discover
-                --start-directory "${CMAKE_CURRENT_SOURCE_DIR}/tests"
-                --verbose
-    )
-
-# List the examples we want to test. Some examples might run too long for
-# testing, or might require additional libraries.
-# Leave off the .py extension; here, we are listing module names.
-set(PYTHON_EXAMPLES_UNITTEST_ARGS
-        build_simple_arm_model
-        extend_OpenSim_Vec3_class
-        posthoc_StatesTrajectory_example
-        wiring_inputs_and_outputs_with_TableReporter
-        )
-if(OPENSIM_WITH_CASADI)
-    list(APPEND PYTHON_EXAMPLES_UNITTEST_ARGS
-            Moco.exampleKinematicConstraints
-            Moco.exampleSlidingMass
-            Moco.exampleOptimizeMass
-            Moco.examplePredictAndTrack
+    # Test files. If you require more test resource files, list them here.
+    foreach(test_file
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/storage.sto"
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/gait2392_setup_forward_empty_model.xml"
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/gait2392_cmc_actuators_empty_model.xml"
+            "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"
+            "${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim"
+            "${CMAKE_SOURCE_DIR}/OpenSim/Sandbox/futureOrientationInverseKinematics.trc"
+            "${CMAKE_SOURCE_DIR}/OpenSim/Common/Test/dataWithNaNsOfDifferentCases.trc"
+            "${CMAKE_SOURCE_DIR}/Applications/Analyze/test/subject02_grf_HiFreq.mot"
+            "${CMAKE_SOURCE_DIR}/Applications/IK/test/std_subject01_walk1_ik.mot"
+            "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/walking2.c3d"
+            "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/walking5.c3d"
+            "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/orientation_quats.sto"
+            "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/calibrated_model_imu.osim"
             )
-endif()
 
-# Similar as above, but for the example files. These files aren't named as
-# test_*.py, so we must specify a more general search pattern.
-add_test(NAME python_examples
-    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
-    COMMAND "${Python3_EXECUTABLE}" -m unittest
-                ${PYTHON_EXAMPLES_UNITTEST_ARGS}
-                --verbose
-    )
-set_tests_properties(python_examples PROPERTIES
-        ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}/examples")
+        OpenSimPutFileInPythonPackage("${test_file}" opensim/tests)
 
-foreach(folder tests examples)
-    set_property(TEST python_${folder} APPEND PROPERTY ENVIRONMENT
-        "OPENSIM_USE_VISUALIZER=0")
-endforeach()
+    endforeach()
 
-if(WIN32)
-    # On Windows, CMake cannot use RPATH to hard code the location of libraries
-    # in the binary directory (DLL's don't have RPATH), so we must set PATH to
-    # find the right libraries. The location of the libraries depends on the
-    # build configuration, which is filled in for `$<CONFIG>`. We also don't
-    # want to accidentally use a different OpenSim build/installation somewhere
-    # on the machine.
+
+    # Umbrella target for assembling the python bindings in the build tree.
+    # =====================================================================
+    # This command must come *after* all calls to OpenSimPutFileInPythonPackage, as
+    # that macro assembles the OPENSIM_PYTHON_PACKAGE_FILES list.
+    add_custom_target(PythonBindings ALL DEPENDS ${OPENSIM_PYTHON_PACKAGE_FILES})
+
+    # Require the libraries to be built.
+    add_dependencies(PythonBindings ${OPENSIM_PYTHON_PACKAGE_LIBRARY_TARGETS})
+
+    set_target_properties(PythonBindings PROPERTIES
+        PROJECT_LABEL "Python - umbrella target"
+        FOLDER "Bindings")
+
+
+    # Test.
+    # =====
+    # This test runs all the python tests in the tests directory from the
+    # source tree. It's important to run the tests in the source tree so that
+    # one can edit the tests and immediately re-run the tests without any
+    # intermediate file copying.
+    # It so happens that ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG> is the same as
+    # ${OPENSIM_PYTHON_BINARY_DIR}, but the former avoids an `if(MSVC OR XCODE)`.
+    add_test(NAME python_tests
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
+        COMMAND "${Python3_EXECUTABLE}" -m unittest discover
+                    --start-directory "${CMAKE_CURRENT_SOURCE_DIR}/tests"
+                    --verbose
+        )
+
+    # List the examples we want to test. Some examples might run too long for
+    # testing, or might require additional libraries.
+    # Leave off the .py extension; here, we are listing module names.
+    set(PYTHON_EXAMPLES_UNITTEST_ARGS
+            build_simple_arm_model
+            extend_OpenSim_Vec3_class
+            posthoc_StatesTrajectory_example
+            wiring_inputs_and_outputs_with_TableReporter
+            )
+    if(OPENSIM_WITH_CASADI)
+        list(APPEND PYTHON_EXAMPLES_UNITTEST_ARGS
+                Moco.exampleKinematicConstraints
+                Moco.exampleSlidingMass
+                Moco.exampleOptimizeMass
+                Moco.examplePredictAndTrack
+                )
+    endif()
+
+    # Similar as above, but for the example files. These files aren't named as
+    # test_*.py, so we must specify a more general search pattern.
+    add_test(NAME python_examples
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
+        COMMAND "${Python3_EXECUTABLE}" -m unittest
+                    ${PYTHON_EXAMPLES_UNITTEST_ARGS}
+                    --verbose
+        )
+    set_tests_properties(python_examples PROPERTIES
+            ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}/examples")
+
     foreach(folder tests examples)
         set_property(TEST python_${folder} APPEND PROPERTY ENVIRONMENT
-            "PATH=${CMAKE_BINARY_DIR}/$<CONFIG>")
+            "OPENSIM_USE_VISUALIZER=0")
     endforeach()
+
+    if(WIN32)
+        # On Windows, CMake cannot use RPATH to hard code the location of libraries
+        # in the binary directory (DLL's don't have RPATH), so we must set PATH to
+        # find the right libraries. The location of the libraries depends on the
+        # build configuration, which is filled in for `$<CONFIG>`. We also don't
+        # want to accidentally use a different OpenSim build/installation somewhere
+        # on the machine.
+        foreach(folder tests examples)
+            set_property(TEST python_${folder} APPEND PROPERTY ENVIRONMENT
+                "PATH=${CMAKE_BINARY_DIR}/$<CONFIG>")
+        endforeach()
+    endif()
+
+    # Allow MSVC users to run only the python tests directly from the MSVC GUI.
+    # The python tests are run from RUN_TESTS, so no need to run this target as
+    # part of `BUILD_ALL` (e.g, in MSVC). Might need to set
+    # EXCLUDE_FROM_DEFAULT_BUILD to achieve this?
+    add_custom_target(RunPythonTests
+        COMMAND ${CMAKE_CTEST_COMMAND} --tests-regex python
+                                    ${OPENSIM_TEST_BUILD_CONFIG}
+                                    --extra-verbose)
+    set_target_properties(RunPythonTests PROPERTIES
+        PROJECT_LABEL "Python - run tests"
+        FOLDER "Bindings")
+
+    add_dependencies(RunPythonTests PythonBindings)
 endif()
-
-# Allow MSVC users to run only the python tests directly from the MSVC GUI.
-# The python tests are run from RUN_TESTS, so no need to run this target as
-# part of `BUILD_ALL` (e.g, in MSVC). Might need to set
-# EXCLUDE_FROM_DEFAULT_BUILD to achieve this?
-add_custom_target(RunPythonTests
-    COMMAND ${CMAKE_CTEST_COMMAND} --tests-regex python
-                                   ${OPENSIM_TEST_BUILD_CONFIG}
-                                   --extra-verbose)
-set_target_properties(RunPythonTests PROPERTIES
-    PROJECT_LABEL "Python - run tests"
-    FOLDER "Bindings")
-
-add_dependencies(RunPythonTests PythonBindings)
-
 
 # Install python package.
 # =======================

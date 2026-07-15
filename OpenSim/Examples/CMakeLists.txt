@@ -2,9 +2,9 @@
 option(BUILD_API_EXAMPLES
     "Build examples that are used for the APIExamples distribution" ON)
 
-if(BUILD_API_EXAMPLES)
+if(BUILD_API_EXAMPLES OR OPENSIM_BUILD_DISTRIBUTION)
 
-  install(DIRECTORY ExampleMain
+    install(DIRECTORY ExampleMain
         ExampleHopperDevice
         ExampleLuxoMuscle
         ExampleSimpleElbow
@@ -18,17 +18,17 @@ if(BUILD_API_EXAMPLES)
         DataTable
         DataAdapter
         DESTINATION "${OPENSIM_INSTALL_CPPEXDIR}")
-
-    add_subdirectory(ExampleHopperDevice)
-    add_subdirectory(ExampleSimpleElbow)
-    add_subdirectory(SymbolicExpressionReporter)
-    add_subdirectory(DataTable)
-    add_subdirectory(DataAdapter)
-    add_subdirectory(Moco)
-    add_subdirectory(Wrapping)
-    add_subdirectory(PolynomialPathFitter)
-    add_subdirectory(ExponentialContactForce)
-
+    if (BUILD_API_EXAMPLES)
+        add_subdirectory(ExampleHopperDevice)
+        add_subdirectory(ExampleSimpleElbow)
+        add_subdirectory(SymbolicExpressionReporter)
+        add_subdirectory(DataTable)
+        add_subdirectory(DataAdapter)
+        add_subdirectory(Moco)
+        add_subdirectory(Wrapping)
+        add_subdirectory(PolynomialPathFitter)
+        add_subdirectory(ExponentialContactForce)
+    endif()
 else()
 
     add_subdirectory(ControllerExample)
