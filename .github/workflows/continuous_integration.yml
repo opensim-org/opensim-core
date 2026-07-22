@@ -160,7 +160,7 @@ jobs:
         sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
         make && make -j4 install
 
-    - name: Extract CMake cache variables from preset
+    - name: Extract CMake cache variables
       id: cmake_vars
       run: |
         PRESET_VARS=$(cmake --preset ci-make-macos-release -N)
@@ -182,7 +182,7 @@ jobs:
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}-${{ hashFiles('gfortran_version/*') }}
 
     - name: Build dependencies
-      if: steps.cache-dependencies.outputs.cache-hit != 'true'
+      # if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
         cd $GITHUB_WORKSPACE/dependencies
         cmake . --preset ci-make-macos-release -LAH
@@ -196,7 +196,6 @@ jobs:
 
         VERSION=`cmake -N -L $GITHUB_WORKSPACE/build/ci-make-macos-release | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
         echo "version=$VERSION" >> $GITHUB_OUTPUT
-
 
     - name: Build opensim-core
       run: |
