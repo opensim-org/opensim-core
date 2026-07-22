@@ -54,3 +54,5 @@ CMakeSettings.json
 # editor: Visual Studio Code
 .vscode/
 
+# CMake user presets
+CMakeUserPresets.json
