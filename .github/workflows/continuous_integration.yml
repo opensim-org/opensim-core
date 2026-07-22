@@ -117,9 +117,9 @@ jobs:
         name: opensim-core-${{ steps.configure.outputs.version }}-win
         path: opensim-core-${{ steps.configure.outputs.version }}.zip
 
-  mac_arm64:
-    runs-on: macos-15
-    name: Mac Arm64
+  macos:
+    runs-on: macos-latest
+    name: MacOS
 
     outputs:
       version: ${{ steps.configure.outputs.version }}
@@ -160,11 +160,22 @@ jobs:
         sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
         make && make -j4 install
 
+    - name: Extract CMake cache variables from preset
+      id: cmake_vars
+      run: |
+        PRESET_VARS=$(cmake --preset ci-make-macos-release -N)
+        OPENSIM_DEPENDENCIES_DIR=$(echo "$PRESET_VARS" \
+            | sed -n 's/^ *OPENSIM_DEPENDENCIES_DIR[^=]*="\(.*\)"$/\1/p')
+        echo "OPENSIM_DEPENDENCIES_DIR=$OPENSIM_DEPENDENCIES_DIR" >> $GITHUB_OUTPUT
+        CMAKE_INSTALL_PREFIX=$(echo "$PRESET_VARS" \
+            | sed -n 's/^ *CMAKE_INSTALL_PREFIX[^=]*="\(.*\)"$/\1/p')
+        echo "CMAKE_INSTALL_PREFIX=$CMAKE_INSTALL_PREFIX" >> $GITHUB_OUTPUT
+
     - name: Cache dependencies
       id: cache-dependencies
       uses: actions/cache@v3
       with:
-        path: ~/opensim_dependencies_install
+        path: ${{ steps.cmake_vars.outputs.OPENSIM_DEPENDENCIES_DIR }}
         # If Homebrew updates the gcc package, then our cache of IPOPT is invalid.
         # Specifically, the pkgcfg_lib_IPOPT_gfortran CMake variable becomes
         # undefined.
@@ -173,89 +184,79 @@ jobs:
     - name: Build dependencies
       if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
-        mkdir $GITHUB_WORKSPACE/../build_deps
-        cd $GITHUB_WORKSPACE/../build_deps
-        DEP_CMAKE_ARGS=($GITHUB_WORKSPACE/dependencies -LAH)
-        DEP_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install)
-        DEP_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
-        DEP_CMAKE_ARGS+=(-DSUPERBUILD_ezc3d=ON)
-        DEP_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
-        DEP_CMAKE_ARGS+=(-DOPENSIM_DISABLE_LOG_FILE=ON)
-        DEP_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=11)
-
-        printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
-        cmake "${DEP_CMAKE_ARGS[@]}"
-        make --jobs 4
+        cd $GITHUB_WORKSPACE/dependencies
+        cmake . --preset ci-make-macos-release -LAH
+        cmake --build --preset ci-make-macos-release
 
     - name: Configure opensim-core
       id: configure
       run: |
-        mkdir $GITHUB_WORKSPACE/../build
-        cd $GITHUB_WORKSPACE/../build
-        OSIM_CMAKE_ARGS=($GITHUB_WORKSPACE -LAH)
-        OSIM_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/../opensim-core-install)
-        OSIM_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install)
-        OSIM_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=11)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_C3D_PARSER=ezc3d)
-        OSIM_CMAKE_ARGS+=(-DBUILD_API_EXAMPLES=ON)
-        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on)
-        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WHEELS=on)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
-        OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_INSTALL_UNIX_FHS=OFF)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off)
+        # mkdir $GITHUB_WORKSPACE/../build
+        # cd $GITHUB_WORKSPACE/../build
+        # OSIM_CMAKE_ARGS=($GITHUB_WORKSPACE -LAH)
+        # OSIM_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/../opensim-core-install)
+        # OSIM_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
+        # OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install)
+        # OSIM_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=11)
+        # OSIM_CMAKE_ARGS+=(-DOPENSIM_C3D_PARSER=ezc3d)
+        # OSIM_CMAKE_ARGS+=(-DBUILD_API_EXAMPLES=ON)
+        # OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on)
+        # OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WHEELS=on)
+        # OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
+        # OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
+        # OSIM_CMAKE_ARGS+=(-DOPENSIM_INSTALL_UNIX_FHS=OFF)
+        # OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off)
         # TODO: Update to simbody.github.io/latest
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simbody.github.io/simtk.org/api_docs/simbody/latest/")
-        OSIM_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-Werror, -Wdeprecated-copy")
-        printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
-        cmake "${OSIM_CMAKE_ARGS[@]}"
-        VERSION=`cmake -L . | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
-        echo $VERSION
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        # OSIM_CMAKE_ARGS+=(-DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simbody.github.io/simtk.org/api_docs/simbody/latest/")
+        # OSIM_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-Werror, -Wdeprecated-copy")
+        # printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
+        # cmake "${OSIM_CMAKE_ARGS[@]}"
+
+        cmake -S $GITHUB_WORKSPACE --preset ci-make-macos-release -LAH \
+            -DSWIG_EXECUTABLE=$HOME/swig/bin/swig
+
+        VERSION=`cmake -N -L $GITHUB_WORKSPACE/build/ci-make-macos-release | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
         echo "version=$VERSION" >> $GITHUB_OUTPUT
+
 
     - name: Build opensim-core
       run: |
-        cd $GITHUB_WORKSPACE/../build
-        make --jobs 4
+         cmake --build --preset ci-make-macos-release
 
     - name: Test opensim-core
       run: |
-        cd $GITHUB_WORKSPACE/../build
-        ctest --parallel 4 --output-on-failure
+        ctest --preset ci-make-macos-release
 
     - name: Install opensim-core
       run: |
-        cd $GITHUB_WORKSPACE/../build
-        make doxygen
-        make install
+        cmake --build --preset ci-make-macos-release --target doxygen
+        cmake --build --preset ci-make-macos-release --target install
         cd $GITHUB_WORKSPACE
-        mv $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ steps.configure.outputs.version }}
+        mv ${{ steps.cmake_vars.outputs.CMAKE_INSTALL_PREFIX }} opensim-core-${{ steps.configure.outputs.version }}
         zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure.outputs.version }}.zip opensim-core-${{ steps.configure.outputs.version }}
-        mv opensim-core-${{ steps.configure.outputs.version }} $GITHUB_WORKSPACE/../opensim-core-install
+        mv opensim-core-${{ steps.configure.outputs.version }} ${{ steps.cmake_vars.outputs.CMAKE_INSTALL_PREFIX }}
 
     - name: Build wheel
       run: |
-        cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+        cd ${{ steps.cmake_vars.outputs.CMAKE_INSTALL_PREFIX }}/sdk/Python
         python3 -m build --wheel
 
     - name: Capture wheel path
       id: wheel
       run: |
-         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist
-         echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
+        cd ${{ steps.cmake_vars.outputs.CMAKE_INSTALL_PREFIX }}/sdk/Python/dist
+        echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
 
     - name: Upload macOS wheel
       uses: actions/upload-artifact@v4
       with:
         name: ${{ steps.wheel.outputs.path }}
-        path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
+        path: ${{ steps.cmake_vars.outputs.CMAKE_INSTALL_PREFIX }}/sdk/Python/dist/${{ steps.wheel.outputs.path }}
 
     - name: Test Python bindings
       run: |
-        cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        pip3 install /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
+        cd ${{ steps.cmake_vars.outputs.CMAKE_INSTALL_PREFIX }}/sdk/Python
+        pip3 install ${{ steps.cmake_vars.outputs.CMAKE_INSTALL_PREFIX }}/sdk/Python/dist/${{ steps.wheel.outputs.path }}
         # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
