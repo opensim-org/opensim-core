@@ -163,13 +163,17 @@ jobs:
     - name: Extract CMake cache variables
       id: cmake_vars
       run: |
-        PRESET_VARS=$(cmake --preset ci-make-macos-release -N)
+        PRESET_VARS=$(cmake --preset ci-make-macos-release -N --log-level=VERBOSE)
         OPENSIM_DEPENDENCIES_DIR=$(echo "$PRESET_VARS" \
             | sed -n 's/^ *OPENSIM_DEPENDENCIES_DIR[^=]*="\(.*\)"$/\1/p')
         echo "OPENSIM_DEPENDENCIES_DIR=$OPENSIM_DEPENDENCIES_DIR" >> $GITHUB_OUTPUT
         CMAKE_INSTALL_PREFIX=$(echo "$PRESET_VARS" \
             | sed -n 's/^ *CMAKE_INSTALL_PREFIX[^=]*="\(.*\)"$/\1/p')
         echo "CMAKE_INSTALL_PREFIX=$CMAKE_INSTALL_PREFIX" >> $GITHUB_OUTPUT
+        if [ -z "$OPENSIM_DEPENDENCIES_DIR" ] || [ -z "$CMAKE_INSTALL_PREFIX" ]; then
+            echo "::error::Failed to extract cache variables from preset output"
+            exit 1
+        fi
 
     - name: Cache dependencies
       id: cache-dependencies
