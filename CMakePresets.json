@@ -40,7 +40,7 @@
                 "OPENSIM_SIMBODY_DOXYGEN_LOCATION": "https://simbody.github.io/latest",
                 "OPENSIM_INSTALL_UNIX_FHS": "OFF",
                 "OPENSIM_DOXYGEN_USE_MATHJAX": "OFF",
-                "BUILD_PYTHON_WHEELS": "ON",
+                "BUILD_PYTHON_WHEELS": "ON"
             }
         },
         {
