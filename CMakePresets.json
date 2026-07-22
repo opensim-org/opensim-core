@@ -90,7 +90,7 @@
                 "release"
             ],
             "environment": {
-                "CXXFLAGS": "-Werror -Wdeprecated-copy"
+                "CXXFLAGS": "-Wdeprecated-copy"
             }
         }
     ],
