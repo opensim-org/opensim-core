@@ -2,25 +2,97 @@
     "version": 6,
     "configurePresets": [
         {
+            "hidden": true,
+            "name": "windows",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            },
+            "architecture": {
+                "value": "x64"
+            }
+        },
+        {
+            "hidden": true,
+            "name": "macos",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            },
+            "cacheVariables": {
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "11"
+            }
+        },
+        {
+            "hidden": true,
+            "name": "linux",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "hidden": true,
+            "name": "release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "hidden": true,
+            "name": "relwithdebinfo",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
+        },
+        {
+            "hidden": true,
             "name": "base",
             "description": "Base build configuration for all presets",
-            "hidden": true,
             "binaryDir": "${sourceDir}/build/${presetName}",
+            "installDir": "${sourceDir}/build/${presetName}/install",
+            "inherits": ["release"],
             "cacheVariables": {
                 "OPENSIM_DEPENDENCIES_DIR": "${sourceDir}/build/dependencies/${presetName}/install"
             }
         },
         {
-            "name": "dev-default",
-            "description": "Recommended development configuration that builds everything a typical release contains",
+            "name": "default",
+            "displayName": "Default build configuration",
+            "description": "The right build configuration for most users",
             "inherits": ["base"],
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "CMAKE_COMPILE_WARNING_AS_ERROR": false,
                 "OPENSIM_WITH_CASADI": "ON",
                 "BUILD_JAVA_WRAPPING": "ON",
                 "BUILD_PYTHON_WRAPPING": "ON",
+                "BUILD_API_EXAMPLES": "ON",
                 "OPENSIM_C3D_PARSER": "ezc3d"
             }
+        },
+        {
+            "hidden": true,
+            "name": "ci",
+            "description": "Base build configuration settings for CI",
+            "inherits": ["default"],
+            "cacheVariables": {
+                "OPENSIM_DISABLE_LOG_FILE": "ON",
+                "OPENSIM_SIMBODY_DOXYGEN_LOCATION": "https://simbody.github.io/latest",
+                "OPENSIM_INSTALL_UNIX_FHS": "OFF",
+                "OPENSIM_DOXYGEN_USE_MATHJAX": "OFF",
+                "BUILD_PYTHON_WHEELS": "ON"
+            }
+        },
+        {
+            "name": "dev-default",
+            "description": "Recommended development configuration that builds everything a typical release contains",
+            "inherits": [
+                "default",
+                "relwithdebinfo"
+            ]
         },
         {
             "name": "dev-minimal",
@@ -32,11 +104,171 @@
                 "BUILD_PYTHON_WRAPPING": "OFF",
                 "OPENSIM_C3D_PARSER": "None"
             }
+        },
+        {
+            "name": "ci-msvc-windows-release",
+            "displayName": "Windows CI default",
+            "description": "Default CI configuration for Windows",
+            "inherits": [
+                "ci",
+                "windows"
+            ],
+            "environment": {
+                "CXXFLAGS": "/WX /MD -DSKIP_TIMING"
+            }
+        },
+        {
+            "name": "ci-make-macos-release",
+            "displayName": "MacOS CI default",
+            "description": "Default CI configuration for MacOS",
+            "inherits": [
+                "ci",
+                "macos"
+            ],
+            "environment": {
+                "CXXFLAGS": "-Wdeprecated-copy"
+            }
+        },
+        {
+            "name": "ci-make-linux-release",
+            "displayName": "Linux CI default",
+            "description": "Default CI configuration for Linux",
+            "inherits": [
+                "ci",
+                "linux"
+            ],
+            "environment": {
+                "CXXFLAGS": "-Werror"
+            }
         }
     ],
     "buildPresets": [
-        { "name": "dev-default", "configurePreset": "dev-default" },
-        { "name": "dev-minimal", "configurePreset": "dev-minimal" }
+        {
+            "hidden": true,
+            "name": "windows",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "hidden": true,
+            "name": "macos",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            }
+        },
+        {
+            "hidden": true,
+            "name": "linux",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name": "dev-default",
+            "configurePreset": "dev-default"
+        },
+        {
+            "name": "dev-minimal",
+            "configurePreset": "dev-minimal"
+        },
+        {
+            "name": "ci-msvc-windows-release",
+            "configurePreset": "ci-msvc-windows-release",
+            "inherits": "windows",
+            "configuration": "Release"
+        },
+        {
+            "name": "ci-make-macos-release",
+            "configurePreset": "ci-make-macos-release",
+            "inherits": "macos"
+        },
+        {
+            "name": "ci-make-linux-release",
+            "configurePreset": "ci-make-linux-release",
+            "inherits": "linux"
+        }
+    ],
+    "testPresets": [
+        {
+            "hidden": true,
+            "name": "base",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "hidden": true,
+            "name": "windows",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "hidden": true,
+            "name": "macos",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            }
+        },
+        {
+            "hidden": true,
+            "name": "linux",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name": "default",
+            "configurePreset": "default",
+            "inherits": [
+                "base"
+            ]
+        },
+        {
+            "name": "dev-default",
+            "configurePreset": "dev-default",
+            "inherits": [
+                "base"
+            ]
+        },
+        {
+            "name": "ci-msvc-windows-release",
+            "configurePreset": "ci-msvc-windows-release",
+            "inherits": [
+                "base",
+                "windows"
+            ],
+            "configuration": "Release"
+        },
+        {
+            "name": "ci-make-macos-release",
+            "configurePreset": "ci-make-macos-release",
+            "inherits": [
+                "base",
+                "macos"
+            ]
+        },
+        {
+            "name": "ci-make-linux-release",
+            "configurePreset": "ci-make-linux-release",
+            "inherits": [
+                "base",
+                "linux"
+            ]
+        }
     ],
     "workflowPresets": [
         {
