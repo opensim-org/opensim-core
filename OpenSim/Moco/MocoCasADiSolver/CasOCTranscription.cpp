@@ -1489,7 +1489,7 @@ void Transcription::printConstraintValues(const Iterate& it,
                     const double L1 = max;
                     const double time_of_max = it.times(argmax).scalar();
 
-                    std::string label = fmt::format("{}_{}", pc.name, ieq);
+                    std::string label = std::format("{}_{}", pc.name, ieq);
                     ss << std::setfill('0') << std::setw(2) << ipc << ":"
                            << std::setfill(' ') << std::setw(maxNameLength)
                            << label << spacer << std::setprecision(2)

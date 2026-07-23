@@ -75,7 +75,7 @@ ActuatorInputController::getInputControlLabels() const {
                 // Use the control name format based on
                 // SimulationUtilities::createControlNamesFromModel().
                 labels.push_back(
-                        fmt::format("{}_{}", actu.getAbsolutePathString(), j));
+                        std::format("{}_{}", actu.getAbsolutePathString(), j));
             }
         } else {
             // Scalar actuator.

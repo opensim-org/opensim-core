@@ -881,7 +881,7 @@ TEST_CASE("DoublePendulum tests, Posa2016 method - MocoCasADiSolver",
     bool enforce_constraint_derivatives = GENERATE(true, false);
     std::string dynamics_mode = GENERATE(as<std::string>{}, 
             "explicit", "implicit");
-    std::string section = fmt::format(
+    std::string section = std::format(
             "enforce derivatives: {}, dynamics_mode: {}", 
             enforce_constraint_derivatives, dynamics_mode);
 
@@ -907,7 +907,7 @@ TEST_CASE("DoublePendulum tests, Bordalba2023 method", "[casadi]") {
             "legendre-gauss-radau-3");
     std::string dynamics_mode = GENERATE(as<std::string>{}, 
             "explicit", "implicit");
-    std::string section = fmt::format("scheme: {}, dynamics_mode: {}", 
+    std::string section = std::format("scheme: {}, dynamics_mode: {}",
             scheme, dynamics_mode);
 
     // Trapezoidal rule requires more mesh intervals to keep slack variables 

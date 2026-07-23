@@ -790,7 +790,7 @@ std::string AbstractTool::getNextAvailableForceName(const std::string prefix) co
     bool found = false;
     while (!found) {
         candidate++;
-        candidateName = fmt::format("{}_{}", prefix, candidate);
+        candidateName = std::format("{}_{}", prefix, candidate);
         if (_model) {
             if (_model->getForceSet().contains(candidateName))
                 continue;

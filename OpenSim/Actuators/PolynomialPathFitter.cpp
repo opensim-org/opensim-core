@@ -34,6 +34,7 @@
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 
+#include <format>
 #include <future>
 
 using namespace OpenSim;
@@ -114,7 +115,7 @@ TimeSeriesTable loadCoordinateValuesAndValidateModel(
     // Validate the coordinate values table
     std::vector<std::string> jointsToWeld;
     for (auto& coordinate : model.updComponentList<Coordinate>()) {
-        std::string valuePath = fmt::format("{}/value",
+        std::string valuePath = std::format("{}/value",
                 coordinate.getAbsolutePathString());
 
         // If the coordinate is locked, but the user provided a column for the
@@ -128,7 +129,7 @@ TimeSeriesTable loadCoordinateValuesAndValidateModel(
             }
         } else {
             OPENSIM_THROW_IF(!values.hasColumn(valuePath), Exception,
-                    fmt::format("Expected the coordinate values table to "
+                    std::format("Expected the coordinate values table to "
                                 "contain a column for '{}' (this coordinate is "
                                 "not locked), but it does not.",
                             coordinate.getAbsolutePathString()))
@@ -449,10 +450,10 @@ void computePathLengthsAndMomentArms(
     for (const auto& forcePath : forcePaths) {
         const auto& force = model.getComponent<Force>(forcePath);
         pathLengthLabels[ip++] =
-                fmt::format("{}_length", force.getAbsolutePathString());
+                std::format("{}_length", force.getAbsolutePathString());
         for (const auto& coordinate :
                 model.getComponentList<Coordinate>()) {
-            momentArmLabels[ima++] = fmt::format("{}_moment_arm_{}",
+            momentArmLabels[ima++] = std::format("{}_moment_arm_{}",
                     force.getAbsolutePathString(), coordinate.getName());
         }
     }
@@ -478,7 +479,7 @@ void filterSampledData(
     // Remove moment arm columns for coupled coordinates.
     for (const auto& couplerConstraint :
             model.getComponentList<CoordinateCouplerConstraint>()) {
-        auto momentArmLabel = fmt::format("_moment_arm_{}",
+        auto momentArmLabel = std::format("_moment_arm_{}",
                 couplerConstraint.getDependentCoordinateName());
         for (const auto& label : momentArms.getColumnLabels()) {
             if (label.find(momentArmLabel) != std::string::npos) {
@@ -887,7 +888,7 @@ Set<FunctionBasedPath> fitPolynomialCoefficients(
             // The path lengths for this force. This is the first N elements of
             // the 'b' vector.
             b(0, numTimes) = pathLengths.getDependentColumn(
-                    fmt::format("{}_length", forcePath));
+                    std::format("{}_length", forcePath));
 
             // The moment arms this force and coordinates associated with this
             // force. The moment arms are the remaining elements of the 'b'
@@ -898,12 +899,12 @@ Set<FunctionBasedPath> fitPolynomialCoefficients(
                 const std::string& coordinateName =
                         coordinatesNamesThisForce[ic];
                 b((ic+1)*numTimes, numTimes) = momentArms.getDependentColumn(
-                        fmt::format("{}_moment_arm_{}", forcePath,
+                        std::format("{}_moment_arm_{}", forcePath,
                                 coordinateName));
 
                 const SimTK::VectorView coordinateValuesThisCoordinate =
                         coordinateValues.getDependentColumn(
-                            fmt::format("{}/value",
+                            std::format("{}/value",
                                         coordinatePathsThisForce[ic]));
                 for (int itime = 0; itime < numTimes; ++itime) {
                     coordinatesThisForce.set(
@@ -1028,7 +1029,7 @@ void computeFittingErrors(
     auto printWarningMessage = [](const std::string& pathLengthOrMomentArm,
                                 double tolerance) {
         log_warn("-----------------------------------------------------------");
-        log_warn(fmt::format("The {} RMS error is greater than the prescribed "
+        log_warn(std::format("The {} RMS error is greater than the prescribed "
                              "tolerance of {:g} cm.",
                              pathLengthOrMomentArm, tolerance));
         log_warn("");
@@ -1070,7 +1071,7 @@ void computeFittingErrors(
         pathName = pathName.substr(0, pathName.length() - 5);
         log_info("'{}' path errors:", pathName);
 
-        const std::string lengthLabel = fmt::format("{}_length", pathName);
+        const std::string lengthLabel = std::format("{}_length", pathName);
         SimTK::Vector pathLength = pathLengths.getDependentColumn(lengthLabel);
         SimTK::Vector pathLengthFitted = pathLengthsFitted.getDependentColumn(
                 lengthLabel);
@@ -1089,7 +1090,7 @@ void computeFittingErrors(
                     modelFitted.getComponent<Coordinate>(coordinatePath);
             const std::string& coordinateName = coordinate.getName();
 
-            const std::string momentArmLabel = fmt::format(
+            const std::string momentArmLabel = std::format(
                 "{}_moment_arm_{}", pathName, coordinateName);
             SimTK::Vector momentArm = momentArms.getDependentColumn(
                     momentArmLabel);
@@ -1104,7 +1105,7 @@ void computeFittingErrors(
 
             if (momentArmRMSError > 10.0*momentArmTolerance) {
                 printWarningMessage(
-                        fmt::format("'{}' moment arm", coordinateName),
+                        std::format("'{}' moment arm", coordinateName),
                         momentArmTolerance);
             }
 
@@ -1227,7 +1228,7 @@ void PolynomialPathFitter::run() {
     coordinateBoundsMap.reserve(m_model.getNumCoordinates());
     coordinateRangeMap.reserve(m_model.getNumCoordinates());
     for (const auto& coordinate : m_model.getComponentList<Coordinate>()) {
-        std::string valuePath = fmt::format("{}/value",
+        std::string valuePath = std::format("{}/value",
                 coordinate.getAbsolutePathString());
         coordinateBoundsMap.insert({valuePath, globalBounds});
 
@@ -1258,7 +1259,7 @@ void PolynomialPathFitter::run() {
 
         bounds[0] = SimTK::convertDegreesToRadians(bounds[0]);
         bounds[1] = SimTK::convertDegreesToRadians(bounds[1]);
-        std::string valuePath = fmt::format("{}/value", coordinatePath);
+        std::string valuePath = std::format("{}/value", coordinatePath);
         coordinateBoundsMap[valuePath] = bounds;
     }
 
@@ -1355,10 +1356,10 @@ void PolynomialPathFitter::run() {
 
     // Print the information for each path.
     log_info("");
-    std::string pathName = fmt::format("{}path",
+    std::string pathName = std::format("{}path",
             std::string((int)(0.5*longestPathName)-2, ' '));
-    std::string fitName = fmt::format("{}polynomial fit", std::string(15, ' '));
-    std::string line = fmt::format("{:{}} | {:{}}", pathName, longestPathName,
+    std::string fitName = std::format("{}polynomial fit", std::string(15, ' '));
+    std::string line = std::format("{:{}} | {:{}}", pathName, longestPathName,
             fitName, 44);
     std::string separator(line.size(), '-');
     log_info(separator);
@@ -1375,7 +1376,7 @@ void PolynomialPathFitter::run() {
                 ++numNonZeroCoeffs;
             }
         }
-        line = fmt::format("{:{}} | order = {}, dimension = "
+        line = std::format("{:{}} | order = {}, dimension = "
                 "{}, coefficients = {}", path.getName(), longestPathName,
                 function.getOrder(), function.getDimension(), numNonZeroCoeffs);
         log_info(line);
@@ -1419,7 +1420,7 @@ void PolynomialPathFitter::run() {
     // Print the FunctionBasedPaths to file.
     std::string functionBasedPathsFileName =
             SimTK::Pathname::getAbsolutePathname(
-                    fmt::format("{}/{}_FunctionBasedPathSet.xml",
+                    std::format("{}/{}_FunctionBasedPathSet.xml",
                             outputDir, m_model.getName()));
     log_info("Printing the FunctionBasedPaths to '{}'...",
             functionBasedPathsFileName);
@@ -1428,17 +1429,17 @@ void PolynomialPathFitter::run() {
     // Print the coordinate values to file.
     std::string coordinatesFileName =
             SimTK::Pathname::getAbsolutePathname(
-                    fmt::format("{}/{}_coordinate_values.sto",
+                    std::format("{}/{}_coordinate_values.sto",
                             outputDir, m_model.getName()));
     std::string sampledCoordinatesFileName =
             SimTK::Pathname::getAbsolutePathname(
-                    fmt::format("{}/{}_coordinate_values_sampled.sto",
+                    std::format("{}/{}_coordinate_values_sampled.sto",
                             outputDir, m_model.getName()));
     log_info("");
-    log_info(fmt::format("Printing original coordinate values to '{}'...",
+    log_info(std::format("Printing original coordinate values to '{}'...",
             coordinatesFileName));
     STOFileAdapter::write(m_values, coordinatesFileName);
-    log_info(fmt::format("Printing sampled coordinate values to '{}'...",
+    log_info(std::format("Printing sampled coordinate values to '{}'...",
             sampledCoordinatesFileName));
     STOFileAdapter::write(valuesSampled, sampledCoordinatesFileName);
 
@@ -1446,11 +1447,11 @@ void PolynomialPathFitter::run() {
     // data to file.
     std::string pathLengthsFileName =
             SimTK::Pathname::getAbsolutePathname(
-                    fmt::format("{}/{}_path_lengths.sto",
+                    std::format("{}/{}_path_lengths.sto",
                             outputDir, m_model.getName()));
     std::string momentArmsFileName =
             SimTK::Pathname::getAbsolutePathname(
-                    fmt::format("{}/{}_moment_arms.sto",
+                    std::format("{}/{}_moment_arms.sto",
                             outputDir, m_model.getName()));
     log_info("");
     log_info("Printing the path lengths to '{}'...",
@@ -1463,11 +1464,11 @@ void PolynomialPathFitter::run() {
     // data to file.
     std::string pathLengthsSampledFileName =
             SimTK::Pathname::getAbsolutePathname(
-                    fmt::format("{}/{}_path_lengths_sampled.sto",
+                    std::format("{}/{}_path_lengths_sampled.sto",
                             outputDir, m_model.getName()));
     std::string momentArmsSampledFileName =
             SimTK::Pathname::getAbsolutePathname(
-                    fmt::format("{}/{}_moment_arms_sampled.sto",
+                    std::format("{}/{}_moment_arms_sampled.sto",
                             outputDir, m_model.getName()));
 
     log_info("");
@@ -1482,11 +1483,11 @@ void PolynomialPathFitter::run() {
     // coordinate data to file.
     std::string pathLengthsFittedFileName =
             SimTK::Pathname::getAbsolutePathname(
-                    fmt::format("{}/{}_path_lengths_fitted.sto",
+                    std::format("{}/{}_path_lengths_fitted.sto",
                             outputDir, m_model.getName()));
     std::string momentArmsFittedFileName =
             SimTK::Pathname::getAbsolutePathname(
-                    fmt::format("{}/{}_moment_arms_fitted.sto",
+                    std::format("{}/{}_moment_arms_fitted.sto",
                             outputDir, m_model.getName()));
 
     log_info("");
@@ -1501,11 +1502,11 @@ void PolynomialPathFitter::run() {
     // coordinate data to file.
     std::string pathLengthsSampledFittedFileName =
             SimTK::Pathname::getAbsolutePathname(
-                    fmt::format("{}/{}_path_lengths_sampled_fitted.sto",
+                    std::format("{}/{}_path_lengths_sampled_fitted.sto",
                             outputDir, m_model.getName()));
     std::string momentArmsSampledFittedFileName =
             SimTK::Pathname::getAbsolutePathname(
-                    fmt::format("{}/{}_moment_arms_sampled_fitted.sto",
+                    std::format("{}/{}_moment_arms_sampled_fitted.sto",
                             outputDir, m_model.getName()));
 
     log_info("");

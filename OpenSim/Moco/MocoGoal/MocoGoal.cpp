@@ -20,6 +20,8 @@
 
 #include <OpenSim/Moco/Components/ControlDistributor.h>
 
+#include <format>
+
 using namespace OpenSim;
 
 MocoGoal::MocoGoal() {
@@ -40,10 +42,10 @@ MocoGoal::MocoGoal(std::string name, double weight)
 
 void MocoGoal::printDescription() const {
     const auto mode = getModeAsString();
-    std::string str = fmt::format("  {}. {}, enabled: {}, mode: {}",
+    std::string str = std::format("  {}. {}, enabled: {}, mode: {}",
             getName(), getConcreteClassName(), get_enabled(), mode);
     if (mode == "cost") {
-        str += fmt::format(", weight: {}", get_weight());
+        str += std::format(", weight: {}", get_weight());
     }
     log_info(str);
     printDescriptionImpl();

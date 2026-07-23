@@ -27,6 +27,8 @@
 #include <OpenSim/Moco/MocoTrajectory.h>
 #include "MocoCasOCProblem.h"
 
+#include <format>
+
 using OpenSim::Exception;
 
 namespace CasOC {
@@ -47,7 +49,7 @@ std::vector<std::string>
 Problem::createKinematicConstraintEquationNamesImpl() const {
     std::vector<std::string> names(getNumKinematicConstraintEquations());
     for (int i = 0; i < getNumKinematicConstraintEquations(); ++i) {
-        names[i] = fmt::format("kinematic_constraint_{:03d}", i);
+        names[i] = std::format("kinematic_constraint_{:03d}", i);
     }
     return names;
 }

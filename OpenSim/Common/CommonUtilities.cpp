@@ -190,7 +190,7 @@ SimTK::Real OpenSim::solveBisection(
                                       x.getContiguousScalarData() + x.size()),
                 residual, {"residual"});
         STOFileAdapter::write(
-                table, fmt::format("solveBisection_residual_{}.sto",
+                table, std::format("solveBisection_residual_{}.sto",
                                getFormattedDateTime()));
     }
     OPENSIM_THROW_IF(sameSign, Exception,

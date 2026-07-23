@@ -186,15 +186,15 @@ TEST_CASE("findJointsBetweenPhysicalFrames") {
         const PhysicalFrame* prevBody = &ground;
         for (int i = 0; i < numLinks; ++i) {
             const std::string istr = std::to_string(i);
-            auto* bi = new OpenSim::Body(fmt::format("b{}_{}", istr, name),
+            auto* bi = new OpenSim::Body(std::format("b{}_{}", istr, name),
                 1, Vec3(0), Inertia(1));
             model.addBody(bi);
 
-            auto* ji = new PinJoint(fmt::format("j{}_{}", istr, name),
+            auto* ji = new PinJoint(std::format("j{}_{}", istr, name),
                     *prevBody, Vec3(0), Vec3(0),
                     *bi, Vec3(-1, 0, 0), Vec3(0));
             auto& qi = ji->updCoordinate();
-            qi.setName(fmt::format("q{}_{}", istr, name));
+            qi.setName(std::format("q{}_{}", istr, name));
             model.addJoint(ji);
 
             prevBody = bi;

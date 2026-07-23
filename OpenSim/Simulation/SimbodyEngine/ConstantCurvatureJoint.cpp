@@ -53,7 +53,7 @@ SimTK::Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q) {
     SimTK::Vec3 pos = q;
     const double bound = (M_PI / 2) - 0.01;
     if (pos(0) > bound) {
-        log_warn(fmt::format(
+        log_warn(std::format(
                 "WARNING! ConstantCurvatureJoint position outside of "
                 "its supported range! X rotation reached position "
                 "{}, which is above upper bound {}. This will lead "
@@ -64,7 +64,7 @@ SimTK::Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q) {
         pos(0) = bound;
     }
     if (pos(0) < -bound) {
-        log_warn(fmt::format(
+        log_warn(std::format(
                 "WARNING! ConstantCurvatureJoint position outside of "
                 "its supported range! X rotation reached position "
                 "{}, which is below lower bound {}. This will lead "
@@ -75,7 +75,7 @@ SimTK::Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q) {
         pos(0) = -bound;
     }
     if (pos(1) > bound) {
-        log_warn(fmt::format(
+        log_warn(std::format(
                 "WARNING! ConstantCurvatureJoint position outside of "
                 "its supported range! Z rotation reached position "
                 "{}, which is above upper bound {}. This will lead "
@@ -86,7 +86,7 @@ SimTK::Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q) {
         pos(1) = bound;
     }
     if (pos(1) < -bound) {
-        log_warn(fmt::format(
+        log_warn(std::format(
                 "WARNING! ConstantCurvatureJoint position outside of "
                 "its supported range! Z rotation reached position "
                 "{}, which is below lower bound {}. This will lead "
@@ -97,7 +97,7 @@ SimTK::Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q) {
         pos(1) = -bound;
     }
     if (pos(2) > bound) {
-        log_warn(fmt::format(
+        log_warn(std::format(
                 "WARNING! ConstantCurvatureJoint position outside of "
                 "its supported range! Y rotation reached position "
                 "{}, which is above upper bound {}. This will lead "
@@ -108,7 +108,7 @@ SimTK::Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q) {
         pos(2) = bound;
     }
     if (pos(2) < -bound) {
-        log_warn(fmt::format(
+        log_warn(std::format(
                 "WARNING! ConstantCurvatureJoint position outside of "
                 "its supported range! Y rotation reached position "
                 "{}, which is below lower bound {}. This will lead "

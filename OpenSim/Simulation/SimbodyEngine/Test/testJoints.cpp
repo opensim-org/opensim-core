@@ -1797,7 +1797,7 @@ TEST_CASE("testCantileverFreeBeamJoint") {
 
     // Rename the hip coordinates for the cantilever-free beam joint.
     for (int i = 0; i < hip->numCoordinates(); i++) {
-        hip->upd_coordinates(i).setName(fmt::format("hip_q{}", i));
+        hip->upd_coordinates(i).setName(std::format("hip_q{}", i));
     }
 
     // Add the thigh body, which now also contains the hip joint, to the model.

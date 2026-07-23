@@ -102,7 +102,7 @@ void MocoOutputConstraint::initializeOnModelImpl(const Model&,
         m_useCompositeOutputValue = true;
         initializeComposite();
     } else if (get_operation() != "") {
-        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("An operation was provided "
+        OPENSIM_THROW_FRMOBJ(Exception, std::format("An operation was provided "
                 "but a second Output path was not provided. Either provide no "
                 "operation with a single Output, or provide a value to both "
                 "setOperation() and setSecondOutputPath()."));
@@ -119,11 +119,11 @@ void MocoOutputConstraint::initializeComposite() const {
     } else if (get_operation() == "division") {
         m_operation = Division;
     } else if (get_operation() == "") {
-        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("A second Output path was "
+        OPENSIM_THROW_FRMOBJ(Exception, std::format("A second Output path was "
                 "provided, but no operation was provided. Use setOperation() to"
                 "provide an operation"));
     } else {
-        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("Invalid operation: '{}', must "
+        OPENSIM_THROW_FRMOBJ(Exception, std::format("Invalid operation: '{}', must "
                 "be 'addition', 'subtraction', 'multiplication', or 'division'.",
                 get_operation()));
     }
@@ -246,24 +246,24 @@ double MocoOutputConstraint::calcCompositeOutputValue(const SimTK::State& state)
 
 void MocoOutputConstraint::printDescriptionImpl() const {
     // Output path.
-    std::string str = fmt::format("        output: {}", getOutputPath());
+    std::string str = std::format("        output: {}", getOutputPath());
 
     if (m_useCompositeOutputValue) {
-        str += fmt::format("\n        second output: {}", getSecondOutputPath());
+        str += std::format("\n        second output: {}", getSecondOutputPath());
         // Operation.
-        str += fmt::format("\n        operation: {}", get_operation());
+        str += std::format("\n        operation: {}", get_operation());
     }
 
     // Output type.
-    str += fmt::format(", type: {}", getDataTypeString(m_data_type));
+    str += std::format(", type: {}", getDataTypeString(m_data_type));
 
     // Output index (if relevant).
     if (getOutputIndex() != -1) {
-        str += fmt::format(", index: {}", getOutputIndex());
+        str += std::format(", index: {}", getOutputIndex());
     }
 
     // Exponent.
-    str += fmt::format(", exponent: {}", getExponent());
+    str += std::format(", exponent: {}", getExponent());
 
     log_info(str);
 }

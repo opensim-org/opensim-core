@@ -30,7 +30,8 @@
 
 // INCLUDES
 #include "osimCommonDLL.h"
-#include <spdlog/common.h>
+
+#include <format>
 #include <string>
 
 #ifdef SWIG
@@ -200,24 +201,24 @@ public:
 #ifndef SWIG
     /** Use this when you want to throw an Exception (with OPENSIM_THROW or
     OPENSIM_THROW_IF) and also provide a message that is formatted
-    using fmt::format() syntax. */
+    using std::format() syntax. */
     template <typename... Args>
     Exception(const std::string& file, size_t line, const std::string& func,
-            spdlog::format_string_t<Args...> fmt, Args&&... args)
+            std::format_string<Args...> fmt, Args&&... args)
             : Exception{file, line, func,
-                      fmt::format(fmt, std::forward<Args>(args)...)} {}
+                      std::format(fmt, std::forward<Args>(args)...)} {}
 
     /** The message created by this constructor will contain the class name and
     instance name of the provided Object, and also accepts a message formatted
-    using fmt::format() syntax. Use this when throwing an Exception directly.
+    using std::format() syntax. Use this when throwing an Exception directly.
     Use OPENSIM_THROW_FRMOBJ and OPENSIM_THROW_IF_FRMOBJ macros at throw sites.
     */
     template <typename... Args>
     Exception(const std::string& file, size_t line, const std::string& func,
-            const Object& obj, spdlog::format_string_t<Args...> fmt,
+            const Object& obj, std::format_string<Args...> fmt,
             Args&&... args)
             : Exception{file, line, func, obj,
-                      fmt::format(fmt, std::forward<Args>(args)...)} {}
+                      std::format(fmt, std::forward<Args>(args)...)} {}
 #endif
 
     virtual ~Exception() throw() {}

@@ -205,7 +205,7 @@ TEMPLATE_TEST_CASE("Linear tangent steering",
 
     MocoSolution solution = study.solve().unseal();
     solution.write(
-            fmt::format("testMocoAnalytic_LinearTangentSteering_{}_solution.sto",
+            std::format("testMocoAnalytic_LinearTangentSteering_{}_solution.sto",
                     transcription_scheme));
 
     const SimTK::Vector time = solution.getTime();

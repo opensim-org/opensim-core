@@ -94,7 +94,7 @@ void OpenSim::prescribeControlsToModel(
     for (auto& controller : model.updComponentList<InputController>()) {
         const auto& labels = controller.getInputControlLabels();
         for (const auto& label : labels) {
-            std::string inputControlName = fmt::format("{}/{}", 
+            std::string inputControlName = std::format("{}/{}",
                     controller.getAbsolutePathString(), label);
 
             const auto inputControl = 
@@ -433,7 +433,7 @@ TimeSeriesTable OpenSim::calcGeneralizedForces(Model model,
     for (int j = 0; j < static_cast<int>(coordinates.size()); ++j) {
         const auto& coordinate = coordinates[j];
         udots.updCol(j) = accelerationsTable.getDependentColumn(
-                fmt::format("{}|acceleration",
+                std::format("{}|acceleration",
                             coordinate->getAbsolutePathString()));
     }
 

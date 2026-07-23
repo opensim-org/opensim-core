@@ -22,28 +22,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "osimCommonDLL.h"              // for OSIMCOMMON_API
-#include <memory>                       // for shared_ptr
-#include <spdlog/common.h>              // for spdlog::format_string_t
-#include <spdlog/fmt/bundled/base.h>    // for formatter
-#include <spdlog/fmt/bundled/ostream.h> // for ostream_formatter
-#include <spdlog/logger.h>              // for logger
-#include <string>                       // for basic_string, string
-#include <string_view>                  // for std::string_view
-#include <utility>                      // for std::forward
+#include <OpenSim/Common/LogLevel.h>
+#include <OpenSim/Common/osimCommonDLL.h>
 
-#ifndef SWIG
-#include <SimTKcommon/SmallMatrix.h>             // for Vec3
-#include <SimTKcommon/internal/BigMatrix.h>      // for Vector
-#include <SimTKcommon/internal/MassProperties.h> // for Inertia
-#include <SimTKcommon/internal/Rotation.h>       // for Rotation
-
-// fmt library serializers for custom SimTK objects
-template <> struct fmt::formatter<SimTK::Vec3> : ostream_formatter {};
-template <> struct fmt::formatter<SimTK::Vector> : ostream_formatter {};
-template <> struct fmt::formatter<SimTK::Rotation> : ostream_formatter {};
-template <> struct fmt::formatter<SimTK::Inertia> : ostream_formatter {};
-#endif
+#include <format>
+#include <memory>
+#include <string>
+#include <string_view>
+#include <utility>
 
 namespace OpenSim {
 
@@ -59,35 +45,28 @@ class LogSink;
 ///
 class OSIMCOMMON_API Logger {
 public:
-    ///  This is a static singleton class: there is no way of constructing it
+    using Level = LogLevel;
+
+    /// This is a static singleton class: there is no way of constructing it.
     Logger() = delete;
 
-    /// This enum lists the types of messages that should be logged. These
-    /// levels match those of the spdlog logging library that OpenSim uses for
-    /// logging.
-    enum class Level {
-        /// Do not log any messages. Useful when running an optimization or
-        /// automated pipeline.
-        Off = 6,
-        /// Only log critical errors.
-        Critical = 5,
-        /// Log all messages that require user intervention.
-        Error = 4,
-        /// Log warnings. Warnings are generated when the software will proceed
-        /// but the user should check their input.
-        Warn = 3,
-        /// Default.
-        Info = 2,
-        /// Log information that may be useful when debugging the operation of
-        /// the
-        /// software to investigate unexpected results.
-        Debug = 1,
-        /// Log as much as possible, including messages that describe the
-        /// software's
-        /// behavior step by step. Note: OpenSim has very few Trace-level
-        /// messages.
-        Trace = 0
-    };
+#ifndef SWIG
+    /// Write `fmt` formatted with `args` at level `logLevel` to the log.
+    template<class... Args>
+    static void logMessage(LogLevel logLevel, std::format_string<Args...> fmt, Args&&... args)
+    {
+        if (not shouldLog(logLevel)) {
+            return;
+        }
+        sinkMessage(logLevel, std::format(fmt, std::forward<Args>(args)...));
+    }
+#endif  // SWIG
+
+    /// Write `message` at level `logLevel` to the log.
+    static void logMessage(LogLevel logLevel, std::string_view message)
+    {
+        logMessage(logLevel, "{}", message);
+    }
 
     /// Log messages of importance `level` and greater.
     /// For example, if the level is set to Info, then Critical, Error, Warn,
@@ -121,49 +100,36 @@ public:
     static bool shouldLog(Level level);
 
     /// @name Commands to log messages
-    /// Use these functions instead of using spdlog directly.
     /// @{
 #ifndef SWIG
     template <typename... Args>
-    static void critical(spdlog::format_string_t<Args...> fmt, Args&&... args) {
-        if (shouldLog(Level::Critical)) {
-            getDefaultLogger().critical(fmt, std::forward<Args>(args)...);
-        }
+    static void critical(std::format_string<Args...> fmt, Args&&... args) {
+        logMessage(Level::Critical, fmt, std::forward<Args>(args)...);
     }
 
     template <typename... Args>
-    static void error(spdlog::format_string_t<Args...> fmt, Args&&... args) {
-        if (shouldLog(Level::Error)) {
-            getDefaultLogger().error(fmt, std::forward<Args>(args)...);
-        }
+    static void error(std::format_string<Args...> fmt, Args&&... args) {
+        logMessage(Level::Error, fmt, std::forward<Args>(args)...);
     }
 
     template <typename... Args>
-    static void warn(spdlog::format_string_t<Args...> fmt, Args&&... args) {
-        if (shouldLog(Level::Warn)) {
-            getDefaultLogger().warn(fmt, std::forward<Args>(args)...);
-        }
+    static void warn(std::format_string<Args...> fmt, Args&&... args) {
+        logMessage(Level::Warn, fmt, std::forward<Args>(args)...);
     }
 
     template <typename... Args>
-    static void info(spdlog::format_string_t<Args...> fmt, Args&&... args) {
-        if (shouldLog(Level::Info)) {
-            getDefaultLogger().info(fmt, std::forward<Args>(args)...);
-        }
+    static void info(std::format_string<Args...> fmt, Args&&... args) {
+        logMessage(Level::Info, fmt, std::forward<Args>(args)...);
     }
 
     template <typename... Args>
-    static void debug(spdlog::format_string_t<Args...> fmt, Args&&... args) {
-        if (shouldLog(Level::Debug)) {
-            getDefaultLogger().debug(fmt, std::forward<Args>(args)...);
-        }
+    static void debug(std::format_string<Args...> fmt, Args&&... args) {
+        logMessage(Level::Debug, fmt, std::forward<Args>(args)...);
     }
 
     template <typename... Args>
-    static void trace(spdlog::format_string_t<Args...> fmt, Args&&... args) {
-        if (shouldLog(Level::Trace)) {
-            getDefaultLogger().trace(fmt, std::forward<Args>(args)...);
-        }
+    static void trace(std::format_string<Args...> fmt, Args&&... args) {
+        logMessage(Level::Trace, fmt, std::forward<Args>(args)...);
     }
 
     /// Use this function to log messages that would normally be sent to
@@ -174,11 +140,15 @@ public:
     /// Besides such use cases, this function should be used sparingly to
     /// give users control over what gets logged.
     template <typename... Args>
-    static void cout(spdlog::format_string_t<Args...> fmt, Args&&... args) {
-        getCoutLogger().log(
-                getCoutLogger().level(), fmt, std::forward<Args>(args)...);
+    static void cout(std::format_string<Args...> fmt, Args&&... args) {
+        sinkCoutMessage(std::format(fmt, std::forward<Args>(args)...));
     }
-#endif
+
+    static void cout(std::string_view msg) {
+        cout("{}", msg);
+    }
+#endif  // SWIG
+
     /// @}
 
     /// Log messages to a file at the level getLevel().
@@ -199,15 +169,16 @@ public:
     /// Start reporting messages to the provided sink.
     /// @note This function is not thread-safe. Do not invoke this function
     /// concurrently, or concurrently with addLogFile() or removeSink().
-    static void addSink(const std::shared_ptr<LogSink> sink);
+    static void addSink(std::shared_ptr<LogSink> sink);
 
     /// Remove a sink. If it doesn't exist, do nothing.
     /// @note This function is not thread-safe. Do not invoke this function
     /// concurrently, or concurrently with addLogFile() or addSink().
-    static void removeSink(const std::shared_ptr<LogSink> sink);
+    static void removeSink(const std::shared_ptr<LogSink>& sink);
+
 private:
-    static spdlog::logger& getCoutLogger();
-    static spdlog::logger& getDefaultLogger();
+    static void sinkMessage(LogLevel level, std::string&& payload);
+    static void sinkCoutMessage(std::string&&);
 };
 
 /// @name Logging functions
@@ -215,77 +186,77 @@ private:
 #ifndef SWIG
 /// @related Logger
 template <typename... Args>
-void log_critical(spdlog::format_string_t<Args...> fmt, Args&&... args) {
-    Logger::critical(fmt, std::forward<Args>(args)...);
+void log_critical(std::format_string<Args...> fmt, Args&&... args) {
+    Logger::logMessage(LogLevel::Critical, fmt, std::forward<Args>(args)...);
+}
+/// @related Logger
+inline void log_critical(std::string_view msg) {
+    Logger::logMessage(LogLevel::Critical, msg);
 }
 
 /// @related Logger
 template <typename... Args>
-void log_error(spdlog::format_string_t<Args...> fmt, Args&&... args) {
-    Logger::error(fmt, std::forward<Args>(args)...);
+void log_error(std::format_string<Args...> fmt, Args&&... args) {
+    Logger::logMessage(LogLevel::Error, fmt, std::forward<Args>(args)...);
+}
+/// @related Logger
+inline void log_error(std::string_view msg) {
+    Logger::logMessage(LogLevel::Error, msg);
 }
 
 /// @related Logger
 template <typename... Args>
-void log_warn(spdlog::format_string_t<Args...> fmt, Args&&... args) {
-    Logger::warn(fmt, std::forward<Args>(args)...);
+void log_warn(std::format_string<Args...> fmt, Args&&... args) {
+    Logger::logMessage(LogLevel::Warn, fmt, std::forward<Args>(args)...);
+}
+/// @related Logger
+inline void log_warn(std::string_view msg) {
+    Logger::logMessage(LogLevel::Warn, msg);
 }
 
 /// @related Logger
 template <typename... Args>
-void log_info(spdlog::format_string_t<Args...> fmt, Args&&... args) {
-    Logger::info(fmt, std::forward<Args>(args)...);
+void log_info(std::format_string<Args...> fmt, Args&&... args) {
+    Logger::logMessage(LogLevel::Info, fmt, std::forward<Args>(args)...);
+}
+/// @related Logger
+inline void log_info(std::string_view msg) {
+    Logger::logMessage(LogLevel::Info, msg);
 }
 
 /// @related Logger
 template <typename... Args>
-void log_debug(spdlog::format_string_t<Args...> fmt, Args&&... args) {
-    Logger::debug(fmt, std::forward<Args>(args)...);
+void log_debug(std::format_string<Args...> fmt, Args&&... args) {
+    Logger::logMessage(LogLevel::Debug, fmt, std::forward<Args>(args)...);
 }
+/// @related Logger
+inline void log_debug(std::string_view msg) {
+    Logger::logMessage(LogLevel::Debug, msg);
+}
+
 
 /// @related Logger
 template <typename... Args>
-void log_trace(spdlog::format_string_t<Args...> fmt, Args&&... args) {
-    Logger::trace(fmt, std::forward<Args>(args)...);
+void log_trace(std::format_string<Args...> fmt, Args&&... args) {
+    Logger::logMessage(LogLevel::Trace, fmt, std::forward<Args>(args)...);
+}
+/// @related Logger
+inline void log_trace(std::string_view msg) {
+    Logger::logMessage(LogLevel::Trace, msg);
 }
 
 /// @copydoc Logger::cout()
 /// @related Logger
 template <typename... Args>
-void log_cout(spdlog::format_string_t<Args...> fmt, Args&&... args) {
+void log_cout(std::format_string<Args...> fmt, Args&&... args) {
     Logger::cout(fmt, std::forward<Args>(args)...);
 }
-
-// Overloads for logging a single raw string message.
-
+/// @copydoc Logger::cout()
 /// @related Logger
-inline void log_critical(std::string_view msg) {
-    OpenSim::Logger::critical("{}", msg);
+inline void log_cout(std::string_view msg) {
+    Logger::cout(msg);
 }
 
-/// @related Logger
-inline void log_error(std::string_view msg) {
-    OpenSim::Logger::error("{}", msg);
-}
-
-/// @related Logger
-inline void log_warn(std::string_view msg) { OpenSim::Logger::warn("{}", msg); }
-
-/// @related Logger
-inline void log_info(std::string_view msg) { OpenSim::Logger::info("{}", msg); }
-
-/// @related Logger
-inline void log_debug(std::string_view msg) {
-    OpenSim::Logger::debug("{}", msg);
-}
-
-/// @related Logger
-inline void log_trace(std::string_view msg) {
-    OpenSim::Logger::trace("{}", msg);
-}
-
-/// @related Logger
-inline void log_cout(std::string_view msg) { OpenSim::Logger::cout("{}", msg); }
 #endif
 
 } // namespace OpenSim

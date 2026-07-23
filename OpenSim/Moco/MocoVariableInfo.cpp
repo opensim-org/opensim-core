@@ -19,6 +19,8 @@
 #include "MocoVariableInfo.h"
 #include "MocoUtilities.h"
 
+#include <format>
+
 using namespace OpenSim;
 
 MocoVariableInfo::MocoVariableInfo() {
@@ -65,14 +67,14 @@ void MocoVariableInfo::validate() const {
 
 void MocoVariableInfo::printDescription() const {
     const auto bounds = getBounds();
-    std::string str = fmt::format("  {}. bounds: {}", getName(), bounds);
+    std::string str = std::format("  {}. bounds: {}", getName(), bounds);
     const auto initial = getInitialBounds();
     if (initial.isSet()) {
-        str += fmt::format(" initial: {}", initial);
+        str += std::format(" initial: {}", initial);
     }
     const auto final = getFinalBounds();
     if (final.isSet()) {
-        str += fmt::format(" final: {}", final);
+        str += std::format(" final: {}", final);
     }
     log_info(str);
 }

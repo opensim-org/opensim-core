@@ -38,18 +38,12 @@ std::vector<std::string> MocoConstraintInfo::getConstraintLabels() const {
 }
 
 void MocoConstraintInfo::printDescription() const {
-    std::string str = fmt::format("  {}. {}. number of scalar equations: {}",
-            getName(), getConcreteClassName(), getNumEquations());
-
-    const std::vector<MocoBounds> bounds = getBounds();
-    std::vector<std::string> boundsStr;
-    for (const auto& bound : bounds) {
-        std::stringstream ss;
-        ss << bound;
-        boundsStr.push_back(ss.str());
-    }
-    str += fmt::format(". bounds: {}", fmt::join(boundsStr, ", "));
-    log_info(str);
+    log_info("  {}. {}. number of scalar equations: {}. bounds: {}",
+        getName(),
+        getConcreteClassName(),
+        getNumEquations(),
+        detail::join(getBounds(), ", ")
+    );
 }
 
 void MocoConstraintInfo::constructProperties() {

@@ -63,7 +63,7 @@ SynergyController::operator=(SynergyController&& other) = default;
 std::vector<std::string> SynergyController::getInputControlLabels() const {
     std::vector<std::string> labels;
     for (int i = 0; i < getProperty_synergy_vectors().size(); ++i) {
-        labels.push_back(fmt::format("synergy_excitation_{}", i));
+        labels.push_back(std::format("synergy_excitation_{}", i));
     }
     return labels;
 }
@@ -95,7 +95,7 @@ void SynergyController::extendConnectToModel(Model& model) {
 void SynergyController::addSynergyVector(const SimTK::Vector& vector) {
     int index = getProperty_synergy_vectors().size();
     append_synergy_vectors(
-            SynergyVector(fmt::format("synergy_vector_{}", index), vector));
+            SynergyVector(std::format("synergy_vector_{}", index), vector));
 }
 
 void SynergyController::updSynergyVector(int index, 

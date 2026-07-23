@@ -1,7 +1,7 @@
-#ifndef OPENSIM_LOGSINK_H_
-#define OPENSIM_LOGSINK_H_
+#ifndef OPENSIM_LOG_LEVEL_H_
+#define OPENSIM_LOG_LEVEL_H_
 /* -------------------------------------------------------------------------- *
- *                         OpenSim:  LogSink.h                                *
+ *                       OpenSim:  LogLevel.h                                 *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -22,54 +22,38 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Common/LogLevel.h>
-#include <OpenSim/Common/LogMessage.h>
-#include <OpenSim/Common/osimCommonDLL.h>
-
-#include <string>
-
-// This file is not included in osimCommon.h. Only include
-// this file when deriving from LogSink.
 namespace OpenSim {
 
-/// Derive from this class to implement your own way of reporting logged
-/// messages.
-class OSIMCOMMON_API LogSink {
-public:
-    virtual ~LogSink() noexcept = default;
+    /// This enum lists the types of messages that should be logged, ordered
+    /// from least-severe to most-severe (or off).
+    enum class LogLevel {
+        /// Log as much as possible, including messages that describe the
+        /// software's behavior step by step. Note: OpenSim has very few Trace-level
+        /// messages.
+        Trace = 0,
 
-    /// Sinks `msg` into this `LogSink`.
-    void sink(const LogMessage& msg) {
-        sinkImpl(msg);
-        sinkImpl(msg.getPayload());
-    }
+        /// Log information that may be useful when debugging the operation of
+        /// the
+        /// software to investigate unexpected results.
+        Debug = 1,
 
-    /// Tells this `LogSink` to flush any buffered content to its output.
-    void flush() { flushImpl(); }
+        /// Default.
+        Info = 2,
 
-    LogLevel getLevel() const { return level_; }
-    void setLevel(LogLevel logLevel) { level_ = logLevel; }
-    bool shouldLog(LogLevel logLevel) { return logLevel >= level_; }
+        /// Log warnings. Warnings are generated when the software will proceed
+        /// but the user should check their input.
+        Warn = 3,
 
-protected:
-    /// Implementors may override this function to provide their own
-    /// message sinking behavior.
-    virtual void sinkImpl(const LogMessage&) {}
+        /// Log all messages that require user intervention.
+        Error = 4,
 
-    /// Implementors may override this function to provide their own
-    /// message sinking behavior.
-    ///
-    /// Legacy shim: OpenSim 2019/11 to 2026/06 only provided this overload.
-    virtual void sinkImpl(const std::string& msg) {}
+        /// Only log critical errors.
+        Critical = 5,
 
-    /// Implementors may override this function to provide their own
-    /// message flushing behavior.
-    virtual void flushImpl() {}
+        /// Do not log any messages. Useful when running an optimization or
+        /// automated pipeline.
+        Off = 6,
+    };
+}
 
-private:
-    LogLevel level_ = LogLevel::Trace;
-};
-
-} // namespace OpenSim
-
-#endif // OPENSIM_LOGSINK_H_
+#endif
