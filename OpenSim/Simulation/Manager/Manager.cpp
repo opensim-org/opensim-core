@@ -28,6 +28,7 @@
 
 #include "Manager.h"
 
+#include <OpenSim/Common/Detail/SimbodyFormatterShims.h>
 #include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Simulation/Model/Model.h>

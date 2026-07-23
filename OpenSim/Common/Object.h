@@ -40,12 +40,13 @@
 #include "PropertySet.h"
 #include "PropertyTable.h"
 #include "osimCommonDLL.h"
+#include "Detail/JoinShim.h"
+
 #include <cstring>
 #include <map>
 #include <memory>
 #include <ostream>
 #include <set>
-#include <spdlog/fmt/ranges.h> // for fmt::join
 #include <string>
 
 // DISABLES MULTIPLE INSTANTIATION WARNINGS
@@ -1081,7 +1082,7 @@ void Object::checkPropertyValueIsInSet(
     for (int i = 0; i < p.size(); ++i) {
         const auto& value = p.getValue(i);
         if (set.find(value) == set.end()) {
-            std::string str = fmt::format("{}", fmt::join(set, ", "));
+            std::string str = std::format("{}", detail::join(set, ", "));
             OPENSIM_THROW_FRMOBJ(Exception,
                     "Property '{}' has invalid value {}; expected one of the "
                     "following: {}.", p.getName(), value, str);
@@ -1104,7 +1105,7 @@ void Object::checkPropertyValueIsInRangeOrSet(const Property<T>& p,
     for (int i = 0; i < p.size(); ++i) {
         const auto& value = p.getValue(i);
         if ((value < lower || value > upper) && set.find(value) == set.end()) {
-            std::string str = fmt::format("{}", fmt::join(set, ", "));
+            std::string str = std::format("{}", detail::join(set, ", "));
             OPENSIM_THROW_FRMOBJ(Exception,
                     "Property '{}' has invalid value {}; expected value to be "
                     "in range [{}, {}], or one of the following: {}.",
@@ -1400,7 +1401,7 @@ ObjectProperty<T>::readFromXMLElement
     int objectsFound = 0;
     SimTK::Xml::element_iterator iter = propertyElement.element_begin();
     for (; iter != propertyElement.element_end(); ++iter) {
-        const SimTK::String& objTypeTag = iter->getElementTag();
+        const std::string& objTypeTag = iter->getElementTag();
 
         const Object* registeredObj = 
             Object::getDefaultInstanceOfType(objTypeTag);

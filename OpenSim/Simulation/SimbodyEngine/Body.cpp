@@ -25,8 +25,11 @@
 // INCLUDES
 //=============================================================================
 #include "Body.h"
+
+#include <OpenSim/Common/Detail/SimbodyFormatterShims.h>
 #include <OpenSim/Common/ScaleSet.h>
-#include "simbody/internal/MobilizedBody.h"
+
+#include <simbody/internal/MobilizedBody.h>
 
 //=============================================================================
 // STATICS

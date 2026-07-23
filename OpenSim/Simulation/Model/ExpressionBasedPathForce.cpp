@@ -133,7 +133,7 @@ double ExpressionBasedPathForce::computeMomentArm(const SimTK::State& s,
 
 OpenSim::Array<std::string> ExpressionBasedPathForce::getRecordLabels() const {
     OpenSim::Array<std::string> labels("");
-    labels.append(fmt::format("{}_tension", getName()));
+    labels.append(std::format("{}_tension", getName()));
     return labels;
 }
 

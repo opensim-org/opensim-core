@@ -26,6 +26,8 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
 
+#include <format>
+
 using namespace OpenSim;
 
 void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
@@ -87,11 +89,11 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
         auto columns = statesTableToUse.getColumnLabels();
         for (int i = 0; i < coords.getSize(); ++i) {
             const Coordinate& coord = coords.get(i);
-            std::string path = fmt::format("{}/value", coord.getAbsolutePathString());
+            std::string path = std::format("{}/value", coord.getAbsolutePathString());
             OPENSIM_THROW_IF(
                 std::find(columns.begin(), columns.end(), path) == columns.end(),
                 Exception,
-                fmt::format("Expected the states reference table to contain "
+                std::format("Expected the states reference table to contain "
                             "columns for all coordinate values in the model, "
                             "but {} was not found.", path));
         }
@@ -169,7 +171,7 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
                 mat.updElt(irow, icol++) = e[ie];
                 if (!irow) {
                     colLabels.push_back(
-                            fmt::format("{}/quaternion_e{}", label, ie));
+                            std::format("{}/quaternion_e{}", label, ie));
                 }
             }
         }

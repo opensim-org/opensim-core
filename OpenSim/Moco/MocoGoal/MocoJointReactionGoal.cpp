@@ -162,7 +162,7 @@ void MocoJointReactionGoal::printDescriptionImpl() const {
     for (int i = 0; i < (int)measures.size(); i++) {
         measures[i] = get_reaction_measures(i);
     }
-    log_info("        reaction measures: {}", fmt::join(measures, ", "));
+    log_info("        reaction measures: {}", detail::join(measures, ", "));
 
-    log_info("        reaction weights: {}", fmt::join(m_measureWeights, ", "));
+    log_info("        reaction weights: {}", detail::join(m_measureWeights, ", "));
 }

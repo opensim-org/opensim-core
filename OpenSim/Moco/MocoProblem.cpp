@@ -22,6 +22,8 @@
 
 #include <OpenSim/Simulation/SimulationUtilities.h>
 
+#include <format>
+
 using namespace OpenSim;
 
 // ============================================================================
@@ -122,7 +124,7 @@ void MocoPhase::printControlNamesWithSubstring(const std::string& substring) {
             } else {
                 for (int i = 0; i < actu.numControls(); ++i) {
                     controlsToExclude.push_back(
-                            fmt::format("{}_{}", actuPath, i));
+                            std::format("{}_{}", actuPath, i));
                 }
             }
         }

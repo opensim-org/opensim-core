@@ -2807,9 +2807,9 @@ public:
         for (const C& thisComp : compList) {
             const std::string thisClass = thisComp.getConcreteClassName();
             auto path = thisComp.getAbsolutePath();
-            log_cout(fmt::format(
+            log_cout(std::format(
                     "{:>{}}  {}/{}",
-                    fmt::format("[{}]", thisClass),
+                    std::format("[{}]", thisClass),
                     maxlen,
                     std::string((path.getNumPathLevels() - 1) * 4, ' '),
                     path.getComponentName()));

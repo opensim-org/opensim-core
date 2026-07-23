@@ -108,7 +108,7 @@ ControlDistributor::addControlDistributorAndConnectInputControllers(
         }
         const auto labels = controller.getInputControlLabels();
         for (const auto& label : labels) {
-            std::string inputControlName = fmt::format(
+            std::string inputControlName = std::format(
                     "{}/{}", controller.getAbsolutePathString(), label);
             controlDistributorUPtr->addControl(inputControlName);
             controlDistributorUPtr->finalizeFromProperties();

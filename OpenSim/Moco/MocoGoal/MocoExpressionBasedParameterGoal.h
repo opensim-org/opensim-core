@@ -51,7 +51,7 @@ auto* spring2_parameter = mp.addParameter("spring2_stiffness", "spring2",
 auto* spring_goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
 double STIFFNESS = 100.0;
 // minimum is when p + q = STIFFNESS
-spring_goal->setExpression(fmt::format("square(p+q-{})", STIFFNESS));
+spring_goal->setExpression(std::format("square(p+q-{})", STIFFNESS));
 spring_goal->addParameter(*spring1_parameter, "p");
 spring_goal->addParameter(*spring2_parameter, "q");
 @endcode

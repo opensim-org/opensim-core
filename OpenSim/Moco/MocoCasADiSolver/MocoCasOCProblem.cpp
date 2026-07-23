@@ -282,6 +282,6 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
     }
 
     m_fileDeletionThrower = std::make_unique<FileDeletionThrower>(
-            fmt::format("delete_this_to_stop_optimization_{}_{}.txt",
+            std::format("delete_this_to_stop_optimization_{}_{}.txt",
                     problemRep.getName(), m_formattedTimeString));
 }

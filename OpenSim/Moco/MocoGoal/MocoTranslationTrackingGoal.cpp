@@ -24,6 +24,8 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
 
+#include <format>
+
 using namespace OpenSim;
 using SimTK::Vec3;
 
@@ -61,7 +63,7 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
                 OPENSIM_THROW_IF_FRMOBJ(std::find(labels.begin(), labels.end(),
                                                 path) == labels.end(),
                         Exception,
-                        fmt::format(
+                        std::format(
                                 "Expected frame_paths to match one of the "
                                 "column labels in the translation reference, "
                                 "but frame path '{}' not found in the "

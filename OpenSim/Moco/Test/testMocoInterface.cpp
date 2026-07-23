@@ -1746,7 +1746,7 @@ void testSlidingMass(const std::string& transcriptionScheme) {
             transcriptionScheme, N);
     MocoSolution solution = study.solve();
     solution.write(
-            fmt::format("testMocoInterface_testSlidingMass_{}_solution.sto",
+            std::format("testMocoInterface_testSlidingMass_{}_solution.sto",
                     transcriptionScheme));
     int numTimes;
     if (transcriptionScheme == "trapezoidal") {

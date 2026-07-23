@@ -78,7 +78,7 @@ void MocoExpressionBasedParameterGoal::initializeOnModelImpl(const Model& model)
         if (msg.compare(0, 30, "No value specified for variable")) {
             std::string undefinedVar = msg.substr(32, msg.size() - 32);
             OPENSIM_THROW_FRMOBJ(Exception, 
-                    fmt::format("Parameter variable '{}' is not defined. Use "
+                    std::format("Parameter variable '{}' is not defined. Use "
                     "addParameter() to explicitly define this variable. Or, "
                     "remove it from the expression.", undefinedVar));
         } else {
@@ -102,8 +102,7 @@ double MocoExpressionBasedParameterGoal::getPropertyValue(int i) const {
         return static_cast<const Property<SimTK::Vec6>*>(propRef.get())
                                                      ->getValue()[elt];
     }
-    OPENSIM_THROW_FRMOBJ(Exception, fmt::format(fmt::runtime(
-            "Property at index {} is not of a recognized type."), i));
+    OPENSIM_THROW_FRMOBJ(Exception, std::format("Property at index {} is not of a recognized type.", i));
 }
 
 void MocoExpressionBasedParameterGoal::calcGoalImpl(

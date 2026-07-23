@@ -25,6 +25,7 @@
 //============================================================================
 #include "Property.h"
 #include "Object.h"
+#include "Detail/SimbodyFormatterShims.h"
 #include <string>
 
 

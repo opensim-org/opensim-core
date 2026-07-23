@@ -30,6 +30,8 @@
 #include <OpenSim/Simulation/Control/SynergyController.h>
 #include <OpenSim/Moco/osimMoco.h>
 
+#include <format>
+
 using namespace OpenSim;
 
 /// Solve the basic muscle redundancy problem with MocoInverse.
@@ -302,12 +304,12 @@ void solveMocoInverseWithSynergies(int numSynergies = 5) {
     auto& effort = dynamic_cast<MocoControlGoal&>(
             problem.updGoal("excitation_effort"));
     for (int i = 0; i < numSynergies; ++i) {
-        std::string nameLeft = fmt::format("/controllerset/"
+        std::string nameLeft = std::format("/controllerset/"
                 "synergy_controller_left_leg/synergy_excitation_{}", i);
         problem.setInputControlInfo(nameLeft, {0, 1.0});
         effort.setWeightForControl(nameLeft, 10);
 
-        std::string nameRight = fmt::format("/controllerset/"
+        std::string nameRight = std::format("/controllerset/"
                 "synergy_controller_right_leg/synergy_excitation_{}", i);
         problem.setInputControlInfo(nameRight, {0, 1.0});
         effort.setWeightForControl(nameRight, 10);
@@ -328,7 +330,7 @@ void solveMocoInverseWithSynergies(int numSynergies = 5) {
     solution.insertStatesTrajectory(coordinateSpeeds);
 
     // Write the solution to a Storage file.
-    solution.write(fmt::format("example3DWalking_MocoInverseWith{}Synergies_"
+    solution.write(std::format("example3DWalking_MocoInverseWith{}Synergies_"
             "solution.sto", numSynergies));
 }
 
