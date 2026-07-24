@@ -35,3 +35,6 @@ set_target_properties(${TEST_TARGET} PROPERTIES
 add_test(NAME ${TEST_TARGET}
          COMMAND opensim-cmd -L $<TARGET_FILE:${TEST_TARGET}> run-tool
                  subject01_Setup_AnalysisPluginTemplate.xml)
+if(BUILD_API_ONLY)
+    set_tests_properties(${TEST_TARGET} PROPERTIES DISABLED TRUE)
+endif()

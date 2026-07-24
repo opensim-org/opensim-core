@@ -1,4 +1,4 @@
-﻿#ifndef OPENSIM_STATES_DOCUMENT_H_
+#ifndef OPENSIM_STATES_DOCUMENT_H_
 #define OPENSIM_STATES_DOCUMENT_H_
 /* -------------------------------------------------------------------------- *
  *                  OpenSim:  StatesDocument.h                        *
@@ -25,6 +25,7 @@
 
 // INCLUDE
 #include <SimTKsimbody.h>
+#include <string>
 #include "osimSimulationDLL.h"
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -119,7 +120,7 @@ Design Notes
 
 ### Dependencies
 Most operations in class StatesDocument rely on underlying SimTK classes,
-most notably SimTK::String, SimTK::Array<T>, SimTK::State, and SimTK::Xml.
+most notably SimTK::Array<T>, SimTK::State, and SimTK::Xml.
 
 StatesDocument has just one key OpenSim dependency: OpenSim::Model.
 OpenSim::Model brings with it all the methods it inherits from class
@@ -373,13 +374,13 @@ deserialize those same states and use them to accomplish a few basic things.
     // the name of the model, and the document is saved to the current working
     // directory. The file name can also incorporate a valid system path (e.g.,
     // "C:/Users/smith/Documents/Work/BouncingBlock.ostates").
-    SimTK::String statesFileName = model.getName() + ".ostates";
-    doc.serializeToFile(statesFileName);
+    std::string statesFileName = model.getName() + ".ostates";
+    doc.serialize(statesFileName);
 
     // ----------------------
     // Save the Model to File
     // ----------------------
-    SimTK::String modelFileName = model.getName() + ".osim";
+    std::string modelFileName = model.getName() + ".osim";
     model->print(modelFileName);
 
 ```
@@ -389,8 +390,8 @@ deserialize those same states and use them to accomplish a few basic things.
     // -----------------------------
     // Construct the Model from File
     // -----------------------------
-    SimTK::String name = "BouncingBlock";
-    SimTK::String modelFileName = name + ".osim";
+    std::string name = "BouncingBlock";
+    std::string modelFileName = name + ".osim";
     OpenSim::Model model(modelFileName);
     model.buildSystem();
     SimTK::State& initState = model->initializeState();
@@ -398,7 +399,7 @@ deserialize those same states and use them to accomplish a few basic things.
     // -----------------------------------------------
     // Construct the StatesDocument Instance from File
     // -----------------------------------------------
-    SimTK::String statesFileName = name + ".ostates";
+    std::string statesFileName = name + ".ostates";
     StatesDocument doc(statesFileName);
 
     // ----------------------
@@ -516,7 +517,7 @@ public:
 
     @param filename The name of the file, which may be prepended by the system
     path at which the file resides (e.g., "C:/Documents/block.ostates"). */
-    StatesDocument(const SimTK::String& filename) : filename(filename) {
+    StatesDocument(const std::string& filename) : filename(filename) {
         doc.readFromFile(filename);
         initializeNote();
         initializePrecision();
@@ -541,7 +542,7 @@ public:
     reproduction of state. */
     StatesDocument(const OpenSim::Model& model,
         const SimTK::Array_<SimTK::State>& trajectory,
-        const SimTK::String& note = "",
+        const std::string& note = "",
         int precision = SimTK::LosslessNumDigitsReal);
 
     /** Construct a StatesDocument instance from a states trajectory in
@@ -563,14 +564,14 @@ public:
     reproduction of state. */
     StatesDocument(const OpenSim::Model& model,
         const std::vector<SimTK::State>& trajectory,
-        const SimTK::String& note = "",
+        const std::string& note = "",
         int precision = SimTK::LosslessNumDigitsReal);
 
     //-------------------------------------------------------------------------
     // Accessors
     //-------------------------------------------------------------------------
     /** Get the annotation note for this states document. */
-    const SimTK::String& getNote() const { return note; }
+    const std::string& getNote() const { return note; }
     /** Get the precision for this states document. */
     int getPrecision() const { return precision; }
 
@@ -582,7 +583,7 @@ public:
 
     @param filename The name of the file, which may include the file system
     path at which to write the file (e.g., "C:/Documents/block.ostates"). */
-    void serialize(const SimTK::String& filename);
+    void serialize(const std::string& filename);
 
     //-------------------------------------------------------------------------
     // Deserialization
@@ -654,8 +655,8 @@ private:
     int precision{SimTK::LosslessNumDigitsReal};
     int nStateObjects{0};
     SimTK::Xml::Document doc;
-    SimTK::String filename{""};
-    SimTK::String note{""};
+    std::string filename{""};
+    std::string note{""};
 
 }; // END of class StatesDocument
 

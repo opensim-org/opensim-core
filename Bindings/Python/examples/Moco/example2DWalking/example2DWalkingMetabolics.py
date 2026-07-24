@@ -109,7 +109,7 @@ track.set_allow_unused_references(True)
 track.set_track_reference_position_derivatives(True)
 track.set_apply_tracked_states_to_guess(True)
 track.set_initial_time(0.0)
-track.set_final_time(0.47008941)
+track.set_final_time(0.470089)
 
 # Call initialize() to get the internal MocoStudy. This will allow us to
 # make further modifications to the MocoProblem.
@@ -216,7 +216,7 @@ fullStride.write('gaitTrackingMetCost_solution_fullcycle.sto')
 # To report the COT we multiply the metabolic cost objective term by 10 because
 # it had been scaled by 0.1
 print('   ')
-print(f'The metabolic cost of transport is: {10*solution.getObjectiveTerm('met'):.3f} J/kg/m')
+print(f'The metabolic cost of transport is: {10*solution.getObjectiveTerm("met"):.3f} J/kg/m')
 print('   ')
 
 # Visualize the result.

@@ -80,7 +80,7 @@ MocoSolution gaitTracking(double controlEffortWeight = 10,
     track.set_track_reference_position_derivatives(true);
     track.set_apply_tracked_states_to_guess(true);
     track.set_initial_time(0.0);
-    track.set_final_time(0.47008941);
+    track.set_final_time(0.470089);
     MocoStudy study = track.initialize();
     MocoProblem& problem = study.updProblem();
 

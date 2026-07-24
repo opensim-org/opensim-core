@@ -627,6 +627,32 @@ class TestTables {
         System.out.println(tableFlat);
     }
 
+    public static void test_TimeSeriesTableConcatenate() {
+        TimeSeriesTable table = new TimeSeriesTable();
+        StdVectorString labels = new StdVectorString();
+        labels.add("0"); labels.add("1"); labels.add("2"); labels.add("3");
+        table.setColumnLabels(labels);
+        // Append a row to the table.
+        RowVector row = new RowVector(4, 1);
+        System.out.println(table);
+        // Append another row to the table.
+        row.set(0, 2); row.set(1, 2); row.set(2, 2); row.set(3, 2);
+        table.appendRow(0.2, row);
+        // Create a second table.
+        TimeSeriesTable table2 = new TimeSeriesTable();
+        table2.setColumnLabels(labels);
+        RowVector row3 = new RowVector(4, 1);
+        row3.set(0, 3); row3.set(1, 3); row3.set(2, 3); row3.set(3, 3);
+        table2.appendRow(0.3, row3);
+        // Concatenate the tables.
+        TimeSeriesTable combined = TableUtilities.concatenate(table, table2);
+        System.out.println(combined);
+        assert combined.getNumRows()             == 2;
+        assert combined.getColumnLabels().size() == 4;
+        assert combined.getRowAtIndex(0).get(0) == 2;
+        assert combined.getRowAtIndex(1).get(3) == 3;
+    }
+
     public static void test_TimeSeriesTableVec3() {
         TimeSeriesTableVec3 table = new TimeSeriesTableVec3();
         // Set column labels.
@@ -802,6 +828,7 @@ class TestTables {
         test_DataTable();
         test_DataTableVec3();
         test_TimeSeriesTable();
+        test_TimeSeriesTableConcatenate();
         test_TimeSeriesTableVec3();
         test_FlattenWithIK();
         test_vector_rowvector();

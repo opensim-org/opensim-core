@@ -485,8 +485,8 @@ public:
     getRegisteredObjectsOfGivenType(ArrayPtrs<T>& rArray) {
         rArray.setSize(0);
         rArray.setMemoryOwner(false);
-        for(int i=0; i<_registeredTypes.getSize(); i++) {
-            T* obj = dynamic_cast<T*>(_registeredTypes[i]);
+        for(int i=0; i<_registeredTypes().getSize(); i++) {
+            T* obj = dynamic_cast<T*>(_registeredTypes()[i]);
             if (obj) rArray.append(obj);
         }
     }
@@ -874,22 +874,22 @@ private:
     // Each object type only appears once in this array. Renamed types usually
     // do not have separate registered objects; they are just used to locate 
     // one of the current ones.
-    static ArrayPtrs<Object>                    _registeredTypes;
+    static ArrayPtrs<Object>&                    _registeredTypes();
 
-    // Map from concrete object class name string to a default object of that 
-    // type kept in the above array of registered types. Renamed types are *not* 
-    // normally entered here; the names are mapped separately using the map 
+    // Map from concrete object class name string to a default object of that
+    // type kept in the above array of registered types. Renamed types are *not*
+    // normally entered here; the names are mapped separately using the map
     // below.
-    static std::map<std::string,Object*>        _mapTypesToDefaultObjects;
+    static std::map<std::string,Object*>&        _mapTypesToDefaultObjects();
 
     // Map types that have been renamed to their new names, which can
-    // then be used to find them in the default object map. This lets us 
+    // then be used to find them in the default object map. This lets us
     // recognize the old names while converting to the new ones internally
-    // so that they will be updated when written out. It also allows one 
+    // so that they will be updated when written out. It also allows one
     // to map one registered type to a different one programmatically, because
     // we'll look up the name in the rename table first prior to searching
     // the registered types list.
-    static std::map<std::string,std::string>    _renamedTypesMap;
+    static std::map<std::string,std::string>&    _renamedTypesMap();
 
     // Global flag to indicate if all registered objects are to be written in 
     // a "defaults" section.

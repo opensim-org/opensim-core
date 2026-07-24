@@ -1,0 +1,54 @@
+{
+    "version": 6,
+    "configurePresets": [
+        {
+            "name": "base",
+            "description": "Base build configuration for all presets",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/../build/dependencies/${presetName}",
+            "installDir": "${sourceDir}/../build/dependencies/${presetName}/install",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/dependencies/${presetName}/install"
+            }
+        },
+        {
+            "name": "dev-default",
+            "description": "Recommended development configuration that builds all dependencies that a typical release requires",
+            "inherits": ["base"],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "OPENSIM_WITH_CASADI": "ON",
+                "SUPERBUILD_ezc3d": "ON"
+            }
+        },
+        {
+            "name": "dev-minimal",
+            "description": "Minimal development configuration that only build the dependencies necessary for a minimal build (no Moco, no ezc3d)",
+            "inherits": ["dev-default"],
+            "cacheVariables": {
+                "OPENSIM_WITH_CASADI": "OFF",
+                "SUPERBUILD_ezc3d": "OFF"
+            }
+        }
+    ],
+    "buildPresets": [
+        { "name": "dev-default", "configurePreset": "dev-default" },
+        { "name": "dev-minimal", "configurePreset": "dev-minimal" }
+    ],
+    "workflowPresets": [
+        {
+            "name": "dev-default",
+            "steps": [
+                { "type": "configure", "name": "dev-default" },
+                { "type": "build",     "name": "dev-default" }
+            ]
+        },
+        {
+            "name": "dev-minimal",
+            "steps": [
+                { "type": "configure", "name": "dev-minimal" },
+                { "type": "build",     "name": "dev-minimal" }
+            ]
+        }
+    ]
+}

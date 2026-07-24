@@ -44,7 +44,7 @@ of building and simulating a simple arm whose elbow is actuated by a muscle
 (this example is in C++; you can find a Python version at
 `Bindings/Python/examples/build_simple_arm_model.py`):
 
-@snippet testREADME.cpp README
+@snippet exampleSimpleElbow.cpp SimpleElbow
 
 This code produces the following animation:
 

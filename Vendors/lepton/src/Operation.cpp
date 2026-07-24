@@ -31,8 +31,9 @@
  * -------------------------------------------------------------------------- */
 
 #include "lepton/Operation.h"
+#include <numbers>
+
 #include "lepton/ExpressionTreeNode.h"
-#include "MSVC_erfc.h"
 
 using namespace Lepton;
 using namespace std;
@@ -228,7 +229,7 @@ ExpressionTreeNode Operation::Tanh::differentiate(const std::vector<ExpressionTr
 ExpressionTreeNode Operation::Erf::differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const {
     return ExpressionTreeNode(new Operation::Multiply(),
                               ExpressionTreeNode(new Operation::Multiply(),
-                                                 ExpressionTreeNode(new Operation::Constant(2.0/sqrt(M_PI))),
+                                                 ExpressionTreeNode(new Operation::Constant(2.0/sqrt(std::numbers::pi))),
                                                  ExpressionTreeNode(new Operation::Exp(),
                                                                     ExpressionTreeNode(new Operation::Negate(),
                                                                                        ExpressionTreeNode(new Operation::Square(), children[0])))),
@@ -238,7 +239,7 @@ ExpressionTreeNode Operation::Erf::differentiate(const std::vector<ExpressionTre
 ExpressionTreeNode Operation::Erfc::differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const {
     return ExpressionTreeNode(new Operation::Multiply(),
                               ExpressionTreeNode(new Operation::Multiply(),
-                                                 ExpressionTreeNode(new Operation::Constant(-2.0/sqrt(M_PI))),
+                                                 ExpressionTreeNode(new Operation::Constant(-2.0/sqrt(std::numbers::pi))),
                                                  ExpressionTreeNode(new Operation::Exp(),
                                                                     ExpressionTreeNode(new Operation::Negate(),
                                                                                        ExpressionTreeNode(new Operation::Square(), children[0])))),

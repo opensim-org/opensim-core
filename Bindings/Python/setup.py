@@ -4,6 +4,7 @@ import os
 import sys
 from setuptools import setup
 from setuptools.dist import Distribution
+from pathlib import Path
 
 # This provides a list of relative paths to all the dependencies in the bin folder.
 # Only when installed locally via "python -m pip install ." in Windows
@@ -20,6 +21,9 @@ if os.path.exists(geometry_path):
     for file in os.listdir(geometry_path):
         geometry_files.append(os.path.join(geometry_path, file).replace(os.sep,'/'))
 
+this_dir = Path(__file__).parent
+long_description = (this_dir / "opensim/README.md").read_text(encoding="utf-8")
+
 # This provides the variable `__version__`.
 if sys.version_info[0] < 3:
     execfile('opensim/version.py')
@@ -32,19 +36,19 @@ class BinaryDistribution(Distribution):
 
 setup(name='opensim',
       version=__version__,
+      options={"bdist_wheel": {"build_number": "1"}},
       description='OpenSim Simulation Framework',
+      long_description=long_description,
+      long_description_content_type='text/markdown',
       author='OpenSim Team',
       author_email='ahabib@stanford.edu',
       url='http://opensim.stanford.edu/',
       license='Apache 2.0',
       packages=['opensim'],
-      # Copy the bin_files and geometry_files into the opensim package directory
-      data_files=[
-            ('opensim', bin_files)
-      ],
       # The last 3 entries are for if OPENSIM_PYTHON_STANDALONE is ON.
       # The asterisk after the extension is to handle version numbers on Linux.
-      package_data={'opensim': ['_*.*', '*.dylib', '*.dll', '*.so*']},
+      package_data={'opensim': ['_*.*', '*.dylib', '*.dll', '*.so*', 'simbody-*',
+                    'simbody-*.*/*/*/*', 'Geometry/*.*']},
       # Create a command-line tool for generating a report.
       entry_points={
           'console_scripts': [
@@ -59,9 +63,10 @@ setup(name='opensim',
           'Topic :: Scientific/Engineering :: Physics',
           ],
           install_requires=[
-              "numpy>=2.0"
+              "numpy>=2.1"
           ],
           distclass=BinaryDistribution
       )
+
 # To build the wheel, run the following command:
-#python setup.py bdist_wheel
+# python setup.py bdist_wheel

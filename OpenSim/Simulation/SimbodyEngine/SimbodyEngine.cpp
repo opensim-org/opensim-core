@@ -87,7 +87,9 @@ SimbodyEngine::SimbodyEngine(const string &aFileName) :
     Object(aFileName, false)
 {
     setNull();
-    connectSimbodyEngineToModel(*_model);
+    if (_model) {
+        connectSimbodyEngineToModel(*_model);
+    }
 }
 
 
@@ -100,7 +102,9 @@ SimbodyEngine::SimbodyEngine(const SimbodyEngine& aEngine) :
 {
     setNull();
     copyData(aEngine);
-    connectSimbodyEngineToModel(*_model);
+    if (_model) {
+        connectSimbodyEngineToModel(*_model);
+    }
 }
 
 
@@ -158,7 +162,9 @@ SimbodyEngine& SimbodyEngine::operator=(const SimbodyEngine &aEngine)
     // Base class
     Object::operator=(aEngine);
     copyData(aEngine);
-    connectSimbodyEngineToModel(*aEngine._model);
+    if (_model) {
+        connectSimbodyEngineToModel(*aEngine._model);
+    }
     return(*this);
 }
 

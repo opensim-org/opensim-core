@@ -168,7 +168,6 @@ void muscleDrivenStateTracking() {
     }
     for (const auto& muscle : model.getComponentList<Muscle>()) {
         periodicityGoal->addStatePair(muscle.getStateVariableNames()[0]);
-        periodicityGoal->addControlPair(muscle.getAbsolutePathString());
     }
     for (const auto& actu : model.getComponentList<Actuator>()) {
         periodicityGoal->addControlPair(actu.getAbsolutePathString());
@@ -226,37 +225,9 @@ void muscleDrivenJointMomentTracking() {
 
     // Get a reference to the MocoControlCost that is added to every MocoTrack
     // problem by default and set the overall weight to 0.1.
-    MocoControlGoal& effort = 
+    MocoControlGoal& effort =
             dynamic_cast<MocoControlGoal&>(problem.updGoal("control_effort"));
     effort.setWeight(0.1);
-
-    // Put larger individual weights on the pelvis CoordinateActuators, which act 
-    // as the residual, or 'hand-of-god', forces which we would like to keep as small
-    // as possible.
-    effort.setWeightForControlPattern(".*pelvis.*", 10);
-
-    // Constrain the states and controls to be periodic.
-    auto* periodicityGoal = problem.addGoal<MocoPeriodicityGoal>("periodicity");
-    Model model = modelProcessor.process();
-    model.initSystem();
-    for (const auto& coord : model.getComponentList<Coordinate>()) {
-        if (!IO::EndsWith(coord.getName(), "_tx")) {
-            // Add a state pair for the coordinate value.
-            periodicityGoal->addStatePair(coord.getStateVariableNames()[0]);
-        }
-        // Add a state pair for the coordinate speed.
-        periodicityGoal->addStatePair(coord.getStateVariableNames()[1]);
-    }
-    for (const auto& muscle : model.getComponentList<Muscle>()) {
-        // Add a control pair for the muscle excitation.
-        periodicityGoal->addControlPair(muscle.getAbsolutePathString());
-        // Add a state pair for the muscle activation.
-        periodicityGoal->addStatePair(muscle.getStateVariableNames()[0]);
-    }
-    for (const auto& actu : model.getComponentList<Actuator>()) {
-        // Add a control pair for the actuator control.
-        periodicityGoal->addControlPair(actu.getAbsolutePathString());
-    }
 
     // Add a joint moment tracking goal to the problem.
     auto* jointMomentTracking = 
@@ -293,9 +264,9 @@ void muscleDrivenJointMomentTracking() {
 
     // Encourage better tracking of the ankle joint moments.
     jointMomentTracking->setWeightForGeneralizedForce(
-            "ankle_angle_r_moment", 100);
+            "ankle_angle_r_moment", 10);
     jointMomentTracking->setWeightForGeneralizedForce(
-            "ankle_angle_l_moment", 100);
+            "ankle_angle_l_moment", 10);
     
     // Update the solver problem and tolerances.
     auto& solver = study.updSolver<MocoCasADiSolver>();
@@ -304,9 +275,10 @@ void muscleDrivenJointMomentTracking() {
     solver.resetProblem(problem);
 
     // Set the guess, if available.
-    if (IO::FileExists("exampleMocoTrack_muscle_driven_tracking_solution.sto")) {
+    if (IO::FileExists(
+            "exampleMocoTrack_muscle_driven_state_tracking_solution.sto")) {
         solver.setGuessFile(
-                "exampleMocoTrack_muscle_driven_tracking_solution.sto");
+                "exampleMocoTrack_muscle_driven_state_tracking_solution.sto");
     }
 
     // Solve!
@@ -314,6 +286,8 @@ void muscleDrivenJointMomentTracking() {
     solution.write("exampleMocoTrack_joint_moment_tracking_solution.sto");
 
     // Save the model to a file.
+    Model model = modelProcessor.process();
+    model.initSystem();
     model.print("exampleMocoTrack_model.osim");
 
     // Compute the joint moments and write them to a file.

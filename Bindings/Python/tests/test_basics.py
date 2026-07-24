@@ -127,3 +127,39 @@ class TestBasics(unittest.TestCase):
         property = muscle.getPropertyByName('max_isometric_force')
         osim.PropertyHelper.setValueDouble(200, property);
         assert muscle.get_max_isometric_force()==200
+
+    def test_StatesTrajectory_and_StatesDocument(self):
+        model = osim.ModelFactory.createDoublePendulum()
+        state = model.initSystem()
+
+        # Run a forward simulation and retreive the StatesTrajectory.
+        manager = osim.Manager(model);
+        manager.setRecordStatesTrajectory(True);
+        manager.initialize(state);
+        manager.integrate(5.0);
+        statesTraj = manager.getStatesTrajectory();
+
+        # Check initial time.
+        initialState = statesTraj.get(0);
+        self.assertEqual(initialState.getTime(), 0)
+        self.assertEqual(initialState.getQ().size(), 2)
+        self.assertEqual(initialState.getU().size(), 2)
+
+        # Check final time.
+        finalState = statesTraj.get(statesTraj.getSize()-1);
+        self.assertEqual(finalState.getTime(), 5.0)
+        self.assertEqual(finalState.getQ().size(), 2)
+        self.assertEqual(finalState.getU().size(), 2)
+
+        # Create a StatesDocument to serialize the trajectory.
+        doc = statesTraj.exportToStatesDocument(model);
+        doc.serialize('pendulum.ostates');
+
+        # Deserialize and check equality.
+        statesTrajDeserialized = osim.StatesTrajectory.createFromStatesDocument(
+                model, 'pendulum.ostates')
+        self.assertEqual(statesTraj.getSize(), statesTrajDeserialized.getSize())
+        for i in range(statesTraj.getSize()):
+            state = statesTraj.get(i)
+            stateDeserialized = statesTrajDeserialized.get(i)
+            self.assertEqual(state.getTime(), stateDeserialized.getTime())

@@ -1286,7 +1286,13 @@ endif()
 if(APPLE)
   set(_matlab_bin_prefix "mac") # i should be for intel
   set(_matlab_bin_suffix_32bits "i")
-  set(_matlab_bin_suffix_64bits "i64")
+  if(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64" AND Matlab_MEX_EXTENSION MATCHES "a64$")
+    # native Apple Silicon Matlab
+    set(_matlab_bin_suffix_64bits "a64")
+  else()
+    # Intel Mac OR Apple Silicon using Rosetta for Matlab
+    set(_matlab_bin_suffix_64bits "i64")
+  endif()
 elseif(UNIX)
   set(_matlab_bin_prefix "gln")
   set(_matlab_bin_suffix_32bits "x86")

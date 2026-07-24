@@ -1,0 +1,57 @@
+{
+    "version": 6,
+    "configurePresets": [
+        {
+            "name": "base",
+            "description": "Base build configuration for all presets",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "OPENSIM_DEPENDENCIES_DIR": "${sourceDir}/build/dependencies/${presetName}/install"
+            }
+        },
+        {
+            "name": "dev-default",
+            "description": "Recommended development configuration that builds everything a typical release contains",
+            "inherits": ["base"],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "OPENSIM_WITH_CASADI": "ON",
+                "BUILD_JAVA_WRAPPING": "ON",
+                "BUILD_PYTHON_WRAPPING": "ON",
+                "OPENSIM_C3D_PARSER": "ezc3d"
+            }
+        },
+        {
+            "name": "dev-minimal",
+            "description": "Minimal development configuration that builds OpenSim without Moco, ezc3d, and bindings",
+            "inherits": ["dev-default"],
+            "cacheVariables": {
+                "OPENSIM_WITH_CASADI": "OFF",
+                "BUILD_JAVA_WRAPPING": "OFF",
+                "BUILD_PYTHON_WRAPPING": "OFF",
+                "OPENSIM_C3D_PARSER": "None"
+            }
+        }
+    ],
+    "buildPresets": [
+        { "name": "dev-default", "configurePreset": "dev-default" },
+        { "name": "dev-minimal", "configurePreset": "dev-minimal" }
+    ],
+    "workflowPresets": [
+        {
+            "name": "dev-default",
+            "steps": [
+                { "type": "configure", "name": "dev-default" },
+                { "type": "build",     "name": "dev-default" }
+            ]
+        },
+        {
+            "name": "dev-minimal",
+            "steps": [
+                { "type": "configure", "name": "dev-minimal" },
+                { "type": "build",     "name": "dev-minimal" }
+            ]
+        }
+    ]
+}

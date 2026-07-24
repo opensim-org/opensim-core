@@ -45,9 +45,11 @@
 #include "Model/ContactHalfSpace.h"
 #include "Model/ContactMesh.h"
 #include "Model/CoordinateLimitForce.h"
+#include "Model/CoordinateLinearStopForce.h"
 #include "Model/CoordinateSet.h"
 #include "Model/ElasticFoundationForce.h"
 #include "Model/ExponentialContactForce.h"
+#include "Model/ExponentialCoordinateLimitForce.h"
 #include "Model/HuntCrossleyForce.h"
 #include "Model/SmoothSphereHalfSpaceForce.h"
 #include "Model/MeyerFregly2016Force.h"
@@ -126,7 +128,8 @@
 #include "SimbodyEngine/CustomJoint.h"
 #include "SimbodyEngine/WeldJoint.h"
 #include "SimbodyEngine/ScapulothoracicJoint.h"
-#include "OpenSim/Simulation/SimbodyEngine/ConstantCurvatureJoint.h"
+#include "SimbodyEngine/ConstantCurvatureJoint.h"
+#include "SimbodyEngine/CantileverFreeBeamJoint.h"
 #include "SimbodyEngine/TransformAxis.h"
 #include "SimbodyEngine/Coordinate.h"
 #include "SimbodyEngine/SpatialTransform.h"
@@ -236,6 +239,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( SliderJoint() );
     Object::registerType( PlanarJoint() );
     Object::registerType( ConstantCurvatureJoint() );
+    Object::registerType( CantileverFreeBeamJoint() );
     Object::registerType( TransformAxis() );
     Object::registerType( Coordinate() );
     Object::registerType( SpatialTransform() );
@@ -255,10 +259,11 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( ContactEllipsoid() );
     Object::registerType( ContactTorus() );
     Object::registerType( CoordinateLimitForce() );
+    Object::registerType( CoordinateLinearStopForce() );
     Object::registerType( SmoothSphereHalfSpaceForce() );
     Object::registerType( ExponentialContactForce() );
-    Object::registerType( ExponentialContactForce::Parameters() );
     Object::registerType( MeyerFregly2016Force() );
+    Object::registerType( ExponentialCoordinateLimitForce() );
     Object::registerType( HuntCrossleyForce() );
     Object::registerType( ElasticFoundationForce() );
     Object::registerType( HuntCrossleyForce::ContactParameters() );

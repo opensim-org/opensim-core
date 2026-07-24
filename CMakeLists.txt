@@ -28,8 +28,8 @@ include(FeatureSummary)
 # OpenSim version.
 # ----------------
 set(OPENSIM_MAJOR_VERSION 4)
-set(OPENSIM_MINOR_VERSION 5)
-set(OPENSIM_PATCH_VERSION 2)
+set(OPENSIM_MINOR_VERSION 6)
+set(OPENSIM_PATCH_VERSION 0)
 
 # Don't include the patch version if it is 0.
 set(PATCH_VERSION_STRING)
@@ -552,7 +552,7 @@ endif()
 if(${BUILD_PYTHON_WRAPPING})
     set(required_python_version 3)
     set(Python3_ROOT_DIR ""  CACHE PATH "Top level directory containing Python3. For conda environments, this can also be set to the top level directory for a specific environment.")
-    find_package(Python3 3.6 REQUIRED COMPONENTS Interpreter Development NumPy)
+    find_package(Python3 3.6 REQUIRED COMPONENTS Interpreter Development.Module NumPy)
     message("Python3_FOUND:${Python3_FOUND}")
     message("Python3_VERSION:${Python3_VERSION}")
     message("Python3_Development_FOUND:${Python3_Development_FOUND}")
@@ -962,6 +962,8 @@ endif()
 if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
     OpenSimInstallDependencyLibraries(SimTK "${Simbody_BIN_DIR}"
         "${Simbody_LIB_DIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+    OpenSimInstallVisualizer("${Simbody_BIN_DIR}"
+       "${Simbody_LIB_DIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
 endif()
 
 

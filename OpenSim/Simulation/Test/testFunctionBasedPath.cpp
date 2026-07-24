@@ -370,4 +370,27 @@ TEST_CASE("testFunctionBasedPath") {
         CHECK_THAT(genForce_y, WithinAbs(residuals[1], tol));
     }
 
+    SECTION("findIndependentCoordinates") {
+        // Create a planar point mass model and add a PathActuator with a 2-DOF
+        // FunctionBasedPath.
+        Model model = ModelFactory::createPlanarPointMass();
+
+        FunctionBasedPath fbPath;
+        fbPath.setName("polynomial_path_2dof");
+        fbPath.setLengthFunction(MultivariatePolynomialFunction(
+            createVector({1.0, 2.0, 3.0, 4.0, 5.0, 6.0}), 2, 2));
+        fbPath.setCoordinatePaths({"/jointset/tx/tx", "/jointset/ty/ty"});
+        auto* actu = new PathActuator();
+        actu->set_path(fbPath);
+        model.addComponent(actu);
+        model.finalizeConnections();
+
+        // findIndependentCoordinates() should return the coordinates we
+        // prescribed in the FunctionBasedPath above.
+        SimTK::State state = model.initSystem();
+        auto coords = fbPath.findIndependentCoordinates(state);
+        CHECK(coords.size() == 2);
+        CHECK(coords[0].toString() == "/jointset/tx/tx");
+        CHECK(coords[1].toString() == "/jointset/ty/ty");
+    }
 }

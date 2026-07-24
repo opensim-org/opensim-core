@@ -22,6 +22,8 @@
 #include <OpenSim/Simulation/Model/ForceProducer.h>
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
 #include <OpenSim/Simulation/Model/CoordinateLimitForce.h>
+#include <OpenSim/Simulation/Model/ExponentialCoordinateLimitForce.h>
+#include <OpenSim/Simulation/Model/CoordinateLinearStopForce.h>
 #include <OpenSim/Simulation/Model/ExternalForce.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/ContactHalfSpace.h>
@@ -31,6 +33,7 @@
 #include <OpenSim/Simulation/Model/ElasticFoundationForce.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 #include <OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.h>
+#include <OpenSim/Simulation/Model/ExponentialContactForce.h>
 
 #include <OpenSim/Simulation/Model/ContactGeometrySet.h>
 #include <OpenSim/Simulation/Model/Probe.h>
@@ -103,6 +106,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/ConstantCurvatureJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/CantileverFreeBeamJoint.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
 
 #include <OpenSim/Simulation/Model/Marker.h>

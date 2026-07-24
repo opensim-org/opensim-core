@@ -1,85 +1,56 @@
-# Ignore backup files created by editors like emacs, vim.
-*~
-*.swp
-*.swo
-# Ignore cmake files.
-*CMakeCache.txt
-*CMakeFiles
-# Ignore tmp directory/file. We use it sometimes to write debug information.
-tmp
-# Ignore build trees.
+# Sources: downloaded source code
+dependencies/*
+!dependencies/CMakeLists.txt
+!dependencies/CMakePresets.json
+!dependencies/*.cmake
+!dependencies/*.patch
+
+# Build directory
 /build*
-# Ignore install dir.
+
+# Testing: `tmp` is sometimes used to write debug information.
+tmp
+
+# Installation: some configurations install OpenSim in the source directory
 install
 
-# Vim
-.*.swo
-.*.swp
-*~
-
-# OpenSim
+# Runtime: some configurations cause OpenSim to write these log files
 err.log
 out.log
 
-# Mac
-.DS_Store
-
-# dependencies
-dependencies/*
-!dependencies/CMakeLists.txt
-!dependencies/*.cmake
-!dependencies/*.patch
+# Runtime: OpenSim Moco
+delete_this_to_stop_optimization*.txt
 
 # python
 *.pyc
 venv
 
+# macOS
+.DS_Store
+
 # Matlab
 *.asv
 
-# Moco optimization delete-to-stop file
-delete_this_to_stop_optimization*.txt
+# editor: CLion/PyCharm
+.idea
 
-# Clion
-# -----
-# Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
+# editor: QtCreator
+*.autosave
+CMakeLists.txt.user
 
-# User-specific stuff:
-.idea/**/workspace.xml
-.idea/**/tasks.xml
-.idea/dictionaries
-.idea/vcs.xml
-.idea/opensim-core.iml
-.idea/OpenSim.iml
-.idea/misc.xml
-.idea/editor.xml
-.idea/codeStyles/codeStyleConfig.xml
-.idea/codeStyles/Project.xml
-.idea/editor.xml
-.idea/copilot/**
-.cache/clangd/**
-**/.vscode/
+# editor: emacs/vim
+*~
+*.swp
+*.swo
 
+# When using clangd-based LSPs
+.cache/
 
-# Sensitive or high-churn files:
-.idea/**/dataSources/
-.idea/**/dataSources.ids
-.idea/**/dataSources.xml
-.idea/**/dataSources.local.xml
-.idea/**/sqlDataSources.xml
-.idea/**/dynamic.xml
-.idea/**/uiDesigner.xml
+# editor: Visual Studio
+.vs/
+out/
+CMakeSettings.json
 
-.idea/deployment.xml
-.idea/other.xml
-.idea/encodings.xml
-.idea/inspectionProfiles/Project_Default.xml
+# editor: Visual Studio Code
+.vscode/
 
-# Clang-Tidy
-.clang-tidy
-
-# CMake
-cmake-build-*
-
-## File-based project format:
-*.iws

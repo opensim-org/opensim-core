@@ -45,3 +45,8 @@ add_test(NAME ${TEST_TARGET}_Example2
          COMMAND opensim-cmd -L $<TARGET_FILE:${TEST_TARGET}> run-tool
          forward.xml
          WORKING_DIRECTORY ${TEST_DIR})
+
+if(BUILD_API_ONLY)
+    set_tests_properties(${TEST_TARGET}_Example1 ${TEST_TARGET}_Example2
+            PROPERTIES DISABLED TRUE)
+endif()

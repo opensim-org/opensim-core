@@ -49,9 +49,18 @@ using SimTK::Transform;
 //=============================================================================
 // STATICS
 //=============================================================================
-ArrayPtrs<Object>           Object::_registeredTypes;
-std::map<string,Object*>    Object::_mapTypesToDefaultObjects;
-std::map<string,string>     Object::_renamedTypesMap;
+ArrayPtrs<Object>& Object::_registeredTypes() {
+    static ArrayPtrs<Object> instance;
+    return instance;
+}
+std::map<string,Object*>& Object::_mapTypesToDefaultObjects() {
+    static std::map<string,Object*> instance;
+    return instance;
+}
+std::map<string,string>& Object::_renamedTypesMap() {
+    static std::map<string,string> instance;
+    return instance;
+}
 
 bool                        Object::_serializeAllDefaults=false;
 const string                Object::DEFAULT_NAME(ObjectDEFAULT_NAME);
@@ -503,25 +512,25 @@ registerType(const Object& aObject)
     log_debug("Object.registerType: {}.", type);
 
     // REPLACE IF A MATCHING TYPE IS ALREADY REGISTERED
-    for(int i=0; i <_registeredTypes.size(); ++i) {
-        Object *object = _registeredTypes.get(i);
+    for(int i=0; i <_registeredTypes().size(); ++i) {
+        Object *object = _registeredTypes().get(i);
         if(object->getConcreteClassName() == type) {
             log_debug("Object.registerType: replacing registered object of "
                       "type {} with a new default object of the same type.",
                       type);
             Object* defaultObj = aObject.clone();
             defaultObj->setName(DEFAULT_NAME);
-            _registeredTypes.set(i,defaultObj);
-            _mapTypesToDefaultObjects[type]= defaultObj;
+            _registeredTypes().set(i,defaultObj);
+            _mapTypesToDefaultObjects()[type]= defaultObj;
             return;
-        } 
+        }
     }
 
     // REGISTERING FOR THE FIRST TIME -- APPEND
     Object* defaultObj = aObject.clone();
     defaultObj->setName(DEFAULT_NAME);
-    _registeredTypes.append(defaultObj);
-    _mapTypesToDefaultObjects[type]= defaultObj;
+    _registeredTypes().append(defaultObj);
+    _mapTypesToDefaultObjects()[type]= defaultObj;
 }
 
 /*static*/ void Object::
@@ -530,16 +539,16 @@ renameType(const std::string& oldTypeName, const std::string& newTypeName)
     if(oldTypeName == newTypeName)
         return; 
 
-    std::map<std::string,Object*>::const_iterator p = 
-        _mapTypesToDefaultObjects.find(newTypeName);
+    std::map<std::string,Object*>::const_iterator p =
+        _mapTypesToDefaultObjects().find(newTypeName);
 
-    if (p == _mapTypesToDefaultObjects.end())
+    if (p == _mapTypesToDefaultObjects().end())
         throw OpenSim::Exception(
             "Object::renameType(): illegal attempt to rename object type "
             + oldTypeName + " to " + newTypeName + " which is unregistered.",
             __FILE__, __LINE__);
 
-    _renamedTypesMap[oldTypeName] = newTypeName;
+    _renamedTypesMap()[oldTypeName] = newTypeName;
 }
 
 /*static*/ const Object* Object::
@@ -550,12 +559,12 @@ getDefaultInstanceOfType(const std::string& objectTypeTag) {
     // First apply renames if any.
 
     // Avoid an infinite loop if there is a cycle in the rename table.
-    const int MaxRenames = (int)_renamedTypesMap.size();
+    const int MaxRenames = (int)_renamedTypesMap().size();
     int renameCount = 0;
     while(true) {
         std::map<std::string,std::string>::const_iterator newNamep =
-            _renamedTypesMap.find(actualName);
-        if (newNamep == _renamedTypesMap.end())
+            _renamedTypesMap().find(actualName);
+        if (newNamep == _renamedTypesMap().end())
             break; // actualName has not been renamed
 
         if (++renameCount > MaxRenames) {
@@ -569,9 +578,9 @@ getDefaultInstanceOfType(const std::string& objectTypeTag) {
     }
 
     // Look up the "actualName" default object and return it.
-    std::map<std::string,Object*>::const_iterator p = 
-        _mapTypesToDefaultObjects.find(actualName);
-    if (p != _mapTypesToDefaultObjects.end())
+    std::map<std::string,Object*>::const_iterator p =
+        _mapTypesToDefaultObjects().find(actualName);
+    if (p != _mapTypesToDefaultObjects().end())
         return p->second;
 
     // The requested object was not registered. That's OK normally but is
@@ -619,9 +628,9 @@ newInstanceOfType(const std::string& objectTypeTag)
 /*static*/ void Object::
 getRegisteredTypenames(Array<std::string>& rTypeNames)
 {
-    std::map<string,Object*>::const_iterator p = 
-        _mapTypesToDefaultObjects.begin();
-    for (; p != _mapTypesToDefaultObjects.end(); ++p)
+    std::map<string,Object*>::const_iterator p =
+        _mapTypesToDefaultObjects().begin();
+    for (; p != _mapTypesToDefaultObjects().end(); ++p)
         rTypeNames.append(p->first);
     // Renamed type names don't appear in the registeredTypes map, unless
     // they were separately registered.
@@ -1405,11 +1414,11 @@ PrintPropertyInfo(ostream &aOStream,
 
     if(aClassName=="") {
         // NO CLASS
-        int size = _registeredTypes.getSize();
+        int size = _registeredTypes().getSize();
         ss<<"REGISTERED CLASSES ("<<size<<")\n";
         Object *obj;
         for(int i=0;i<size;i++) {
-            obj = _registeredTypes.get(i);
+            obj = _registeredTypes().get(i);
             if(obj==NULL) continue;
             ss<<obj->getConcreteClassName()<<endl;
         }
@@ -1595,10 +1604,11 @@ makeObjectFromFile(const std::string &aFileName)
         // properly
         IO::CwdChanger cwd = IO::CwdChanger::changeToParentOf(aFileName);
         newObject->_document = std::move(doc);
+        // doc is nullptr after this line
         if (newFormat) {
             newObject->updateFromXMLNode(*newObject->_document->getRootElement().element_begin(), newObject->_document->getDocumentVersion());
-        } else {
-            SimTK::Xml::Element e = doc->getRootElement();
+        } else { // Old format
+            SimTK::Xml::Element e = newObject->_document->getRootElement();
             newObject->updateFromXMLNode(e, 10500);
         }
 

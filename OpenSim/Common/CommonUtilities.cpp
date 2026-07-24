@@ -27,8 +27,10 @@
 #include "STOFileAdapter.h"
 #include "TimeSeriesTable.h"
 #include <chrono>
+#include <cstdint>
 #include <ctime>
 #include <iomanip>
+#include <limits>
 #include <memory>
 #include <sstream>
 #include <unordered_map>
@@ -252,8 +254,8 @@ SimTK::Matrix OpenSim::computeKNearestNeighbors(const SimTK::Matrix& x,
     return distances;
 }
 
-double OpenSim::factorizeMatrixNonNegative(const SimTK::Matrix& A, 
-        int numFactors, int maxIterations, double tolerance, 
+double OpenSim::factorizeMatrixNonNegative(const SimTK::Matrix& A,
+        int numFactors, int maxIterations, double tolerance,
         SimTK::Matrix& W, SimTK::Matrix& H) {
 
     // Initialize W and H.
@@ -287,7 +289,7 @@ double OpenSim::factorizeMatrixNonNegative(const SimTK::Matrix& A,
     SimTK::Matrix error(A.nrow(), A.ncol());
     double normError0 = SimTK::Infinity;
     double normError = SimTK::Infinity;
-    double deltaError = SimTK::Infinity;    
+    double deltaError = SimTK::Infinity;
     for (int j = 0; j < maxIterations; ++j) {
 
         // Alternating least squares.
@@ -300,7 +302,7 @@ double OpenSim::factorizeMatrixNonNegative(const SimTK::Matrix& A,
                 H(i, k) = std::max(0.0, H(i, k));
             }
         }
-        // ~H * ~W = ~A --> ~W = ~H^(-1) * ~A  
+        // ~H * ~W = ~A --> ~W = ~H^(-1) * ~A
         SimTK::FactorSVD svd_H(H.transpose().getAsMatrix());
         svd_H.solve(A.transpose().getAsMatrix(), W.transpose().updAsMatrix());
         for (int i = 0; i < W.nrow(); ++i) {
@@ -320,10 +322,10 @@ double OpenSim::factorizeMatrixNonNegative(const SimTK::Matrix& A,
 
         // Compute error using the Frobenius norm.
         error = A - W * H;
-        normError = std::sqrt(error.scalarNormSqr()) / 
+        normError = std::sqrt(error.scalarNormSqr()) /
                            std::sqrt(A.nelt());
         deltaError = normError0 - normError;
-        log_info("Iteration {} | norm(error) = {} | change in norm(error) = {}", 
+        log_info("Iteration {} | norm(error) = {} | change in norm(error) = {}",
                 j, normError, deltaError);
 
         // Check for convergence.
@@ -336,11 +338,32 @@ double OpenSim::factorizeMatrixNonNegative(const SimTK::Matrix& A,
             log_info("");
             break;
         }
-    
+
         // Update variables.
         normError0 = normError;
         W0 = W;
     }
 
     return normError;
+}
+
+int OpenSim::choose(int n, int k) {
+    OPENSIM_THROW_IF(n < 0, Exception, "n must be non-negative.");
+    OPENSIM_THROW_IF(k < 0 || k > n, Exception, "k must be between 0 and n.");
+
+    // Use symmetry C(n,k) == C(n,n-k) to minimize loop iterations.
+    if (k > n - k) { k = n - k; }
+
+    int64_t result = 1;
+    for (int i = 0; i < k; ++i) {
+        // Check for overflow before multiplying.
+        OPENSIM_THROW_IF(result > std::numeric_limits<int64_t>::max() / (n - i),
+                Exception, "Intermediate overflow in binomial coefficient.");
+        result *= (n - i);
+        result /= (i + 1); // exact: result holds C(n,i), so product is divisible
+    }
+
+    OPENSIM_THROW_IF(result > std::numeric_limits<int>::max(), Exception,
+            "Binomial coefficient exceeds int range.");
+    return static_cast<int>(result);
 }

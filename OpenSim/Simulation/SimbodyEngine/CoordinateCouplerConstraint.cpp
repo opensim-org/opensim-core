@@ -278,13 +278,13 @@ void CoordinateCouplerConstraint::extendAddToSystem(SimTK::MultibodySystem& syst
         // Error checking was handled in extendConnectToModel()
         const Coordinate& aCoordinate = getModel().getCoordinateSet().get(independentCoordNames[i]);
         mob_bodies.push_back(aCoordinate._bodyIndex);
-        mob_qs.push_back(SimTK::MobilizerQIndex(aCoordinate._mobilizerQIndex));
+        mob_qs.push_back(aCoordinate._mobilizerQIndex);
     }
 
     // Last coordinate in the coupler is the dependent coordinate
     const Coordinate& aCoordinate = getModel().getCoordinateSet().get(get_dependent_coordinate_name());
     mob_bodies.push_back(aCoordinate._bodyIndex);
-    mob_qs.push_back(SimTK::MobilizerQIndex(aCoordinate._mobilizerQIndex));
+    mob_qs.push_back(aCoordinate._mobilizerQIndex);
 
     if (!mob_qs.size() && (mob_qs.size() != mob_bodies.size())) {
         errorMessage = "CoordinateCouplerConstraint:: requires at least one body and coordinate." ;

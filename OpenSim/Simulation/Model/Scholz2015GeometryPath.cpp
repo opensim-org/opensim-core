@@ -27,6 +27,7 @@
 #include <OpenSim/Simulation/Model/ForceConsumer.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimulationUtilities.h>
 
 #include <optional>
 
@@ -212,6 +213,38 @@ double Scholz2015GeometryPath::computeMomentArm(const SimTK::State& s,
     return _maSolver->solve(s, coord,  *this);
 }
 
+bool Scholz2015GeometryPath::isVisualPath() const {
+    return true;
+}
+
+std::vector<ComponentPath>
+Scholz2015GeometryPath::
+findIndependentCoordinates(const SimTK::State& s) const {
+    const PhysicalFrame& originFrame = getOrigin().getParentFrame();
+    const PhysicalFrame& insertionFrame = getInsertion().getParentFrame();
+
+    std::vector<SimTK::ReferencePtr<const Joint>>
+    jointsBetweenFrames = findJointsBetweenPhysicalFrames(
+            getModel(),
+            originFrame.getAbsolutePathString(),
+            insertionFrame.getAbsolutePathString());
+
+    std::vector<ComponentPath> coordinates;
+    for (const auto& joint : jointsBetweenFrames) {
+        for (int i = 0; i < joint->numCoordinates(); ++i) {
+            const Coordinate& coord = joint->get_coordinates(i);
+            if (!coord.isConstrained(s)) {
+                coordinates.push_back(
+                    ComponentPath(coord.getAbsolutePathString()));
+            }
+        }
+    }
+    return coordinates;
+}
+
+//=============================================================================
+// FORCE PRODUCER INTERFACE
+//=============================================================================
 void Scholz2015GeometryPath::produceForces(const SimTK::State& state,
         double tension, ForceConsumer& forceConsumer) const {
 
@@ -222,14 +255,16 @@ void Scholz2015GeometryPath::produceForces(const SimTK::State& state,
     const SimTK::CableSpan& cable = getCableSpan();
     const PathPoint& origin = getOrigin();
     const PathPoint& insertion = getInsertion();
-    SimTK::SpatialVec unitBodyForce;
 
     // Force applied at path origin point.
-    {
-        cable.calcOriginUnitForce(state, unitBodyForce);
-        forceConsumer.consumeBodySpatialVec(state, origin.getParentFrame(),
-                tension * unitBodyForce);
-    }
+    // CableSpan::calcOriginTangentDirection() returns the tangent direction of
+    // the cable at origin point, pointing away from the origin in the direction
+    // of the tension force.
+    forceConsumer.consumePointForce(state,
+            origin.getParentFrame(),
+            origin.getLocation(state),
+            tension * cable.calcOriginTangentDirection(state));
+
 
     // Forces applied to each obstacle body.
     for (const auto& [ix, eltIx] : _obstacleIndexes) {
@@ -237,29 +272,64 @@ void Scholz2015GeometryPath::produceForces(const SimTK::State& state,
             continue;
         }
 
-        cable.calcCurveSegmentUnitForce(state, ix, unitBodyForce);
-        const auto& obstacle =
-                getElement<Scholz2015GeometryPathObstacle>(eltIx);
+        // Compute the initial and final Frenet frame for the curve segment.
+        const SimTK::Transform X_GP =
+                cable.calcCurveSegmentInitialFrenetFrame(state, ix);
+        const SimTK::Transform X_GQ =
+                cable.calcCurveSegmentFinalFrenetFrame(state, ix);
+
+        // The tangent direction of the curve segment at the obstacle contact
+        // point is the x-axis of the Frenet frame. The force applied to the
+        // obstacle at the initial contact point is in the negative direction
+        // of the tangent.
+        const SimTK::UnitVec3& t_P = -X_GP.R().getAxisUnitVec(SimTK::XAxis);
+        const SimTK::UnitVec3& t_Q = X_GQ.R().getAxisUnitVec(SimTK::XAxis);
+
+        // Transform the Frenet frame positions from the ground frame G to the
+        // obstacle frame O, to conform with the ForceConsumer interface.
+        const Ground& ground = getModel().getGround();
+        const auto& obstacle = getElement<Scholz2015GeometryPathObstacle>(eltIx);
         const auto& frame = obstacle.getContactGeometry().getFrame();
-        forceConsumer.consumeBodySpatialVec(state, frame,
-                tension * unitBodyForce);
+        const SimTK::Vec3& p_GP = X_GP.p();
+        const SimTK::Vec3& p_GQ = X_GQ.p();
+        const SimTK::Vec3 p_OP = ground.findStationLocationInAnotherFrame(
+                state, p_GP, frame);
+        const SimTK::Vec3 p_OQ = ground.findStationLocationInAnotherFrame(
+                state, p_GQ, frame);
+
+        // Consume the forces applied at the initial and final Frenet frames
+        // associated with the obstacle.
+        forceConsumer.consumePointForce(state, frame, p_OP, tension * t_P);
+        forceConsumer.consumePointForce(state, frame, p_OQ, tension * t_Q);
     }
 
     // Forces applied to each via point.
     for (const auto& [ix, eltIx] : _viaPointIndexes) {
-        cable.calcViaPointUnitForce(state, ix, unitBodyForce);
-        const auto& point = getElement<Scholz2015GeometryPathPoint>(eltIx);
-        const auto& frame = point.getPathPoint().getParentFrame();
-        forceConsumer.consumeBodySpatialVec(state, frame,
-                tension * unitBodyForce);
+        // Calculate the via point's initial tangent direction (point from the
+        // via point torwards the origin) and the final tangent direction
+        // (point from the via point towards the insertion).
+        const SimTK::UnitVec3 t_P =
+                -cable.calcViaPointIncomingTangentDirection(state, ix);
+        const SimTK::UnitVec3 t_Q =
+                cable.calcViaPointOutgoingTangentDirection(state, ix);
+
+        // Consume the forces applied at the via point.
+        const PathPoint& point =
+            getElement<Scholz2015GeometryPathPoint>(eltIx).getPathPoint();
+        const auto& frame = point.getParentFrame();
+        const auto& location = point.getLocation(state);
+        forceConsumer.consumePointForce(state, frame, location, tension * t_P);
+        forceConsumer.consumePointForce(state, frame, location, tension * t_Q);
     }
 
     // Force applied at path insertion point.
-    {
-        cable.calcTerminationUnitForce(state, unitBodyForce);
-        forceConsumer.consumeBodySpatialVec(
-            state, insertion.getParentFrame(), unitBodyForce * tension);
-    }
+    // CableSpan::calcTerminationTangentDirection() returns the tangent
+    // direction of the cable at insertion point, pointing towards the insertion
+    // in the opposite direction of the tension force.
+    forceConsumer.consumePointForce(state,
+            insertion.getParentFrame(),
+            insertion.getLocation(state),
+            -tension * cable.calcTerminationTangentDirection(state));
 }
 
 //=============================================================================
@@ -363,6 +433,18 @@ void Scholz2015GeometryPath::generateDecorations(
 
         previous = x_G;
     });
+}
+
+void Scholz2015GeometryPath::extendPreScale(const SimTK::State& s,
+        const ScaleSet& scaleSet) {
+    Super::extendPreScale(s, scaleSet);
+    setPreScaleLength(s, getLength(s));
+}
+
+void Scholz2015GeometryPath::extendPostScale(const SimTK::State& s,
+        const ScaleSet& scaleSet) {
+    Super::extendPostScale(s, scaleSet);
+    getLength(s);
 }
 
 //=============================================================================

@@ -89,6 +89,14 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSenseExample/Geometry/"
         DESTINATION
         "${OPENSIM_INSTALL_MATLABEXDIR}/Moco/exampleSquatToStand/exampleIMUTracking/Geometry/")
 
+# Copy Geometry folder for PolynomialPathFitter examples
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSenseExample/Geometry/"
+        DESTINATION
+        "${OPENSIM_INSTALL_MATLABEXDIR}/PolynomialPathFitter/Geometry/")
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSenseExample/Geometry/"
+        DESTINATION
+        "${OPENSIM_INSTALL_PYTHONEXDIR}/PolynomialPathFitter/Geometry/")
+
 # The configureOpenSim.m script contains paths into the OpenSim installation
 # that may be different on different platforms, so we configure it with CMake
 # variables.

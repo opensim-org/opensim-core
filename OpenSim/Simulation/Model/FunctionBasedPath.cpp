@@ -125,6 +125,12 @@ double FunctionBasedPath::getLength(const SimTK::State& s) const
     return getCacheVariableValue<double>(s, _lengthCV);
 }
 
+double FunctionBasedPath::getLengtheningSpeed(const SimTK::State& s) const
+{
+    computeLengtheningSpeed(s);
+    return getCacheVariableValue<double>(s, _lengtheningSpeedCV);
+}
+
 double FunctionBasedPath::computeMomentArm(const SimTK::State& s,
         const Coordinate& coord) const
 {
@@ -150,14 +156,25 @@ void FunctionBasedPath::produceForces(const SimTK::State& state,
 
     // Produce mobility forces
     for (int i = 0; i < (int)_coordinates.size(); ++i) {
-        forceConsumer.consumeGeneralizedForce(state, *_coordinates[i], momentArms[i] * tension);
+        forceConsumer.consumeGeneralizedForce(
+                state, *_coordinates[i], momentArms[i] * tension);
     }
 }
 
-double FunctionBasedPath::getLengtheningSpeed(const SimTK::State& s) const
+bool FunctionBasedPath::isVisualPath() const
 {
-    computeLengtheningSpeed(s);
-    return getCacheVariableValue<double>(s, _lengtheningSpeedCV);
+    return false;
+}
+
+std::vector<ComponentPath>
+FunctionBasedPath::findIndependentCoordinates(const SimTK::State&) const
+{
+    std::vector<ComponentPath> coordinates;
+    coordinates.reserve(getProperty_coordinate_paths().size());
+    for (int i = 0; i < getProperty_coordinate_paths().size(); ++i) {
+        coordinates.push_back(ComponentPath(get_coordinate_paths(i)));
+    }
+    return coordinates;
 }
 
 //=============================================================================

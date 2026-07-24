@@ -351,11 +351,18 @@ public:
         return getOutput().getTypeName();
     }
     std::string getName() const override {
-        if (_channelName.empty()) return getOutput().getName();
-        return getOutput().getName() + ":" + _channelName;
+        auto rv = getOutput().getName();
+        if (not _channelName.empty()) {
+            rv += ":" + _channelName;
+        }
+        return rv;
     }
     std::string getPathName() const override {
-        return getOutput().getOwner().getAbsolutePathString() + "|" + getName();
+        auto rv = getOutput().getPathName();
+        if (not _channelName.empty()) {
+            rv += ":" + _channelName;
+        }
+        return rv;
     }
 private:
     mutable T _result;

@@ -47,7 +47,7 @@ def solveMocoInverse():
     jointsToWeld.append("mtp_r")
     jointsToWeld.append("mtp_l")
     modelProcessor.append(osim.ModOpReplaceJointsWithWelds(jointsToWeld))
-    # Add CoordinateActuators to the pelvis coordinates. 
+    # Add CoordinateActuators to the pelvis coordinates.
     modelProcessor.append(osim.ModOpAddResiduals(250.0, 50.0, 1.0))
     modelProcessor.append(osim.ModOpIgnoreTendonCompliance())
     modelProcessor.append(osim.ModOpReplaceMusclesWithDeGrooteFregly2016())
@@ -104,7 +104,7 @@ def solveMocoInverseWithEMG():
     jointsToWeld.append("mtp_r")
     jointsToWeld.append("mtp_l")
     modelProcessor.append(osim.ModOpReplaceJointsWithWelds(jointsToWeld))
-    # Add CoordinateActuators to the pelvis coordinates. 
+    # Add CoordinateActuators to the pelvis coordinates.
     modelProcessor.append(osim.ModOpAddResiduals(250.0, 50.0, 1.0))
     modelProcessor.append(osim.ModOpIgnoreTendonCompliance())
     modelProcessor.append(osim.ModOpReplaceMusclesWithDeGrooteFregly2016())
@@ -195,7 +195,7 @@ def solveMocoInverseWithSynergies(numSynergies=5):
     jointsToWeld.append("mtp_r")
     jointsToWeld.append("mtp_l")
     modelProcessor.append(osim.ModOpReplaceJointsWithWelds(jointsToWeld))
-    # Add CoordinateActuators to the pelvis coordinates. 
+    # Add CoordinateActuators to the pelvis coordinates.
     modelProcessor.append(osim.ModOpAddResiduals(250.0, 50.0, 1.0))
     modelProcessor.append(osim.ModOpIgnoreTendonCompliance())
     modelProcessor.append(osim.ModOpIgnoreActivationDynamics())
@@ -220,7 +220,7 @@ def solveMocoInverseWithSynergies(numSynergies=5):
                 rightControlNames.append(actu.getAbsolutePathString())
             elif name.endswith('_l'):
                 leftControlNames.append(actu.getAbsolutePathString())
-    
+
     controls = prevSolution.exportToControlsTable()
     leftControls = osim.TimeSeriesTable(controls.getIndependentColumn())
     rightControls = osim.TimeSeriesTable(controls.getIndependentColumn())
@@ -231,20 +231,20 @@ def solveMocoInverseWithSynergies(numSynergies=5):
 
     # SynergyController
     # -----------------
-    # SynergyController defines the controls for actuators connected to the 
-    # controller using a linear combination of time-varying synergy control 
-    # signals (i.e., "synergy excitations") and a set of vectors containing 
+    # SynergyController defines the controls for actuators connected to the
+    # controller using a linear combination of time-varying synergy control
+    # signals (i.e., "synergy excitations") and a set of vectors containing
     # weights for each actuator representing the contribution of each synergy
-    # excitation to the total control signal for that actuator 
+    # excitation to the total control signal for that actuator
     # (i.e., "synergy vectors").
     #
     # If 'N' is the number of time points in the trajectory, 'M' is the number
-    # of actuators connected to the controller, and 'K' is the number of   
+    # of actuators connected to the controller, and 'K' is the number of
     # synergies in the controller, then:
     # - The synergy excitations are a matrix 'W' of size N x K.
     # - The synergy vectors are a matrix 'H' of size K x M.
     # - The controls for the actuators are computed A = W * H.
-    #  
+    #
     # SynergyController is a concrete implementation of InputController, which
     # means that it uses Input control signals as the synergy excitations.
     # Moco automatically detects InputController%s in a model provided to a
@@ -255,30 +255,28 @@ def solveMocoInverseWithSynergies(numSynergies=5):
 
     # Use non-negative matrix factorization (NNMF) to extract a set of muscle
     # synergies for each leg.
-    from sklearn.decomposition import NMF
-    import numpy as np
-    nmf = NMF(n_components=numSynergies, init='random', random_state=0)
-    
-    Al = leftControls.getMatrix().to_numpy()
-    Wl = nmf.fit_transform(Al)
-    Hl = nmf.components_
+    maxIterations = 100
+    tolerance = 1e-6
 
-    Ar = rightControls.getMatrix().to_numpy()
-    Wr = nmf.fit_transform(Ar)
-    Hr = nmf.components_
+    leftControlsMat = leftControls.getMatrix()
+    Al = osim.Matrix(leftControlsMat.nrow(), leftControlsMat.ncol())
+    for i in range(leftControlsMat.nrow()):
+        for j in range(leftControlsMat.ncol()):
+            Al.set(i, j, leftControlsMat.getElt(i, j))
 
-    # Scale W and H assuming that the elements of H are all 0.5. This prevents the 
-    # synergy vector weights and synergy excitations from being very large or very
-    # small.
-    scaleVec = 0.5*np.ones(Hl.shape[1])
-    for i in range(numSynergies):
-        scale_l = np.linalg.norm(scaleVec) / np.linalg.norm(Hl[i, :])
-        Hl[i, :] *= scale_l
-        Wl[:, i] /= scale_l
+    Wl = osim.Matrix()
+    Hl = osim.Matrix()
+    osim.factorizeMatrixNonNegative(Al, numSynergies, maxIterations, tolerance, Wl, Hl)
 
-        scale_r = np.linalg.norm(scaleVec) / np.linalg.norm(Hr[i, :])
-        Hr[i, :] *= scale_r
-        Wr[:, i] /= scale_r
+    rightControlsMat = rightControls.getMatrix()
+    Ar = osim.Matrix(rightControlsMat.nrow(), rightControlsMat.ncol())
+    for i in range(rightControlsMat.nrow()):
+        for j in range(rightControlsMat.ncol()):
+            Ar.set(i, j, rightControlsMat.getElt(i, j))
+
+    Wr = osim.Matrix()
+    Hr = osim.Matrix()
+    osim.factorizeMatrixNonNegative(Ar, numSynergies, maxIterations, tolerance, Wr, Hr)
 
     # Add a SynergyController for the left leg to the model.
     leftController = osim.SynergyController()
@@ -289,12 +287,12 @@ def solveMocoInverseWithSynergies(numSynergies=5):
         leftController.addActuator(
                 osim.Muscle.safeDownCast(model.getComponent(name)))
     # Adding a synergy vector increases the number of synergies in the
-    # controller by one. This means that the number of Input control 
+    # controller by one. This means that the number of Input control
     # signals expected by the controller is also increased by one.
-    for i in range(numSynergies):  
-        synergyVector = osim.Vector(Hl.shape[1], 0.0)
-        for j in range(Hl.shape[1]):
-            synergyVector.set(j, Hl[i, j])
+    for i in range(numSynergies):
+        synergyVector = osim.Vector(Hl.ncol(), 0.0)
+        for j in range(Hl.ncol()):
+            synergyVector.set(j, Hl.getElt(i, j))
         leftController.addSynergyVector(synergyVector)
     model.addController(leftController)
 
@@ -305,9 +303,9 @@ def solveMocoInverseWithSynergies(numSynergies=5):
         rightController.addActuator(
                 osim.Muscle.safeDownCast(model.getComponent(name)))
     for i in range(numSynergies):
-        synergyVector = osim.Vector(Hr.shape[1], 0.0)
-        for j in range(Hr.shape[1]):
-            synergyVector.set(j, Hr[i, j])
+        synergyVector = osim.Vector(Hr.ncol(), 0.0)
+        for j in range(Hr.ncol()):
+            synergyVector.set(j, Hr.getElt(i, j))
         rightController.addSynergyVector(synergyVector)
     model.addController(rightController)
     model.finalizeConnections()
@@ -325,21 +323,21 @@ def solveMocoInverseWithSynergies(numSynergies=5):
 
     # Initialize the MocoInverse study and set the control bounds for the
     # muscle synergies excitations. 'setInputControlInfo()' is equivalent to
-    # 'setControlInfo()', but reserved for Input control variables. Note that 
-    # while we make a distinction between "control" variables and 
+    # 'setControlInfo()', but reserved for Input control variables. Note that
+    # while we make a distinction between "control" variables and
     # "Input control" variables in the API, the optimal control problem
     # constructed by Moco treats them both as algebraic variables.
     study = inverse.initialize()
     problem = study.updProblem()
 
-    # We will also increase the weight on the synergy excitations in the 
-    # control effort cost term. MocoControlGoal, and other MocoGoals, that 
+    # We will also increase the weight on the synergy excitations in the
+    # control effort cost term. MocoControlGoal, and other MocoGoals, that
     # depend on control variables have options configuring cost terms with
     # Input control values.
     effort = osim.MocoControlGoal.safeDownCast(
             problem.updGoal("excitation_effort"))
     for i in range(numSynergies):
-        nameLeft = (f'/controllerset/synergy_controller_left_leg' 
+        nameLeft = (f'/controllerset/synergy_controller_left_leg'
                     f'/synergy_excitation_{i}')
         problem.setInputControlInfo(nameLeft, [0, 1.0])
         effort.setWeightForControl(nameLeft, 10)
@@ -367,7 +365,7 @@ def solveMocoInverseWithSynergies(numSynergies=5):
     solutionFile = (f'example3DWalking_MocoInverseWith'
                     f'{numSynergies}Synergies_solution.sto')
     solution.write(solutionFile)
-    
+
     # Generate a report comparing MocoInverse solutions with and without
     # muscle synergies.
     output = (f'example3DWalking_MocoInverseWith'
@@ -379,7 +377,7 @@ def solveMocoInverseWithSynergies(numSynergies=5):
                                 colors=['black', 'red'])
     # The PDF is saved to the working directory.
     report.generate()
-    
+
 
 # Solve the basic muscle redundancy problem with MocoInverse.
 solveMocoInverse()

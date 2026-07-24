@@ -35,6 +35,8 @@
 
 using namespace OpenSim;
 
+template <> struct fmt::formatter<SimTK::ConstraintIndex> : ostream_formatter {};
+
 const std::vector<std::string> MocoProblemRep::m_disallowedJoints(
         {"FreeJoint", "BallJoint", "EllipsoidJoint", "ScapulothoracicJoint"});
 

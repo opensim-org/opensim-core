@@ -28,6 +28,7 @@
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Simulation/Model/Analysis.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include "osimAnalysesDLL.h"
@@ -85,7 +86,12 @@ OpenSim_DECLARE_LIST_PROPERTY(output_paths, std::string,
         setName("OutputReporter");
     }
 
-    virtual ~OutputReporter() = default;
+    OutputReporter(const OutputReporter&);
+    OutputReporter(OutputReporter&&) noexcept;
+    ~OutputReporter() noexcept override;
+
+    OutputReporter& operator=(const OutputReporter&);
+    OutputReporter& operator=(OutputReporter&&) noexcept;
 
 protected:
     //--------------------------------------------------------------------------

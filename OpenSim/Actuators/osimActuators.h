@@ -40,6 +40,7 @@
 #include "Millard2012EquilibriumMuscle.h"
 #include "Millard2012AccelerationMuscle.h"
 #include "DeGrooteFregly2016Muscle.h"
+#include "MeyerFregly2016Muscle.h"
 
 #include "McKibbenActuator.h"
 

@@ -50,6 +50,12 @@ static const int ToggleMarkers = 4;
 static const int ToggleFrames = 5;
 static const int ToggleDefaultGeometry = 6;
 
+#ifdef _WIN32
+static const char PathSeparator = ';'; // Windows
+#else
+static const char PathSeparator = ':'; // Unix
+#endif
+
 /* This class gets first crack at user input coming in through the Visualizer
 window. We use it to intercept anything we want to handle as part of the 
 standard OpenSim-provided interface, such as turning on and off display of wrap
@@ -219,8 +225,8 @@ void ModelVisualizer::createVisualizer() {
     if (SimTK::Pathname::environmentVariableExists("PATH")) {
         const auto& path = SimTK::Pathname::getEnvironmentVariable("PATH");
         std::string buffer{};
-        for(const auto ch : path) {
-            if(ch == ':' || ch == ';') {
+        for (const auto ch : path) {
+            if (ch == PathSeparator) {
                 searchPath.push_back(buffer);
                 buffer.clear();
             } else

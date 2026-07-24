@@ -16,8 +16,7 @@ your goal in Matlab, share your Matlab code, and the Moco team will consider
 implementing it in C++ for you (no guarantees!). Reach out using the Moco forum
 (see link above). See @ref mococustomgoal for more information.
 
-@subsection faqonegoalweight What is the meaning of a MocoGoal's weight if my
-problem contains only one goal?
+@subsection faqonegoalweight What is the meaning of a MocoGoal's weight if my problem contains only one goal?
 
 In Cost mode, the value of a MocoGoal includes a weight (MocoGoal::setWeight()).
 This weight is typically used to set the relative importance of different

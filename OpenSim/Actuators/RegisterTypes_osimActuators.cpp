@@ -80,6 +80,7 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
     Object::RegisterType(Millard2012EquilibriumMuscle());
     Object::RegisterType(Millard2012AccelerationMuscle());
     Object::RegisterType(DeGrooteFregly2016Muscle());
+    Object::RegisterType(MeyerFregly2016Muscle());
 
     Object::registerType(ModelProcessor());
     Object::registerType(ModOpIgnoreActivationDynamics());

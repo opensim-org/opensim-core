@@ -131,6 +131,11 @@ function(AddDependency)
              -DCMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE})
         list(APPEND CMAKE_ARGS
              -DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_C_FLAGS_RELWITHDEBINFO})
+        if(CMAKE_MSVC_RUNTIME_LIBRARY)
+            list(APPEND CMAKE_ARGS
+                 -DCMAKE_MSVC_RUNTIME_LIBRARY:STRING=${CMAKE_MSVC_RUNTIME_LIBRARY}
+                 -DCMAKE_POLICY_DEFAULT_CMP0091:STRING=NEW)
+        endif()
         if(APPLE)
             list(APPEND CMAKE_ARGS
                  -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=${CMAKE_OSX_DEPLOYMENT_TARGET})
@@ -185,7 +190,7 @@ AddDependency(NAME       ezc3d
 AddDependency(NAME       simbody
               DEFAULT    ON
               GIT_URL    https://github.com/simbody/simbody.git
-              GIT_TAG    7f35622b3c5daac919fc39a2865498c03c553e53
+              GIT_TAG    80a3f10a6daa26c8aaf18f2c672cf385b227e62c
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF
                          -DBUILD_TESTING:BOOL=OFF
                          ${SIMBODY_EXTRA_CMAKE_ARGS})

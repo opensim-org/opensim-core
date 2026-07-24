@@ -41,9 +41,9 @@ using namespace OpenSim;
 using namespace std;
 
 //static bool DEBUG=false;
-static double UTOL = (double)SimTK::Eps*1e2;
-static double INTTOL = (double)SimTK::Eps*1e2;
-static int MAXITER = 20;
+static constexpr double UTOL = std::numeric_limits<double>::epsilon() * 1e2;
+static constexpr double INTTOL = std::numeric_limits<double>::epsilon() * 1e2;
+static constexpr int MAXITER = 20;
 static constexpr int NUM_SAMPLE_PTS = 100;
 static_assert(NUM_SAMPLE_PTS>0, "SmoothSegmentedFunction::NUM_SAMPLE_PTS must be larger than zero.");
 

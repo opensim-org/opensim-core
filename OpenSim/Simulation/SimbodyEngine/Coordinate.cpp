@@ -193,7 +193,7 @@ void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
         lock(system.updMatterSubsystem(),
              funcOwner.release(),   // give up ownership
              _bodyIndex,
-             SimTK::MobilizerQIndex(_mobilizerQIndex));
+             _mobilizerQIndex);
 
     // Save the index so we can access the SimTK::Constraint later
     mutableThis->_lockedConstraintIndex = lock.getConstraintIndex();
@@ -204,7 +204,7 @@ void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
                 _model->updMatterSubsystem(),
                 get_prescribed_function().createSimTKFunction(),
                 _bodyIndex,
-                SimTK::MobilizerQIndex(_mobilizerQIndex));
+                _mobilizerQIndex);
         mutableThis->_prescribedConstraintIndex = prescribe.getConstraintIndex();
     }
     else if(get_prescribed()){

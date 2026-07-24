@@ -191,7 +191,19 @@ public:
             double tension,
             ForceConsumer&) const override;
 
-    bool isVisualPath() const override { return false; }
+    bool isVisualPath() const override;
+
+    /**
+     * Find the list of paths to independent coordinates which fully determine
+     * the kinematic state of this path.
+     *
+     * `FunctionBasedPath`'s concrete implementation of this method
+     * constructs the list of `ComponentPath` element directly from the
+     * list property 'component_path' (i.e., the `SimTK::State` argument is
+     * unused).
+     */
+    std::vector<ComponentPath>
+    findIndependentCoordinates(const SimTK::State&) const override;
 
 private:
     // MODEL COMPONENT INTERFACE

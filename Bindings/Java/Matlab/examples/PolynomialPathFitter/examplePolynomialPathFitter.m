@@ -7,7 +7,7 @@
 % National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    %
 % through the Warrior Web program.                                           %
 %                                                                            %
-% Copyright (c) 2005-2023 Stanford University and the Authors                %
+% Copyright (c) 2026 Stanford University and the Authors                     %
 % Author(s): Nicholas Bianco                                                 %
 %                                                                            %
 % Licensed under the Apache License, Version 2.0 (the "License"); you may    %
@@ -73,7 +73,7 @@ sine = Sine(amplitude, angular_frequency, phase);
 mtp_values = Vector(values.getNumRows(), 0.0);
 time = Vector(1, 0.0);
 for i = 0:values.getNumRows()-1
-    time.set(0, times.get(i));
+    time.set(0, double(times.get(i)));
     mtp_values.set(i, sine.calcValue(time));
 end
 
@@ -102,7 +102,7 @@ fitter.setOutputDirectory(resultsDir);
 % path length functions.
 fitter.setMaximumPolynomialOrder(5);
 
-% Set the number of random samples taken at each frame around the nominal 
+% Set the number of random samples taken at each frame around the nominal
 % coordinate values.
 fitter.setNumSamplesPerFrame(10);
 
@@ -114,8 +114,8 @@ fitter.appendCoordinateSamplingBounds(...
 fitter.appendCoordinateSamplingBounds(...
     '/jointset/hip_l/hip_flexion_l', Vec2(-15, 15));
 
-% Set the global coordinate sampling bounds. This will be used for any
-% coordinates that do not have custom bounds set. We'll use reasonably
+% Set the global coordinate sampling bounds, in degrees. This will be used
+% for any coordinates that do not have custom bounds set. We use reasonably
 % large bounds here to sample a wide range of the model's coordinate space
 % around the reference trajectory.
 fitter.setGlobalCoordinateSamplingBounds(Vec2(-30, 30));
@@ -123,16 +123,16 @@ fitter.setGlobalCoordinateSamplingBounds(Vec2(-30, 30));
 % Use stepwise regression to fit the path lengths and moment arms. This
 % setting evaluates the fit after adding polynomial terms one at a time
 % to determine the minimum number of coefficients needed to achieve the
-% path length and moment arm tolerances. Stepwise regression includes 
-% polynomial terms up to the maximum order set by 
+% path length and moment arm tolerances. Stepwise regression includes
+% polynomial terms up to the maximum order set by
 % setMaximumPolynomialOrder().
 fitter.setUseStepwiseRegression(true);
 
-% Set the path length and moment arm tolerances. When the RMS errors 
-% between the original path lengths and moment arms and the fitted 
+% Set the path length and moment arm tolerances. When the RMS errors
+% between the original path lengths and moment arms and the fitted
 % polynomial paths are below these tolerances, the fitting process will
 % stop for a given path. Tighter tolerances may result in a better fit,
-% but at the expense of higher polynomial orders (or more polynomial 
+% but at the expense of higher polynomial orders (or more polynomial
 % terms, if using stepwise regression).
 fitter.setPathLengthTolerance(1e-3);
 fitter.setMomentArmTolerance(1e-3);
@@ -262,7 +262,7 @@ for iFig = 1:nFig
                     set(gca, 'XTickLabel', []);
                 end
 
-                if iCol == 1                  
+                if iCol == 1
                     ylabel(yLabel);
                 else
                     set(gca, 'YTickLabel', []);

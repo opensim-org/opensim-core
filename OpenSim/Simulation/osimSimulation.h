@@ -47,6 +47,7 @@
 #include "Model/HuntCrossleyForce.h"
 #include "Model/SmoothSphereHalfSpaceForce.h"
 #include "Model/MeyerFregly2016Force.h"
+#include "Model/ExponentialContactForce.h"
 #include "Model/Ligament.h"
 #include "Model/Blankevoort1991Ligament.h"
 #include "Model/JointSet.h"
@@ -70,6 +71,8 @@
 #include "Model/FunctionBasedBushingForce.h"
 #include "Model/ExpressionBasedBushingForce.h"
 #include "Model/CoordinateLimitForce.h"
+#include "Model/ExponentialCoordinateLimitForce.h"
+#include "Model/CoordinateLinearStopForce.h"
 #include "Model/ExternalLoads.h"
 #include "Model/PathActuator.h"
 #include "Model/ActuatorPowerProbe.h"
@@ -119,6 +122,7 @@
 #include "SimbodyEngine/Coordinate.h"
 #include "SimbodyEngine/SpatialTransform.h"
 #include "SimbodyEngine/ConstantCurvatureJoint.h"
+#include "SimbodyEngine/CantileverFreeBeamJoint.h"
 
 #include "AssemblySolver.h"
 #include "CoordinateReference.h"
@@ -136,6 +140,7 @@
 #include "OpenSense/OpenSenseUtilities.h"
 #include "OpenSense/IMU.h"
 #include "SimulationUtilities.h"
+#include "VisualizerUtilities.h"
 
 #include "RegisterTypes_osimSimulation.h"   // to expose RegisterTypes_osimSimulation
 

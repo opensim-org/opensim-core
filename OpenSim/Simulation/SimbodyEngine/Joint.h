@@ -339,8 +339,8 @@ protected:
 
     void setChildMobilizedBodyIndex(SimTK::MobilizedBodyIndex index) const;
     void setCoordinateMobilizedBodyIndex(Coordinate *aCoord, SimTK::MobilizedBodyIndex index) const {aCoord->_bodyIndex = index;}
-    void setCoordinateMobilizerQIndex(Coordinate *aCoord, int index) const
-        { aCoord->_mobilizerQIndex = SimTK::MobilizerQIndex(index);}
+    void setCoordinateMobilizerQIndex(Coordinate *aCoord, SimTK::MobilizerQIndex index) const
+        { aCoord->_mobilizerQIndex = index;}
     void setCoordinateModel(Coordinate *aCoord, Model *aModel) const {aCoord->_model = aModel;}
 
     /** Updating XML formating to latest revision */

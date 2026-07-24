@@ -7,7 +7,7 @@ find_package(Catch2 REQUIRED
 # libraries ${LIB_DEPENDENCIES}. Also create a CTest test for this executable.
 function(MocoAddTest)
     set(options)
-    set(oneValueArgs NAME)
+    set(oneValueArgs NAME REQUIRES_CASADI)
     set(multiValueArgs LIB_DEPENDS RESOURCES)
     cmake_parse_arguments(MOCOTEST
             "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -15,11 +15,6 @@ function(MocoAddTest)
     # To organize targets in Visual Studio's Solution Explorer.
     set_target_properties(${MOCOTEST_NAME} PROPERTIES FOLDER "Moco/Tests")
     target_link_libraries(${MOCOTEST_NAME} osimMoco ${MOCOTEST_LIB_DEPENDS} Catch2::Catch2WithMain)
-    # Skip tests relying on MocoCasADiSolver if CasADi is not available.
-    if(NOT OPENSIM_WITH_CASADI)
-        list(APPEND test_args "~*MocoCasADiSolver*")
-        list(APPEND test_args "~[casadi]")
-    endif()
     if(APPLE)
         list(APPEND test_args "~[win]~[linux]~[win/linux]~[linux/win]")
     endif()
@@ -30,6 +25,13 @@ function(MocoAddTest)
         list(APPEND test_args "~[mac]~[linux]~[mac/linux]~[linux/mac]~[unix]")
     endif()
     add_test(NAME ${MOCOTEST_NAME} COMMAND ${MOCOTEST_NAME} ${test_args})
+    # Default to requiring CasADi unless the caller explicitly passes REQUIRES_CASADI FALSE.
+    if(NOT DEFINED MOCOTEST_REQUIRES_CASADI)
+        set(MOCOTEST_REQUIRES_CASADI TRUE)
+    endif()
+    if(MOCOTEST_REQUIRES_CASADI AND NOT OPENSIM_WITH_CASADI)
+        set_tests_properties(${MOCOTEST_NAME} PROPERTIES DISABLED TRUE)
+    endif()
     # Tests likely run faster if we parallelize the tests rather than the
     # individual problems.
     set_property(TEST ${MOCOTEST_NAME} APPEND PROPERTY
@@ -73,7 +75,7 @@ MocoAddTest(NAME testMocoTrack RESOURCES
 
 MocoAddTest(NAME testMocoAnalytic)
 
-MocoAddTest(NAME testMocoMetabolics RESOURCES
+MocoAddTest(NAME testMocoMetabolics REQUIRES_CASADI FALSE RESOURCES
         testMocoMetabolics_hanging_muscle.osim
         )
 

@@ -605,6 +605,25 @@ function(OpenSimInstallDependencyLibraries PREFIX DEP_LIBS_DIR_WIN
     install(FILES ${LIBS} DESTINATION "${OSIM_DESTINATION}")
 endfunction()
 
+# Function to install the Simbody visualizer on the target platform.
+function(OpenSimInstallVisualizer DEP_LIBS_DIR_WIN
+        DEP_LIBS_DIR_UNIX OSIM_DESTINATION)
+    if(WIN32)
+        set(simbody_visualizer "${DEP_LIBS_DIR_WIN}/simbody-visualizer.exe")
+        install(FILES ${simbody_visualizer} DESTINATION "${OSIM_DESTINATION}/bin")
+    else()
+        if (APPLE)
+            set(simbody_visualizer "${DEP_LIBS_DIR_UNIX}/../libexec/simbody/simbody-visualizer.app")
+            install(DIRECTORY ${simbody_visualizer} DESTINATION "${OSIM_DESTINATION}")
+        else()
+            set(simbody_visualizer "${DEP_LIBS_DIR_UNIX}/../libexec/simbody/simbody-visualizer")
+            install(FILES ${simbody_visualizer} DESTINATION "${OSIM_DESTINATION}")
+            # On Linux, the visualizer is a dynamically linked executable, we need fix rpath
+            execute_process(COMMAND bash "-c" "patchelf --set-rpath '$ORIGIN/:$ORIGIN/../../lib' '${simbody_visualizer}'" OUTPUT_VARIABLE res)
+            message(STATUS "patchelf --set-rpath '$ORIGIN/:.$ORIGIN/../../lib' '${simbody_visualizer}' '${res}'")
+        endif()
+    endif()
+endfunction()
 
 # Copy DLL files from a dependency's installation into the
 # build and install directories. This is a Windows-specific function enabled

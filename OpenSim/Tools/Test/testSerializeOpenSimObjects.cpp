@@ -31,6 +31,7 @@
 #include <OpenSim/Simulation/Model/ExponentialContactForce.h>
 
 #include <catch2/catch_all.hpp>
+#include <OpenSim/Tools/InverseKinematicsTool.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -68,7 +69,7 @@ TEST_CASE("Serialize OpenSim objects") {
             path->setLengthFunction(f);
             randClone = path;
         } else if (dynamic_cast<Coordinate*>(clone)) {
-            // TODO: randomizing Coordinate leads to invalid range property
+            // Randomizing Coordinate leads to invalid range property
             // values. But even with the fix below, further randomization
             // leads to a segfault due to invalid Property indexes when
             // Joints try to access Coordinates.
@@ -116,20 +117,25 @@ TEST_CASE("Serialize OpenSim objects") {
             muscle->set_min_control(0.01);
             randClone = muscle;
         } else if (dynamic_cast<DeGrooteFregly2016Muscle*>(clone)) {
-            // TODO: we can't randomize DeGrooteFregly2016Muscle, since
+            // We can't randomize DeGrooteFregly2016Muscle, since
+            // changing the the optimal_force property inherited by
+            // PathActuator leads to an invalid configuration.
+            continue;
+        } else if (dynamic_cast<MeyerFregly2016Muscle*>(clone)) {
+            // We can't randomize MeyerFregly2016Muscle, since
             // changing the the optimal_force property inherited by
             // PathActuator leads to an invalid configuration.
             continue;
         } else if (dynamic_cast<ControlSetController*>(clone)) {
-            // TODO: randomizing ControlSetController fails because it is
+            // Randomizing ControlSetController fails because it is
             // unable to load nonexistent file 'ABCXYZ'.
             continue;
         } else if (dynamic_cast<StationDefinedFrame*>(clone)) {
-            // TODO: randomizing StationDefinedFrame sporadically fails with
+            // Randomizing StationDefinedFrame sporadically fails with
             // exception message "failed to match original model".
             continue;
         } else if (dynamic_cast<ExponentialContactForce*>(clone)) {
-            // TODO: randomizing ExponentialContactForce sporadically fails
+            // Randomizing ExponentialContactForce sporadically fails
             // with exception message "failed to match original model".
             continue;
         } else {
@@ -175,11 +181,13 @@ TEST_CASE("Serialize OpenSim objects") {
 }
 
 TEST_CASE("Test unrecognized types") {
-    bool caughtException = false;
-    try {
-        Object* newObject = Object::newInstanceOfType("Unrecognized");
-    } catch (Exception&) {
-        caughtException = true;
-    }
-    CHECK(caughtException);
+        REQUIRE_THROWS(Object::newInstanceOfType("Unrecognized"));
+}
+
+TEST_CASE("Test old format no enclosing tags") {
+    { InverseKinematicsTool m; }
+    
+    OpenSim::Object* obj = nullptr;
+    REQUIRE_NOTHROW(obj = OpenSim::Object::makeObjectFromFile("ikToolNoDocumentTag.xml"));
+    REQUIRE(obj->getConcreteClassName() == "InverseKinematicsTool");
 }

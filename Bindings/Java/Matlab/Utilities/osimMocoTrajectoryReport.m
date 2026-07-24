@@ -6,7 +6,7 @@
 % ---------
 %   model: An OpenSim Model object associated with the trajectory.
 %   trajectoryFilepath: The path to a MocoTrajectory or MocoSolution STO file.
-% 
+%
 % Optional arguments
 % ------------------
 %   outputFilepath: The file path to which the report should be written. This
@@ -34,20 +34,12 @@
 %   >> reportFilepath = trajReport.generate();
 %   >> open(reportFilepath);
 %
-% We attempt to generate the report as a PDF file, but this requires that
-% you have Ghostscript installed, and that Ghostscript's `ps2pdf` command
-% is available on the system's PATH. You can download Ghostscript from
-% https://www.ghostscript.com/download/gsdnld.html; on Mac, you can install 
-% Ghostscript with Homebrew. If we do not detect Ghostscript, the report
-% is generated as a PostScript (.ps) file, which you can convert to a PDF
-% via the website https://www.ps2pdf.com/. On a Mac, you can open the 
-% PostScript file with Preview to convert it to a PDF.
-% 
-% We tested this code with MATLAB 2019a. If you manage to make this code work
-% with other versions of MATLAB, please let the OpenSim developers know!
+% We tested this code with MATLAB 2025b. If you manage to make this code
+% work with other versions of MATLAB, please let the OpenSim developers
+% know!
 %
 % This code is based on Moco's report.py Python module. Refer to report.py
-% (located in Moco/Bindings/Python in the source code) for additional 
+% (located in Moco/Bindings/Python in the source code) for additional
 % documentation.
 
 % TODO: Plot parameters.
@@ -55,9 +47,9 @@
 % -------------------------------------------------------------------------- %
 % OpenSim Moco: osimMocoTrajectoryReport.m                                   %
 % -------------------------------------------------------------------------- %
-% Copyright (c) 2019 Stanford University and the Authors                     %
+% Copyright (c) 2026 Stanford University and the Authors                     %
 %                                                                            %
-% Author(s): Christopher Dembia                                              %
+% Author(s): Christopher Dembia, Nicholas Bianco                             %
 %                                                                            %
 % Licensed under the Apache License, Version 2.0 (the "License"); you may    %
 % not use this file except in compliance with the License. You may obtain a  %
@@ -88,7 +80,7 @@ classdef osimMocoTrajectoryReport < handle
             self.bilateral = args.Results.bilateral;
 
             self.time = self.trajectory.getTimeMat();
-            [trajDir, self.trajectoryFname, ~] = ...
+            [~, self.trajectoryFname, ~] = ...
                 fileparts(self.trajectoryFilepath);
             if isempty(args.Results.outputFilepath)
                 self.output = sprintf('%s_report.pdf', ...
@@ -99,16 +91,15 @@ classdef osimMocoTrajectoryReport < handle
                 end
                 self.output = args.Results.outputFilepath;
             end
-            if isempty(trajDir)
-                trajDir = './';
+            % Remove self.output PDF if it already exists.
+            if exist(self.output, 'file')
+                delete(self.output)
             end
-            self.output_ps = sprintf('%s.ps', tempname(trajDir));
 
             % self.plotsPerPage is initialized in the "properties" section
             % toward the end of this file.
             self.numRows = floor(self.plotsPerPage / 3) + 1;
-            
-            
+
             derivNames = self.trajectory.getDerivativeNames();
             for id = 0:(derivNames.size()-1)
                 derivName = derivNames.get(id);
@@ -116,7 +107,7 @@ classdef osimMocoTrajectoryReport < handle
                     self.accels = true;
                 end
             end
-            
+
             self.refFiles = args.Results.refFiles;
             self.refs = {};
             for ir = 1:length(self.refFiles)
@@ -134,7 +125,7 @@ classdef osimMocoTrajectoryReport < handle
                 ref = osimTableToStruct(refTable);
                 self.refs = [self.refs, {ref}];
             end
-            
+
             allFiles = {};
             if ~isempty(args.Results.refFiles)
                 allFiles = args.Results.refFiles;
@@ -156,14 +147,7 @@ classdef osimMocoTrajectoryReport < handle
             self.plotInputControls();
             self.plotMultipliers();
             self.plotParameters();
-            [status, ~] = system(sprintf('ps2pdf %s %s', self.output_ps, self.output));
-            if status == 0
-                delete(self.output_ps);
-                reportFilepath = self.output;
-            else
-                reportFilepath = replace(self.output, '.pdf', '.ps');
-                movefile(self.output_ps, reportFilepath);
-            end
+            reportFilepath = self.output;
         end
     end
     methods (Access = private)
@@ -172,11 +156,11 @@ classdef osimMocoTrajectoryReport < handle
             stateMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
             stateLsMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
             stateLabelMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
-            
+
             accelMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
             accelLsMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
             accelLabelMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
-            
+
             coordSet = self.model.getCoordinateSet();
 
             for i = 0:(coordSet.getSize() - 1)
@@ -191,7 +175,7 @@ classdef osimMocoTrajectoryReport < handle
                 if self.accels
                     accelName = sprintf('%s/accel', coordName);
                 end
-                
+
                 if self.bilateral
                     [valueName, stateLsMap] = ...
                         self.bilateralize(valueName, stateLsMap);
@@ -234,7 +218,7 @@ classdef osimMocoTrajectoryReport < handle
                     [stateMap(speedName), sprintf('%s/speed', coordPath)];
                 stateLabelMap(speedName) = ...
                     self.getLabelFromMotionType(coordMotType, 'speed');
-                
+
                 if self.accels
                     if ~accelMap.isKey(accelName)
                         accelMap(accelName) = {};
@@ -311,7 +295,7 @@ classdef osimMocoTrajectoryReport < handle
             map = containers.Map('KeyType', 'char', 'ValueType', 'any');
             lsMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
             labelMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
-            
+
             derivNames = self.trajectory.getDerivativeNames();
             auxDerivNames = {};
             for id = 0:(derivNames.size()-1)
@@ -320,7 +304,7 @@ classdef osimMocoTrajectoryReport < handle
                     auxDerivNames = [auxDerivNames, {derivName}];
                 end
             end
-            
+
             for iaux = 1:length(auxDerivNames)
                 auxDerivName = auxDerivNames{iaux};
                 title = auxDerivName;
@@ -344,7 +328,7 @@ classdef osimMocoTrajectoryReport < handle
             map = containers.Map('KeyType', 'char', 'ValueType', 'any');
             lsMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
             labelMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
-            
+
             names = self.trajectory.getControlNames();
             for ic = 0:(names.size() - 1)
                 name = char(names.get(ic));
@@ -369,7 +353,7 @@ classdef osimMocoTrajectoryReport < handle
             map = containers.Map('KeyType', 'char', 'ValueType', 'any');
             lsMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
             labelMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
-            
+
             names = self.trajectory.getInputControlNames();
             for ic = 0:(names.size() - 1)
                 name = char(names.get(ic));
@@ -394,7 +378,7 @@ classdef osimMocoTrajectoryReport < handle
             map = containers.Map('KeyType', 'char', 'ValueType', 'any');
             lsMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
             labelMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
-            
+
             names = self.trajectory.getMultiplierNames();
             for ic = 0:(names.size() - 1)
                 name = char(names.get(ic));
@@ -420,7 +404,7 @@ classdef osimMocoTrajectoryReport < handle
         end
         function plotVariables(self, varType, varMap, lsMap, labelMap)
             nPagesPrinted = 0;
-            
+
             %  Number of plots on the current page.
             p = 1;
             varMapKeys = varMap.keys();
@@ -431,24 +415,24 @@ classdef osimMocoTrajectoryReport < handle
                 if mod(p, self.plotsPerPage) == 1
                     fig = self.createFigure();
                 end
-                
+
                 lastPlotOnPage = mod(p, self.plotsPerPage) == 0 || ...
                     ivar == varMap.Count;
                 if lastPlotOnPage
                     % Create a legend in the top-center subplot.
                     axL = axes('Position', ...
                         [0, 1.0 - 1 / self.numRows + 0.05, ...
-                        1, 1. / self.numRows - 0.06]);
+                         1, 1. / self.numRows - 0.06]);
                     hold on;
                     legendEntries = {};
                     for ir = 1:length(self.refs)
                         plot(nan, nan, '-', ...
-                            'LineWidth', 3, 'Color', self.cmap(ir, :)); 
+                            'LineWidth', 3, 'Color', self.cmap(ir, :));
                         prefix = self.refFiles{ir};
                         if self.bilateral
                             legendEntries = [legendEntries, {[prefix ' (right)']}];
                             plot(nan, nan, '--', ...
-                                'LineWidth', 3, 'Color', self.cmap(ir, :)); 
+                                'LineWidth', 3, 'Color', self.cmap(ir, :));
                             legendEntries = [legendEntries, {[prefix ' (left)']}];
                         else
                             legendEntries = [legendEntries, {prefix}];
@@ -465,13 +449,13 @@ classdef osimMocoTrajectoryReport < handle
                     else
                         legendEntries = [legendEntries, {prefix}];
                     end
-                    
+
                     set(axL, 'Visible', 'off');
                     legend(axL, legendEntries, 'Interpreter', 'none', ...
                         'Location', 'north');
                     legend boxoff;
                 end
-                
+
                 % Skip the first row, which is used for the legend.
                 ax = self.createSubplot(p + self.numCols);
                 ymin =  inf;
@@ -500,7 +484,7 @@ classdef osimMocoTrajectoryReport < handle
                             final = self.getIndexForNearestValue(ref.time, self.time(end));
                             y = ref.(colLabel)(init:final);
                             plot(ref.time(init:final), y, linestyles{icond}, ...
-                                'LineWidth', 2.5, 'Color', self.cmap(ir, :)); 
+                                'LineWidth', 2.5, 'Color', self.cmap(ir, :));
                             ymin = min(ymin, min(y));
                             ymax = max(ymax, max(y));
                         end
@@ -510,7 +494,7 @@ classdef osimMocoTrajectoryReport < handle
                             'Color', self.cmap(end, :));
                 end
 
- 
+
                 set(ax, 'fontsize', 6);
                 htitle = title(key, 'Interpreter', 'none', 'fontsize', 10);
                 if length(key) > 50
@@ -520,7 +504,7 @@ classdef osimMocoTrajectoryReport < handle
                 elseif length(key) > 40
                     htitle.FontSize = 8;
                 end
-                
+
                 if ivar > self.plotsPerPage * ...
                         floor(double(varMap.Count) / self.plotsPerPage)
                     % This is the last page.
@@ -539,7 +523,7 @@ classdef osimMocoTrajectoryReport < handle
                 if 0 <= ymin && ymax <= 1
                     ylim([0, 1]);
                 end
-                
+
                 irow = ceil(p / self.numCols) + 1;
                 icol = mod(p - 1, self.numCols) + 1;
                 pos = get(ax, 'Position');
@@ -548,17 +532,17 @@ classdef osimMocoTrajectoryReport < handle
                 pos(3) = 1 ./ self.numCols - 0.08;
                 pos(4) = 1 ./ self.numRows - 0.05;
                 set(ax, 'Position', pos, 'Visible', 'on');
-                
+
                 if lastPlotOnPage
-                    print(fig, '-dpsc', '-append', self.output_ps);
+                    exportgraphics(fig, self.output, 'Append', true)
                     close(fig);
-                    
+
                     p = 1;
                     nPagesPrinted = nPagesPrinted + 1;
                 else
                     p = p + 1;
                 end
-                                
+
 
             end
 
@@ -643,10 +627,8 @@ classdef osimMocoTrajectoryReport < handle
         end
         function fig = createFigure()
             fig = figure('Visible', 'off');
-            set(fig, 'PaperUnits', 'inches');
-            set(fig, 'PaperSize', [8.5 11]);
-            set(fig, 'PaperPositionMode', 'manual');
-            set(fig, 'PaperPosition', [0 0 8.5 11]);
+            fig.Units = 'inches';
+            fig.Position = [0 0 8.5 11];
         end
         function index = getIndexForNearestValue(vec, val)
             [~, index] = min(abs(vec - val));
@@ -659,7 +641,6 @@ classdef osimMocoTrajectoryReport < handle
         bilateral
         trajectoryFname
         output
-        output_ps
         accels
         refFiles
         refs

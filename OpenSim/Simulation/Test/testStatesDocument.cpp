@@ -773,3 +773,33 @@ TEST_CASE("Exceptions")
 
     delete model;
 }
+
+
+TEST_CASE("Create StatesTrajectory from StatesDocument") {
+    // Build the default model and run a simulation
+    Model* model = buildModel();
+    Array_<State> traj = simulate(model);
+
+    // Serialize the states to a StatesDocument file.
+    StatesDocument doc(*model, traj);
+    doc.serialize("BlockOnASpring_serialized.ostates");
+
+    // Create a StatesTrajectory from the StatesDocument file.
+    StatesTrajectory states = StatesTrajectory::createFromStatesDocument(
+        *model, "BlockOnASpring_serialized.ostates");
+
+    // Check that the original and the deserialized states are equivalent.
+    CHECK(states.getSize() == traj.size());
+    for (int i = 0; i < static_cast<int>(states.getSize()); ++i) {
+        CHECK_THAT(states[i].getTime(),
+                Catch::Matchers::WithinAbs(traj[i].getTime(), 1e-6));
+        CHECK_THAT((states[i].getQ() - traj[i].getQ()).norm(),
+                Catch::Matchers::WithinAbs(0.0, 1e-6));
+        CHECK_THAT((states[i].getU() - traj[i].getU()).norm(),
+                Catch::Matchers::WithinAbs(0.0, 1e-6));
+        CHECK_THAT((states[i].getZ() - traj[i].getZ()).norm(),
+                Catch::Matchers::WithinAbs(0.0, 1e-6));
+    }
+
+    delete model;
+}

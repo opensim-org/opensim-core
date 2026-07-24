@@ -148,6 +148,10 @@ public:
  * A concrete class representing a geometric path object defined by a list of
  * path points and wrapping obstacles.
  *
+ * @note `Scholz2015GeometryPath` is an experimental class. The default settings
+ *       and algorithms in the underlying wrapping engine (`SimTK::CableSpan`)
+ *       may change in future releases to address robustness issues.
+ *
  * The path consists of straight line segments and curved line segments: a
  * curved segment over each obstacle, and straight segments connecting path
  * points to obstacles. If no obstacle lies between two path points, the points
@@ -429,7 +433,27 @@ public:
     double getLengtheningSpeed(const SimTK::State& s) const override;
     double computeMomentArm(const SimTK::State& s,
             const Coordinate& coord) const override;
-    bool isVisualPath() const override { return true; }
+    bool isVisualPath() const override;
+
+    /**
+     * Find the list of paths to independent coordinates which fully determine
+     * the kinematic state of this path.
+     *
+     * `Scholz2015GeometryPath`'s concrete implementation of this method finds
+     * the joints lying between the frames associated with the path's origin and
+     * insertion points and returns the coordinate paths associated with these
+     * joints. Locked coordinates, prescribed coordinates, and coordinates
+     * dependent on other coordinates via a `CoordinateCouplerConstraint` are
+     * excluded from the list.
+     *
+     * @note This method uses several passes through the model's topology to
+     * form the list of coordinate paths, so avoid repeated calls in performance
+     * critical applications.
+     *
+     * @see SimulationUtilities::findJointsBetweenPhysicalFrames()
+     */
+    std::vector<ComponentPath>
+    findIndependentCoordinates(const SimTK::State&) const override;
     // @}
 
     //** @name `ForceProducer` interface */
@@ -449,6 +473,8 @@ private:
     void generateDecorations(bool fixed, const ModelDisplayHints& hints,
             const SimTK::State& s,
             SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const override;
+    void extendPreScale(const SimTK::State&, const ScaleSet&) override;
+    void extendPostScale(const SimTK::State&, const ScaleSet&) override;
 
     // CONVENIENCE METHODS
     void constructProperties();
