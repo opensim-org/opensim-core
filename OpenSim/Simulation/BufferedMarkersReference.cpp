@@ -67,11 +67,11 @@ void BufferedMarkersReference::getValuesAtTime(
             nextRow = SimTK::RowVector_<SimTK::Vec3>(0);
         }
     }
-    
+
     int n = nextRow.size();
     values.resize(n);
 
-    for (int i = 0; i < n; ++i) { 
+    for (int i = 0; i < n; ++i) {
         values[i] = nextRow[i];
     }
 }
@@ -87,17 +87,17 @@ double BufferedMarkersReference::getNextValuesAndTime(
 
     double returnTime = bufferTimes.front();
     SimTK::RowVector_<SimTK::Vec3> nextRow = _markerBuffer.getRowAtIndex(0);
-    
+
     int n = nextRow.size();
     values.resize(n);
 
-    for (int i = 0; i < n; ++i) { 
-        values[i] = nextRow[i]; 
+    for (int i = 0; i < n; ++i) {
+        values[i] = nextRow[i];
     }
-    
+
     // Remove the first row after getting it (FIFO behavior)
     _markerBuffer.removeRowAtIndex(0);
-    
+
     return returnTime;
 }
 
@@ -118,8 +118,8 @@ void BufferedMarkersReference::putValues(
             _markerBuffer.setColumnLabels(labels);
         }
     }
-    
+
     _markerBuffer.appendRow(time, dataRow);
 }
 
-} // end of namespace OpenSim 
+} // end of namespace OpenSim

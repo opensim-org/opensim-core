@@ -27,10 +27,12 @@
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include <OpenSim/Simulation/MarkersReference.h>
+#include <OpenSim/Simulation/BufferedMarkersReference.h>
 #include <OpenSim/Simulation/BufferedOrientationsReference.h>
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/STOFileAdapter.h>
+#include <cmath>
 #include <random>
 #include <catch2/catch_all.hpp>
 
@@ -910,4 +912,162 @@ TEST_CASE("testNumberOfOrientationsMismatch") {
             ikSolver.computeCurrentSensorOrientation("junk"), Exception);
     SimTK_TEST_MUST_THROW_EXC(
             ikSolver.updateOrientationWeight("junk", 0.1), Exception);
+}
+
+TEST_CASE("testBufferedMarkersReference") {
+    // Unit-level test of the BufferedMarkersReference streaming API:
+    // putValues()/getNextValuesAndTime()/hasNext(), independent of the
+    // InverseKinematicsSolver.
+    vector<std::string> labels{"m0", "m1", "m2"};
+    size_t nc = labels.size();
+
+    // Seed the reference with a single frame so that the base
+    // MarkersReference has marker names/weights configured, as required
+    // for InverseKinematicsSolver to recognize the markers to track.
+    TimeSeriesTable_<SimTK::Vec3> seedTable;
+    seedTable.setColumnLabels(labels);
+    seedTable.appendRow(0.0, SimTK::RowVector_<SimTK::Vec3>(int(nc), SimTK::Vec3(0)));
+
+    Set<MarkerWeight> markerWeights;
+    for (const auto& label : labels) {
+        markerWeights.adoptAndAppend(new MarkerWeight(label, 1.0));
+    }
+
+    BufferedMarkersReference bufferedRef(seedTable, markerWeights);
+
+    SimTK_ASSERT_ALWAYS(bufferedRef.getNumRefs() == static_cast<int>(nc),
+        "BufferedMarkersReference should report the same number of "
+        "references as the seed marker table.");
+
+    // No streamed data has been queued yet.
+    SimTK_ASSERT_ALWAYS(!bufferedRef.hasNext(),
+        "BufferedMarkersReference should report hasNext() == false "
+        "before any data has been streamed in.");
+
+    // Stream a few frames of data into the buffer.
+    for (int i = 1; i <= 3; ++i) {
+        SimTK::RowVector_<SimTK::Vec3> row(
+                int(nc), SimTK::Vec3(double(i), 0, 0));
+        bufferedRef.putValues(0.1 * i, row);
+    }
+
+    SimTK_ASSERT_ALWAYS(bufferedRef.hasNext(),
+        "BufferedMarkersReference should report hasNext() == true "
+        "once data has been streamed in.");
+
+    // Values should be returned in FIFO order and the buffer should drain.
+    for (int i = 1; i <= 3; ++i) {
+        SimTK::Array_<SimTK::Vec3> values;
+        double time = bufferedRef.getNextValuesAndTime(values);
+        SimTK_ASSERT_ALWAYS(std::abs(time - 0.1 * i) < SimTK::Eps,
+            "BufferedMarkersReference::getNextValuesAndTime() returned an "
+            "unexpected time.");
+        SimTK_ASSERT_ALWAYS(values.size() == static_cast<int>(nc),
+            "BufferedMarkersReference::getNextValuesAndTime() returned an "
+            "unexpected number of marker values.");
+        for (const auto& value : values) {
+            SimTK_ASSERT_ALWAYS(
+                (value - SimTK::Vec3(double(i), 0, 0)).norm() < SimTK::Eps,
+                "BufferedMarkersReference::getNextValuesAndTime() returned "
+                "an unexpected marker value.");
+        }
+    }
+
+    SimTK_ASSERT_ALWAYS(!bufferedRef.hasNext(),
+        "BufferedMarkersReference should report hasNext() == false once "
+        "the buffer has been drained.");
+
+    // setFinished() should force hasNext() to false even with data queued.
+    bufferedRef.putValues(0.4,
+            SimTK::RowVector_<SimTK::Vec3>(int(nc), SimTK::Vec3(0)));
+    SimTK_ASSERT_ALWAYS(bufferedRef.hasNext(),
+        "BufferedMarkersReference should report hasNext() == true while "
+        "data is queued and it has not been marked finished.");
+    bufferedRef.setFinished(true);
+    SimTK_ASSERT_ALWAYS(!bufferedRef.hasNext(),
+        "BufferedMarkersReference should report hasNext() == false once "
+        "marked as finished, even with data still queued.");
+}
+
+TEST_CASE("testStreamingIKWithBufferedMarkersReference") {
+    // Verify that InverseKinematicsSolver can consume marker data that is
+    // pushed incrementally into a BufferedMarkersReference -- as would
+    // happen with real-time motion capture -- correctly advancing time and
+    // tracking the expected coordinate trajectory frame-by-frame.
+    std::unique_ptr<Model> pendulum{constructPendulumWithMarkers()};
+    Coordinate& coord = pendulum->getCoordinateSet()[0];
+
+    SimTK::State state = pendulum->initSystem();
+
+    StatesTrajectory states;
+    double dt = 0.01;
+    int N = 21;
+    for (int i = 0; i < N; ++i) {
+        state.updTime() = i * dt;
+        coord.setValue(state, (SimTK::Pi / 6) * sin(2 * SimTK::Pi * i * dt));
+        states.append(state);
+    }
+
+    SimTK::RowVector_<SimTK::Vec3> biases(3, SimTK::Vec3(0));
+    auto markerTable = generateMarkerDataFromModelAndStates(
+            *pendulum, states, biases, 0.0, true);
+
+    Set<MarkerWeight> markerWeights;
+    for (const auto& name : markerTable.getColumnLabels()) {
+        markerWeights.adoptAndAppend(new MarkerWeight(name, 1.0));
+    }
+
+    // Seed the buffered reference with only the first frame; the remaining
+    // frames are streamed in via putValues() to emulate a live data source.
+    TimeSeriesTable_<SimTK::Vec3> seedTable;
+    seedTable.setColumnLabels(markerTable.getColumnLabels());
+    seedTable.appendRow(markerTable.getIndependentColumn()[0],
+            markerTable.getRowAtIndex(0));
+
+    std::shared_ptr<BufferedMarkersReference> bufferedRef(
+            new BufferedMarkersReference(seedTable, markerWeights));
+
+    SimTK::Array_<CoordinateReference> coordRefs;
+    coord.setValue(state, 0.0);
+    state.updTime() = 0.0;
+    InverseKinematicsSolver ikSolver(*pendulum, bufferedRef, coordRefs);
+    ikSolver.setAccuracy(1e-8);
+    ikSolver.assemble(state);
+
+    double accuracy = abs(coord.getValue(state) - coord.getValue(states[0]));
+    cout << "Streaming IK assembled first frame with accuracy: "
+         << accuracy << endl;
+    SimTK_ASSERT_ALWAYS(accuracy <= 1e-4,
+        "Streaming InverseKinematicsSolver failed to assemble the first "
+        "frame from the BufferedMarkersReference seed data.");
+
+    // Stream the remaining frames into the buffer, as a live source would.
+    const auto& times = markerTable.getIndependentColumn();
+    for (int i = 1; i < N; ++i) {
+        bufferedRef->putValues(times[i], markerTable.getRowAtIndex(i));
+    }
+    bufferedRef->setFinished(true);
+
+    ikSolver.setAdvanceTimeFromReference(true);
+    int framesTracked = 0;
+    while (bufferedRef->hasNext()) {
+        ikSolver.track(state);
+        ++framesTracked;
+
+        int stateIndex = static_cast<int>(std::round(state.getTime() / dt));
+        double expected = coord.getValue(states[stateIndex]);
+        double error = abs(coord.getValue(state) - expected);
+        cout << "time: " << state.getTime() << " | " << coord.getName()
+             << " error = " << error << endl;
+        SimTK_ASSERT_ALWAYS(error <= 1e-4,
+            "Streaming InverseKinematicsSolver failed to track the "
+            "expected coordinate value for a streamed marker frame.");
+    }
+
+    SimTK_ASSERT_ALWAYS(framesTracked == N - 1,
+        "Streaming InverseKinematicsSolver did not process the expected "
+        "number of streamed marker frames.");
+    SimTK_ASSERT_ALWAYS(std::abs(state.getTime() - times.back()) < 1e-8,
+        "Streaming InverseKinematicsSolver failed to advance state time "
+        "to the last streamed marker frame.");
 }

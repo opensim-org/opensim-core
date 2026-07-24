@@ -26,7 +26,6 @@
 #include "MarkersReference.h"
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Common/Set.h>
-#include <OpenSim/Simulation/MarkersReference.h>
 
 namespace OpenSim {
 
@@ -62,7 +61,7 @@ public:
 
     // Use MarkersReference convenience constructor from TimeSeriesTable
     using MarkersReference::MarkersReference;
-    
+
     // Explicitly declare the constructor that takes TimeSeriesTable and Set<MarkerWeight>
     // This ensures proper SWIG binding on all platforms
     BufferedMarkersReference(const TimeSeriesTable_<SimTK::Vec3>& markerData,
@@ -92,8 +91,8 @@ public:
     /** get the next values and time from the buffer (for streaming) */
     double getNextValuesAndTime(SimTK::Array_<SimTK::Vec3>& values);
 
-    virtual bool hasNext() const override { 
-        return !_finished && _markerBuffer.getNumRows() > 0; 
+    virtual bool hasNext() const override {
+        return !_finished && _markerBuffer.getNumRows() > 0;
     };
 
     void setFinished(bool finished) {
@@ -109,4 +108,4 @@ private:
 //=============================================================================
 } // namespace
 
-#endif // OPENSIM_BUFFERED_MARKERS_REFERENCE_H_ 
+#endif // OPENSIM_BUFFERED_MARKERS_REFERENCE_H_
