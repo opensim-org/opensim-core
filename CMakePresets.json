@@ -11,6 +11,9 @@
             },
             "architecture": {
                 "value": "x64"
+            },
+            "cacheVariables": {
+                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDLL"
             }
         },
         {
@@ -74,6 +77,47 @@
             }
         },
         {
+            "name": "msvc-default",
+            "displayName": "Default MSVC build configuration",
+            "description": "The right MSVC build configuration for most users",
+            "inherits": [
+                "windows",
+                "default"
+            ]
+        },
+        {
+            "name": "dev-default",
+            "description": "Recommended development configuration that builds everything a typical release contains",
+            "inherits": [
+                "relwithdebinfo",
+                "default"
+            ]
+        },
+        {
+            "name": "msvc-dev-default",
+            "description": "Recommended MSVC development configuration ",
+            "inherits": [
+                "dev-default",
+                "windows"
+            ]
+        },
+        {
+            "name": "dev-minimal",
+            "description": "Minimal development configuration that builds OpenSim without Moco, ezc3d, and bindings",
+            "inherits": [
+                "relwithdebinfo",
+                "base"
+            ],
+            "cacheVariables": {
+                "CMAKE_COMPILE_WARNING_AS_ERROR": false,
+                "OPENSIM_WITH_CASADI": "OFF",
+                "BUILD_JAVA_WRAPPING": "OFF",
+                "BUILD_PYTHON_WRAPPING": "OFF",
+                "BUILD_API_EXAMPLES": "OFF",
+                "OPENSIM_C3D_PARSER": "None"
+            }
+        },
+        {
             "hidden": true,
             "name": "ci",
             "description": "Base build configuration settings for CI",
@@ -87,25 +131,6 @@
             }
         },
         {
-            "name": "dev-default",
-            "description": "Recommended development configuration that builds everything a typical release contains",
-            "inherits": [
-                "default",
-                "relwithdebinfo"
-            ]
-        },
-        {
-            "name": "dev-minimal",
-            "description": "Minimal development configuration that builds OpenSim without Moco, ezc3d, and bindings",
-            "inherits": ["dev-default"],
-            "cacheVariables": {
-                "OPENSIM_WITH_CASADI": "OFF",
-                "BUILD_JAVA_WRAPPING": "OFF",
-                "BUILD_PYTHON_WRAPPING": "OFF",
-                "OPENSIM_C3D_PARSER": "None"
-            }
-        },
-        {
             "name": "ci-msvc-windows-release",
             "displayName": "Windows CI default",
             "description": "Default CI configuration for Windows",
@@ -114,7 +139,7 @@
                 "windows"
             ],
             "environment": {
-                "CXXFLAGS": "/WX /MD"
+                "CXXFLAGS": "/WX"
             }
         },
         {
@@ -171,8 +196,24 @@
             }
         },
         {
+            "name": "default",
+            "configurePreset": "default"
+        },
+        {
+            "name": "msvc-default",
+            "configurePreset": "msvc-default",
+            "inherits": "windows",
+            "configuration": "Release"
+        },
+        {
             "name": "dev-default",
             "configurePreset": "dev-default"
+        },
+        {
+            "name": "msvc-dev-default",
+            "configurePreset": "msvc-dev-default",
+            "inherits": "windows",
+            "configuration": "RelWithDebInfo"
         },
         {
             "name": "dev-minimal",
@@ -238,8 +279,33 @@
             ]
         },
         {
+            "name": "msvc-default",
+            "configurePreset": "msvc-default",
+            "inherits": [
+                "base",
+                "windows"
+            ],
+            "configuration": "Release"
+        },
+        {
             "name": "dev-default",
             "configurePreset": "dev-default",
+            "inherits": [
+                "base"
+            ]
+        },
+        {
+            "name": "msvc-dev-default",
+            "configurePreset": "msvc-dev-default",
+            "inherits": [
+                "base",
+                "windows"
+            ],
+            "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "dev-minimal",
+            "configurePreset": "dev-minimal",
             "inherits": [
                 "base"
             ]
@@ -272,10 +338,31 @@
     ],
     "workflowPresets": [
         {
+            "name": "default",
+            "steps": [
+                { "type": "configure", "name": "default" },
+                { "type": "build",     "name": "default" }
+            ]
+        },
+        {
+            "name": "msvc-default",
+            "steps": [
+                { "type": "configure", "name": "msvc-default" },
+                { "type": "build",     "name": "msvc-default" }
+            ]
+        },
+        {
             "name": "dev-default",
             "steps": [
                 { "type": "configure", "name": "dev-default" },
                 { "type": "build",     "name": "dev-default" }
+            ]
+        },
+        {
+            "name": "msvc-dev-default",
+            "steps": [
+                { "type": "configure", "name": "msvc-dev-default" },
+                { "type": "build",     "name": "msvc-dev-default" }
             ]
         },
         {
