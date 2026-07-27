@@ -234,33 +234,24 @@ function(OpenSimAddLibrary)
         POSITION_INDEPENDENT_CODE ON
     )
 
-    # Set DLL export/import defines based on actual target type so that
-    # both shared and static builds work without manual preprocessor flags.
+    # Set the `FOLDER` property of the library (used by IDEs).
     if(OSIMADDLIB_VENDORLIB)
         set(OSIMADDLIB_FOLDER "Vendor Libraries")
-        # Vendor libs keep DEFINE_SYMBOL for the conventional dllexport path.
-        set_target_properties(${OSIMADDLIB_LIBRARY_NAME} PROPERTIES
-            DEFINE_SYMBOL OSIM${OSIMADDLIB_UKIT}_EXPORTS
-            FOLDER "${OSIMADDLIB_FOLDER}"
-        )
     else()
         set(OSIMADDLIB_FOLDER "Libraries")
-        set_target_properties(${OSIMADDLIB_LIBRARY_NAME} PROPERTIES
-            FOLDER "${OSIMADDLIB_FOLDER}"
-        )
-        # SHARED build: define the _EXPORTS symbol only while building this
-        # target (PRIVATE), so its classes are annotated __declspec(dllexport).
-        # STATIC build: propagate _TYPE_STATIC to all consumers (PUBLIC) so
-        # they suppress __declspec(dllimport) in the API headers.
-        # Note: PUBLIC expressions are evaluated in the consuming target's
-        # context, so the library name must be referenced explicitly to test
-        # *this* target's type rather than the consumer's type.
-        target_compile_definitions(${OSIMADDLIB_LIBRARY_NAME}
-            PRIVATE
-                $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>:OSIM${OSIMADDLIB_UKIT}_EXPORTS>
-            PUBLIC
-                $<$<STREQUAL:$<TARGET_PROPERTY:${OSIMADDLIB_LIBRARY_NAME},TYPE>,STATIC_LIBRARY>:OPENSIM_${OSIMADDLIB_UKIT}_TYPE_STATIC>
-        )
+    endif()
+    set_target_properties(${OSIMADDLIB_LIBRARY_NAME} PROPERTIES FOLDER "${OSIMADDLIB_FOLDER}")
+
+    # Set DLL `__declspec` behavior based on target type.
+    get_target_property(lib_type ${OSIMADDLIB_LIBRARY_NAME} TYPE)
+    if(lib_type STREQUAL "SHARED_LIBRARY")
+        # Define `OSIM*_EXPORTS`, which emits `__declspec(dllexport)` on Windows.
+        # It shouldn't be defined in downstream builds (PRIVATE)
+        target_compile_definitions(${OSIMADDLIB_LIBRARY_NAME} PRIVATE OSIM${OSIMADDLIB_UKIT}_EXPORTS)
+    elseif(lib_type STREQUAL "STATIC_LIBRARY")
+        # Define `OPENSIM_*_TYPE_STATIC`, which prevents `__declspec` emission on Windows.
+        # It should be defined in both this and downstream builds (PUBLIC).
+        target_compile_definitions(${OSIMADDLIB_LIBRARY_NAME} PUBLIC OPENSIM_${OSIMADDLIB_UKIT}_TYPE_STATIC)
     endif()
 
     # Install.
