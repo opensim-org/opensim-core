@@ -22,7 +22,8 @@ the model's topology (e.g., `GeometryPath`) or via a user-defined list of coordi
 (e.g., `FunctionBasedPath`). (#4301)
 - The macOS version targeted by OpenSim is now 13.3 (Ventura; previously: 11, Big Sur) so that newer C++ library
   features can be used by the project (specifically, `std::format`, #4367).
-
+- The top-level `CMakeLists.txt` now mostly avoids global compiler flag manipulation (e.g.
+  via `add_definitions`, `set(CMAKE_C_FLAGS...`) and instead sets them up on a per-target basis.
 
 v4.6
 ====

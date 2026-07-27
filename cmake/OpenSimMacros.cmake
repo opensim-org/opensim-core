@@ -138,6 +138,78 @@ function(OpenSimAddInstallRPATHAbsolute)
         "${CMAKE_INSTALL_PREFIX}/${OSIMRP_TO}")
 endfunction()
 
+# Sets compiler flags etc. on `target` according to OpenSim's standard
+# conventions.
+function(OpenSimConfigureTarget target)
+    # Ensure the target is compiled for C++20 with no extensions.
+    target_compile_features(${target} PUBLIC
+        cxx_std_20
+    )
+    set_target_properties(${target} PROPERTIES
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS OFF
+    )
+
+    # Add compile options to the target (warnings handled below).
+    target_compile_options(${target} PRIVATE
+        $<$<CXX_COMPILER_ID:MSVC>:
+            /bigobj  # Increase section table capacity (for heavy C++ templates)
+            /wd4068  # Always avoid "unknown pragma" warning (regardless of OPENSIM_ENABLE_WARNINGS)
+        >
+    )
+
+    # If requested, add warning-related compile options to the target.
+    if(OPENSIM_ENABLE_WARNINGS)
+        target_compile_options(${target} PRIVATE
+            # gcc OR clang OR apple clang flags
+            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+                -Wall
+                -Wextra
+
+                # Avoid "unused variable" warnings. These are sometimes necessary (e.g.
+                # when `assert` is dropped by a build configuration, or SWIG/Doxygen
+                # would benefit from a varname).
+                -Wno-unused-variable
+                -Wno-unused-parameter
+                -Wno-unused-but-set-variable
+                -Wno-unused-function
+
+                # Avoid warnings for `Object:Self` and `Object::Super` typedefs generated
+                # by OpenSim's macros
+                -Wno-unused-local-typedefs
+            >
+
+            $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+                # Warn when shortening integer conversions
+                # -Wshorten-64-to-32  # TODO: requires fixing a bunch of source locations
+
+                # Don't warn when a custom user-provided copy function is provided
+                -Wno-deprecated-copy-with-user-provided-copy
+            >
+
+            $<$<CXX_COMPILER_ID:GNU>:
+                # These produce false-positives in some versions of GCC
+                # (e.g. try removing it when GCC is >14).
+                -Wno-stringop-overflow
+                -Wno-array-bounds
+                -Wno-maybe-uninitialized
+            >
+        )
+    endif()
+
+    # Add compile definitions to the target.
+    target_compile_definitions(${target}
+        PRIVATE
+            $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_DEPRECATE>
+            $<$<BOOL:${OPENSIM_DISABLE_LOG_FILE}>:OPENSIM_DISABLE_LOG_FILE>
+            $<$<BOOL:${OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION}>:OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION>
+            OSIM_SYS_INFO=${CMAKE_SYSTEM}
+            OSIM_COMPILER_INFO=${CMAKE_CXX_COMPILER}
+            OSIM_OS_NAME=${CMAKE_SYSTEM_NAME}
+            OSIM_VERSION=${OPENSIM_QUALIFIED_VERSION}
+    )
+endfunction()
+
 # Create an OpenSim API library. Here are the arguments:
 # VENDORLIB: If this is a vendor library, specify "VENDORLIB" as the first
 #   argument. Otherwise, omit.
@@ -179,33 +251,29 @@ function(OpenSimAddLibrary)
     set(multiValueArgs LINKLIBS INCLUDES SOURCES TESTDIRS INCLUDEDIRS)
     cmake_parse_arguments(
         OSIMADDLIB "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
     string(TOUPPER "${OSIMADDLIB_KIT}" OSIMADDLIB_UKIT)
 
-
-    # Version stuff.
-    # --------------
+    # Figure out library name (e.g. `osimActuators`)
     set(OSIMADDLIB_LIBRARY_NAME osim${OSIMADDLIB_KIT})
-
-    add_definitions(
-        -DOPENSIM_${OSIMADDLIB_UKIT}_LIBRARY_NAME=${OSIMADDLIB_LIBRARY_NAME}
-        -DOPENSIM_${OSIMADDLIB_UKIT}_MAJOR_VERSION=${OPENSIM_MAJOR_VERSION}
-        -DOPENSIM_${OSIMADDLIB_UKIT}_MINOR_VERSION=${OPENSIM_MINOR_VERSION}
-        -DOPENSIM_${OSIMADDLIB_UKIT}_BUILD_VERSION=${OPENSIM_PATCH_VERSION}
-        -DOPENSIM_${OSIMADDLIB_UKIT}_COPYRIGHT_YEARS="2005-2017"
-        -DOPENSIM_${OSIMADDLIB_UKIT}_AUTHORS="${AUTHORS}"
-        -DOPENSIM_${OSIMADDLIB_UKIT}_TYPE="Shared"
-        )
-
-
-    # Add the library.
-    # ----------------
-    # These next few lines are the most important:
 
     # Create the library using the provided source and include files.
     # No explicit SHARED/STATIC keyword -- respects BUILD_SHARED_LIBS.
     add_library(${OSIMADDLIB_LIBRARY_NAME}
         ${OSIMADDLIB_SOURCES} ${OSIMADDLIB_INCLUDES})
+
+    # Configure the library target using common OpenSim configuration options
+    OpenSimConfigureTarget(${OSIMADDLIB_LIBRARY_NAME})
+
+    # Add target-specific definitions
+    target_compile_definitions(${OSIMADDLIB_LIBRARY_NAME} PRIVATE
+        OPENSIM_${OSIMADDLIB_UKIT}_LIBRARY_NAME=${OSIMADDLIB_LIBRARY_NAME}
+        OPENSIM_${OSIMADDLIB_UKIT}_MAJOR_VERSION=${OPENSIM_MAJOR_VERSION}
+        OPENSIM_${OSIMADDLIB_UKIT}_MINOR_VERSION=${OPENSIM_MINOR_VERSION}
+        OPENSIM_${OSIMADDLIB_UKIT}_BUILD_VERSION=${OPENSIM_PATCH_VERSION}
+        OPENSIM_${OSIMADDLIB_UKIT}_COPYRIGHT_YEARS="2005-2017"
+        OPENSIM_${OSIMADDLIB_UKIT}_AUTHORS="${AUTHORS}"
+        OPENSIM_${OSIMADDLIB_UKIT}_TYPE="Shared"
+    )
 
     target_include_directories(${OSIMADDLIB_LIBRARY_NAME} 
         # Used when building this target:
@@ -388,6 +456,7 @@ function(OpenSimAddTests)
 
             add_executable(${TEST_NAME} ${test_program}
                 ${OSIMADDTESTS_SOURCES})
+            OpenSimConfigureTarget(${TEST_NAME})
             target_link_libraries(${TEST_NAME} ${OSIMADDTESTS_LINKLIBS})
             set(test_args "")
             if(APPLE)
@@ -449,6 +518,7 @@ function(OpenSimAddApplication)
     # Build.
     add_executable(${OSIMADDAPP_NAME} ${OSIMADDAPP_NAME}.cpp
                                       ${OSIMADDAPP_SOURCES})
+    OpenSimConfigureTarget(${OSIMADDAPP_NAME})
     target_link_libraries(${OSIMADDAPP_NAME} osimTools)
     set_target_properties(${OSIMADDAPP_NAME} PROPERTIES
         FOLDER "Applications")
@@ -491,6 +561,7 @@ function(OpenSimAddExampleCXX)
     # Build the example in the build tree.
     foreach(exe ${OSIMEX_EXECUTABLES})
         add_executable(${exe} ${exe}.cpp)
+        OpenSimConfigureTarget(${exe})
         set_target_properties(${exe} PROPERTIES FOLDER "Examples")
         target_link_libraries(${exe} osimTools osimExampleComponents osimMoco)
     endforeach()
@@ -550,6 +621,7 @@ function(OpenSimAddPluginExampleCXX)
             RegisterTypes_osim${OSIMEX_NAME}.h
             RegisterTypes_osim${OSIMEX_NAME}.cpp
             )
+    OpenSimConfigureTarget(osim${OSIMEX_NAME})
     set_target_properties(osim${OSIMEX_NAME} PROPERTIES
             FOLDER "Examples")
     target_link_libraries(osim${OSIMEX_NAME} osimTools osimExampleComponents
@@ -732,4 +804,3 @@ macro(OpenSimFindSwigFileDependencies OSIMSWIGDEP_RETURNVAL
     unset(_successfully_got_dependencies)
 
 endmacro()
-

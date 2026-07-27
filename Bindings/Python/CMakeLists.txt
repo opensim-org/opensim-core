@@ -110,34 +110,31 @@ macro(OpenSimAddPythonModule)
     # Used for specifying dependencies for PythonBindings.
     list(APPEND OPENSIM_PYTHON_PACKAGE_LIBRARY_TARGETS ${_libname})
 
-    # We purposefully wrap deprecated functions, so no need to see such
-    # warnings.
-    if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
-            ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-        # Turn off optimization for SWIG wrapper code. Optimization slows down
-        # compiling and also requires lots of memory. Also, there's not much to
-        # gain from an optimized wrapper file. 
-        # Note that the last optimization flag is what counts for GCC. So an -O0
-        # later on the command line overrides a previous -O2.
-        set(_COMPILE_FLAGS "-O0 -Wno-deprecated-declarations")
-    elseif(${CMAKE_CXX_COMPILER_ID} MATCHES "MSVC")
-        # TODO disable optimization on Windows.
-        # Don't warn about:
-        # 4996: deprecated functions.
-        # 4114: "const const T"
-        set(_COMPILE_FLAGS "/wd4996 /wd4114")
-    endif()
-    if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang" AND
-            NOT (${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "10"))
-        # SWIG uses the register keyword, which is deprecated in C++17.
-        set(_COMPILE_FLAGS "${_COMPILE_FLAGS} -Wno-deprecated-register")
-    endif()
-    # SWIG_PYTHON was added to account for generated cxx files failing to compile
-    # due to operators defined in simbody (removed by this symbol) -Ayman 3/25 
-    set_source_files_properties("${_output_cxx_file}"
-        PROPERTIES COMPILE_FLAGS "${_COMPILE_FLAGS} -DSWIG_PYTHON")
-
     add_library(${_libname} SHARED ${_output_cxx_file} ${_output_header_file})
+    OpenSimConfigureTarget(${_libname})
+
+    # Disable some warnings/optimizations on SWIG-generated code.
+    #
+    # Optimization is disabled in wrapper code because it slows down compilation
+    # and requires a lot of memory. Also, there's not much to gain from an optimized
+    # wrapper.
+    target_compile_options(${_libname} PRIVATE
+        $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+            -O0
+            -Wno-deprecated-declarations
+        >
+
+        $<$<CXX_COMPILER_ID:MSVC>:
+            /wd4996  # Disable warning 4996: deprecated functions.
+            /wd4114  # Disable warning 4114: "const const T"
+        >
+    )
+    target_compile_definitions(${_libname} PRIVATE
+        # SWIG_PYTHON was added to account for generated cxx files
+        # failing to compile due to operators defined in simbody (removed
+        # by this symbol) -Ayman 3/25
+        SWIG_PYTHON
+    )
 
     target_include_directories(${_libname} PRIVATE
             "${Python3_INCLUDE_DIRS}"

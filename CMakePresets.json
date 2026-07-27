@@ -69,6 +69,7 @@
             "inherits": ["base"],
             "cacheVariables": {
                 "CMAKE_COMPILE_WARNING_AS_ERROR": false,
+                "OPENSIM_ENABLE_WARNINGS": "ON",
                 "OPENSIM_WITH_CASADI": "ON",
                 "BUILD_JAVA_WRAPPING": "ON",
                 "BUILD_PYTHON_WRAPPING": "ON",
@@ -123,6 +124,7 @@
             "description": "Base build configuration settings for CI",
             "inherits": ["default"],
             "cacheVariables": {
+                "CMAKE_COMPILE_WARNING_AS_ERROR": true,
                 "OPENSIM_DISABLE_LOG_FILE": "ON",
                 "OPENSIM_SIMBODY_DOXYGEN_LOCATION": "https://simbody.github.io/latest",
                 "OPENSIM_INSTALL_UNIX_FHS": "OFF",
@@ -137,10 +139,7 @@
             "inherits": [
                 "ci",
                 "windows"
-            ],
-            "environment": {
-                "CXXFLAGS": "/WX"
-            }
+            ]
         },
         {
             "name": "ci-make-macos-release",
@@ -149,10 +148,7 @@
             "inherits": [
                 "ci",
                 "macos"
-            ],
-            "environment": {
-                "CXXFLAGS": "-Wdeprecated-copy"
-            }
+            ]
         },
         {
             "name": "ci-make-linux-release",
@@ -162,8 +158,9 @@
                 "ci",
                 "linux"
             ],
-            "environment": {
-                "CXXFLAGS": "-Werror"
+            "cacheVariables": {
+                "CMAKE_CXX_FLAGS_RELEASE": "-DNDEBUG -O2 -funroll-loops",
+                "CMAKE_C_FLAGS_RELEASE": "-DNDEBUG -O2 -funroll-loops"
             }
         }
     ],
