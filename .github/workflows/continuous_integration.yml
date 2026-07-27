@@ -218,25 +218,51 @@ jobs:
         name: opensim-core-${{ steps.configure.outputs.version }}-mac-arm64
         path: opensim-core-${{ steps.configure.outputs.version }}.zip
 
-  ubuntu22:
-    name: Ubuntu 22.04
-    runs-on: ubuntu-22.04
+  manylinux_2_28:
+    name: ManyLinux 2.28
+    runs-on: ubuntu-latest
+    container:
+      image: quay.io/pypa/manylinux_2_28_x86_64
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install Python packages
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
+    - name: Mark workspace as safe for git (manylinux container)
+      run: |
+        git config --global --add safe.directory "$GITHUB_WORKSPACE"
+        git config --global --add safe.directory /__w/opensim-core/opensim-core
 
-    - name: Install Numpy
+    - name: Set up Python path environment
+      run: |
+        echo "/opt/python/cp311-cp311/bin" >> $GITHUB_PATH
+
+    - name: Install Numpy & Python Build Dependencies
       run: |
         pip install pip --upgrade
-        pip install numpy==2.0
+        pip install numpy==2.0 build wheel auditwheel
 
     - name: Install packages
-      run: sudo apt-get update && sudo apt-get install --yes build-essential libtool autoconf pkg-config gfortran libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen patchelf
+      run: |
+        dnf update -y
+        dnf install -y \
+          gcc-c++ \
+          make \
+          cmake \
+          libtool \
+          autoconf \
+          pkgconfig \
+          gcc-gfortran \
+          openblas-devel \
+          lapack-devel \
+          freeglut-devel \
+          libXi-devel \
+          libXmu-devel \
+          doxygen \
+          patchelf \
+          zip \
+          wget \
+          pcre2-devel \
+          java-11-openjdk-devel
 
     - name: Install SWIG
       run: |
@@ -251,7 +277,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: build/dependencies/ci-make-linux-release/install
-        key: ${{ runner.os }}-${{ github.job }}-dependencies-${{ hashFiles('dependencies/*') }}
+        key: ${{ runner.os }}-manylinux2_28-dependencies-${{ hashFiles('dependencies/*') }}
 
     - name: Build dependencies
       if: steps.cache-dependencies.outputs.cache-hit != 'true'
@@ -287,102 +313,22 @@ jobs:
         cmake --build --preset ci-make-linux-release --target install
         cd $GITHUB_WORKSPACE
         mv ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }} opensim-core-${{ steps.configure.outputs.version }}
-        zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure.outputs.version }}-ubuntu22.zip opensim-core-${{ steps.configure.outputs.version }}
-        mv opensim-core-${{ steps.configure.outputs.version }} ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}
-
-    - name: Test Python bindings
-      run: |
-        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ steps.configure.outputs.OPENSIM_DEPENDENCIES_DIR }}/simbody/lib
-        cd ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}/sdk/Python
-        # Run the python tests, verbosely.
-        python3 -m unittest discover --start-directory opensim/tests --verbose
-
-    - name: Upload opensim-core
-      uses: actions/upload-artifact@v4
-      with:
-        # The upload-artifact zipping does not preserve symlinks or executable
-        # bits. So we zip ourselves, even though this causes a double-zip.
-        name: opensim-core-${{ steps.configure.outputs.version }}-ubuntu22-linux
-        path: opensim-core-${{ steps.configure.outputs.version }}-ubuntu22.zip
-
-  ubuntu24:
-    name: Ubuntu 24.04
-    runs-on: ubuntu-24.04
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Install Python packages
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-
-    - name: Install Numpy
-      run: |
-        pip install pip --upgrade
-        pip install numpy==2.0
-        pip install build
-        pip install wheel
-
-    - name: Install packages
-      run: sudo apt-get update && sudo apt-get install --yes build-essential libtool autoconf pkg-config gfortran libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen patchelf
-
-    - name: Install SWIG
-      run: |
-        mkdir ~/swig-source && cd ~/swig-source
-        wget https://github.com/swig/swig/archive/refs/tags/v4.1.1.tar.gz
-        tar xzf v4.1.1.tar.gz && cd swig-4.1.1
-        sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
-        make && make -j4 install
-
-    - name: Cache dependencies
-      id: cache-dependencies
-      uses: actions/cache@v3
-      with:
-        path: build/dependencies/ci-make-linux-release/install
-        key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
-
-    - name: Build dependencies
-      if: steps.cache-dependencies.outputs.cache-hit != 'true'
-      run: |
-        cd $GITHUB_WORKSPACE/dependencies
-        cmake . --preset ci-make-linux-release -LAH
-        cmake --build --preset ci-make-linux-release -j 4
-
-    - name: Configure opensim-core
-      id: configure
-      run: |
-        cmake -S $GITHUB_WORKSPACE --preset ci-make-linux-release -LAH \
-            -DSWIG_EXECUTABLE=$HOME/swig/bin/swig
-
-        VERSION=`cmake -N -L $GITHUB_WORKSPACE/build/ci-make-linux-release | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
-        echo "CMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/build/ci-make-linux-release/install" >> $GITHUB_OUTPUT
-        echo "OPENSIM_DEPENDENCIES_DIR=$GITHUB_WORKSPACE/build/dependencies/ci-make-linux-release/install" >> $GITHUB_OUTPUT
-
-    - name: Build opensim-core
-      run: |
-        cmake --build --preset ci-make-linux-release -j 4
-
-    - name: Test opensim-core
-      run: |
-        # TODO: Temporary for python to find Simbody libraries.
-        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ steps.configure.outputs.OPENSIM_DEPENDENCIES_DIR }}/simbody/lib
-        ctest --preset ci-make-linux-release -j 4
-
-    - name: Install opensim-core
-      run: |
-        cmake --build --preset ci-make-linux-release --target doxygen
-        cmake --build --preset ci-make-linux-release --target install
-        cd $GITHUB_WORKSPACE
-        mv ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }} opensim-core-${{ steps.configure.outputs.version }}
-        zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure.outputs.version }}-ubuntu24.zip opensim-core-${{ steps.configure.outputs.version }}
+        zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure.outputs.version }}-manylinux2_28.zip opensim-core-${{ steps.configure.outputs.version }}
         mv opensim-core-${{ steps.configure.outputs.version }} ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}
 
     - name: Build wheel
       run: |
         cd ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}/sdk/Python
         python3 -m build --wheel
+
+    - name: Auditwheel repair (Manylinux compliance)
+      run: |
+        cd ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}/sdk/Python
+        mkdir -p dist/repaired
+        auditwheel repair dist/opensim*.whl -w dist/repaired/
+        # Overwrite original wheel with repaired manylinux wheel
+        mv dist/repaired/*.whl dist/
+        rmdir dist/repaired/
 
     - name: Capture wheel path
       id: wheel
@@ -409,8 +355,8 @@ jobs:
       with:
         # The upload-artifact zipping does not preserve symlinks or executable
         # bits. So we zip ourselves, even though this causes a double-zip.
-        name: opensim-core-${{ steps.configure.outputs.version }}-ubuntu24-linux
-        path: opensim-core-${{ steps.configure.outputs.version }}-ubuntu24.zip
+        name: opensim-core-${{ steps.configure.outputs.version }}-manylinux2_28-linux
+        path: opensim-core-${{ steps.configure.outputs.version }}-manylinux2_28.zip
 
   build_gui:
     name: Build GUI

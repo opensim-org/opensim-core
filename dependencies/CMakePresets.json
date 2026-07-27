@@ -35,6 +35,9 @@
                 "type": "equals",
                 "lhs": "${hostSystemName}",
                 "rhs": "Linux"
+            },
+            "cacheVariables": {
+                "CMAKE_INSTALL_LIBDIR": "lib"
             }
         },
         {
