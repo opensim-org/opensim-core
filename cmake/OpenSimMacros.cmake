@@ -261,19 +261,6 @@ function(OpenSimAddLibrary)
             PUBLIC
                 $<$<STREQUAL:$<TARGET_PROPERTY:${OSIMADDLIB_LIBRARY_NAME},TYPE>,STATIC_LIBRARY>:OPENSIM_${OSIMADDLIB_UKIT}_TYPE_STATIC>
         )
-        # Static builds: the linker only pulls in object files that satisfy
-        # unresolved symbol references. RegisterTypes_*.cpp TUs contain only
-        # global constructor objects (e.g. osimSimulationInstantiator) with no
-        # externally-referenced symbols, so the linker silently omits them and
-        # type registration never runs. Whole-archive forces all object files in
-        # the library to be included, ensuring those constructors execute.
-        # The condition mirrors the one above: use the library's own TYPE so
-        # shared builds are unaffected.
-        target_link_options(${OSIMADDLIB_LIBRARY_NAME} INTERFACE
-            $<$<AND:$<STREQUAL:$<TARGET_PROPERTY:${OSIMADDLIB_LIBRARY_NAME},TYPE>,STATIC_LIBRARY>,$<PLATFORM_ID:Windows>>:/WHOLEARCHIVE:$<TARGET_FILE:${OSIMADDLIB_LIBRARY_NAME}>>
-            $<$<AND:$<STREQUAL:$<TARGET_PROPERTY:${OSIMADDLIB_LIBRARY_NAME},TYPE>,STATIC_LIBRARY>,$<PLATFORM_ID:Darwin>>:LINKER:-force_load,$<TARGET_FILE:${OSIMADDLIB_LIBRARY_NAME}>>
-            $<$<AND:$<STREQUAL:$<TARGET_PROPERTY:${OSIMADDLIB_LIBRARY_NAME},TYPE>,STATIC_LIBRARY>,$<NOT:$<OR:$<PLATFORM_ID:Windows>,$<PLATFORM_ID:Darwin>>>>:LINKER:--whole-archive,$<TARGET_FILE:${OSIMADDLIB_LIBRARY_NAME}>,--no-whole-archive>
-        )
     endif()
 
     # Install.
