@@ -20,6 +20,8 @@ joints that lie between two frames based on a model's topology. (#4301)
 coordinate paths associated with a path element. Derived classes provide concrete implementations based on
 the model's topology (e.g., `GeometryPath`) or via a user-defined list of coordinates
 (e.g., `FunctionBasedPath`). (#4301)
+- The macOS version targeted by OpenSim is now 13.3 (Ventura; previously: 11, Big Sur) so that newer C++ library
+  features can be used by the project (specifically, `std::format`, #4367).
 
 
 v4.6
