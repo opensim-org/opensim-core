@@ -30,7 +30,7 @@ jobs:
       run: |
         (New-Object System.Net.WebClient).DownloadFile("https://github.com/doxygen/doxygen/releases/download/Release_1_12_0/doxygen-1.12.0.windows.x64.bin.zip", "doxygen.zip")
         7z x $env:GITHUB_WORKSPACE/doxygen.zip -odoxygen
-        echo "$env:GITHUB_WORKSPACE\\doxygen" >> $GITHUB_PATH
+        echo "$env:GITHUB_WORKSPACE\doxygen" >> $env:GITHUB_PATH
 
     - name: Install Python packages
       uses: actions/setup-python@v4
@@ -55,7 +55,7 @@ jobs:
       id: cache-dependencies
       uses: actions/cache@v3
       with:
-        path: ~/opensim_dependencies_install
+        path: build/dependencies/ci-msvc-windows-release/install
         # Every time a cache is created, it's stored with this key.
         # In subsequent runs, if the key matches the key of an existing cache,
         # then the cache is used. We chose for this key to depend on the
@@ -67,48 +67,37 @@ jobs:
     - name: Build dependencies
       if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
-        echo $env:GITHUB_WORKSPACE\\build_deps
-        mkdir $env:GITHUB_WORKSPACE\\build_deps
-        chdir $env:GITHUB_WORKSPACE\\build_deps
-        # /W0 disables warnings.
-        # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
-        # TODO: CMake provides /W3, which overrides our /W0
-        cmake -E env CXXFLAGS="/W0 /MD" cmake $env:GITHUB_WORKSPACE/dependencies -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install -DSUPERBUILD_ezc3d=ON -DOPENSIM_WITH_CASADI=ON -DOPENSIM_PYTHON_STANDALONE=ON
-        cmake --build . --config Release -- /maxcpucount:4
+        chdir $env:GITHUB_WORKSPACE\\dependencies
+        cmake -G "Visual Studio 17 2022" . --preset ci-msvc-windows-release -LAH
+        cmake --build --preset ci-msvc-windows-release -j 4
 
     - name: Configure opensim-core
       id: configure
       run: |
-        mkdir $env:GITHUB_WORKSPACE\\build
-        chdir $env:GITHUB_WORKSPACE\\build
-        # TODO: Can remove /WX when we use that in CMakeLists.txt.
-        # Set the CXXFLAGS environment variable to turn warnings into errors.
-        # Skip timing test section included by default.
-        cmake -E env CXXFLAGS="/WX /MD -DSKIP_TIMING" cmake $env:GITHUB_WORKSPACE -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DOPENSIM_C3D_PARSER=ezc3d -DOPENSIM_WITH_CASADI=on -DBUILD_API_EXAMPLES=on -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WHEELS=on -DPython3_ROOT_DIR=C:\hostedtoolcache\windows\Python\3.11.9\x64
-        $env:match = cmake -L . | Select-String -Pattern OPENSIM_QUALIFIED_VERSION
+        cmake -G "Visual Studio 17 2022" . --preset ci-msvc-windows-release -LAH `
+            -DPython3_ROOT_DIR=$env:pythonLocation
+
+        $env:match = cmake -N -L build/ci-msvc-windows-release | Select-String -Pattern OPENSIM_QUALIFIED_VERSION
         $version = $env:match.split('=')[1]
-        echo $version
-        echo "VERSION=$version" >> $GITHUB_ENV
         echo "version=$version" >> $env:GITHUB_OUTPUT
+        echo "CMAKE_INSTALL_PREFIX=$env:GITHUB_WORKSPACE\build\ci-msvc-windows-release\install" >> $env:GITHUB_OUTPUT
+        echo "OPENSIM_DEPENDENCIES_DIR=$env:GITHUB_WORKSPACE\build\dependencies\ci-msvc-windows-release\install" >> $env:GITHUB_OUTPUT
 
     - name: Build opensim-core
     # Install now to avoid building bindings twice (TODO: still an issue with Visual Studio 2022).
       run: |
-        chdir $env:GITHUB_WORKSPACE\\build
-        cmake --build . --config Release --target doxygen -- /maxcpucount:4
-        cmake --build . --config Release --target install -- /maxcpucount:4
+        cmake --build --preset ci-msvc-windows-release -j 4
+        cmake --build --preset ci-msvc-windows-release --target doxygen
+        cmake --build --preset ci-msvc-windows-release --target install
 
     - name: Test opensim-core
       run: |
-        chdir $env:GITHUB_WORKSPACE\\build
-        ctest --parallel 4 --output-on-failure --build-config Release -E Java_*
+        ctest --preset ci-msvc-windows-release -j 4 -E Java_.*
 
     - name: Install opensim-core
     # TODO: This is where we wish to do the installing, but it's done above for now.
       run: |
-        chdir $env:GITHUB_WORKSPACE\\build
-        chdir $env:GITHUB_WORKSPACE
-        Copy-Item -Path "~/opensim-core-install" -Destination "opensim-core-${{ steps.configure.outputs.version }}" -Recurse
+        Copy-Item -Path "${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}" -Destination "opensim-core-${{ steps.configure.outputs.version }}" -Recurse
         7z a "opensim-core-${{ steps.configure.outputs.version }}.zip" "opensim-core-${{ steps.configure.outputs.version }}"
 
     - name: Upload opensim-core
@@ -117,9 +106,9 @@ jobs:
         name: opensim-core-${{ steps.configure.outputs.version }}-win
         path: opensim-core-${{ steps.configure.outputs.version }}.zip
 
-  mac_arm64:
+  macos:
     runs-on: macos-15
-    name: Mac Arm64
+    name: MacOS
 
     outputs:
       version: ${{ steps.configure.outputs.version }}
@@ -144,15 +133,7 @@ jobs:
         mkdir gfortran_version
         gfortran -v &> gfortran_version/gfortran_version.txt
 
-    - name: Cache SWIG
-      id: cache-swig
-      uses: actions/cache@v3
-      with:
-        path: ~/swig
-        key: ${{ runner.os }}-swig
-
     - name: Install SWIG
-      # if: steps.cache-swig.outputs.cache-hit != 'true'
       run: |
         mkdir ~/swig-source && cd ~/swig-source
         wget https://github.com/swig/swig/archive/refs/tags/v4.1.1.tar.gz
@@ -164,7 +145,7 @@ jobs:
       id: cache-dependencies
       uses: actions/cache@v3
       with:
-        path: ~/opensim_dependencies_install
+        path: build/dependencies/ci-make-macos-release/install
         # If Homebrew updates the gcc package, then our cache of IPOPT is invalid.
         # Specifically, the pkgcfg_lib_IPOPT_gfortran CMake variable becomes
         # undefined.
@@ -173,89 +154,59 @@ jobs:
     - name: Build dependencies
       if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
-        mkdir $GITHUB_WORKSPACE/../build_deps
-        cd $GITHUB_WORKSPACE/../build_deps
-        DEP_CMAKE_ARGS=($GITHUB_WORKSPACE/dependencies -LAH)
-        DEP_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install)
-        DEP_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
-        DEP_CMAKE_ARGS+=(-DSUPERBUILD_ezc3d=ON)
-        DEP_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
-        DEP_CMAKE_ARGS+=(-DOPENSIM_DISABLE_LOG_FILE=ON)
-        DEP_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=11)
-
-        printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
-        cmake "${DEP_CMAKE_ARGS[@]}"
-        make --jobs 4
+        cd $GITHUB_WORKSPACE/dependencies
+        cmake . --preset ci-make-macos-release -LAH
+        cmake --build --preset ci-make-macos-release -j 4
 
     - name: Configure opensim-core
       id: configure
       run: |
-        mkdir $GITHUB_WORKSPACE/../build
-        cd $GITHUB_WORKSPACE/../build
-        OSIM_CMAKE_ARGS=($GITHUB_WORKSPACE -LAH)
-        OSIM_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/../opensim-core-install)
-        OSIM_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install)
-        OSIM_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=11)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_C3D_PARSER=ezc3d)
-        OSIM_CMAKE_ARGS+=(-DBUILD_API_EXAMPLES=ON)
-        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on)
-        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WHEELS=on)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
-        OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_INSTALL_UNIX_FHS=OFF)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off)
-        # TODO: Update to simbody.github.io/latest
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simbody.github.io/simtk.org/api_docs/simbody/latest/")
-        OSIM_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-Werror, -Wdeprecated-copy")
-        printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
-        cmake "${OSIM_CMAKE_ARGS[@]}"
-        VERSION=`cmake -L . | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
-        echo $VERSION
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        cmake -S $GITHUB_WORKSPACE --preset ci-make-macos-release -LAH \
+            -DSWIG_EXECUTABLE=$HOME/swig/bin/swig
+
+        VERSION=`cmake -N -L $GITHUB_WORKSPACE/build/ci-make-macos-release | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
         echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "CMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/build/ci-make-macos-release/install" >> $GITHUB_OUTPUT
+        echo "OPENSIM_DEPENDENCIES_DIR=$GITHUB_WORKSPACE/build/dependencies/ci-make-macos-release/install" >> $GITHUB_OUTPUT
 
     - name: Build opensim-core
       run: |
-        cd $GITHUB_WORKSPACE/../build
-        make --jobs 4
+        cmake --build --preset ci-make-macos-release -j 4
 
     - name: Test opensim-core
       run: |
-        cd $GITHUB_WORKSPACE/../build
-        ctest --parallel 4 --output-on-failure
+        ctest --preset ci-make-macos-release -j 4
 
     - name: Install opensim-core
       run: |
-        cd $GITHUB_WORKSPACE/../build
-        make doxygen
-        make install
+        cmake --build --preset ci-make-macos-release --target doxygen
+        cmake --build --preset ci-make-macos-release --target install
         cd $GITHUB_WORKSPACE
-        mv $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ steps.configure.outputs.version }}
+        mv ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }} opensim-core-${{ steps.configure.outputs.version }}
         zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure.outputs.version }}.zip opensim-core-${{ steps.configure.outputs.version }}
-        mv opensim-core-${{ steps.configure.outputs.version }} $GITHUB_WORKSPACE/../opensim-core-install
+        mv opensim-core-${{ steps.configure.outputs.version }} ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}
 
     - name: Build wheel
       run: |
-        cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+        cd ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}/sdk/Python
         python3 -m build --wheel
 
     - name: Capture wheel path
       id: wheel
       run: |
-         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist
-         echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
+        cd ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}/sdk/Python/dist
+        echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
 
     - name: Upload macOS wheel
       uses: actions/upload-artifact@v4
       with:
         name: ${{ steps.wheel.outputs.path }}
-        path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
+        path: ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}/sdk/Python/dist/${{ steps.wheel.outputs.path }}
 
     - name: Test Python bindings
       run: |
-        cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        pip3 install /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
+        cd ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}/sdk/Python
+        pip3 install ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}/sdk/Python/dist/${{ steps.wheel.outputs.path }}
         # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
@@ -287,15 +238,7 @@ jobs:
     - name: Install packages
       run: sudo apt-get update && sudo apt-get install --yes build-essential libtool autoconf pkg-config gfortran libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen patchelf
 
-    - name: Cache SWIG
-      id: cache-swig
-      uses: actions/cache@v3
-      with:
-        path: ~/swig
-        key: ${{ runner.os }}-swig
-
     - name: Install SWIG
-      # if: steps.cache-swig.outputs.cache-hit != 'true'
       run: |
         mkdir ~/swig-source && cd ~/swig-source
         wget https://github.com/swig/swig/archive/refs/tags/v4.1.1.tar.gz
@@ -307,77 +250,50 @@ jobs:
       id: cache-dependencies
       uses: actions/cache@v3
       with:
-        path: ~/opensim_dependencies_install
+        path: build/dependencies/ci-make-linux-release/install
         key: ${{ runner.os }}-${{ github.job }}-dependencies-${{ hashFiles('dependencies/*') }}
 
     - name: Build dependencies
       if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
-        mkdir $GITHUB_WORKSPACE/../build_deps
-        cd $GITHUB_WORKSPACE/../build_deps
-        DEP_CMAKE_ARGS=($GITHUB_WORKSPACE/dependencies -LAH)
-        DEP_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install)
-        DEP_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
-        DEP_CMAKE_ARGS+=(-DSUPERBUILD_ezc3d=ON)
-        DEP_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
-        DEP_CMAKE_ARGS+=(-DOPENSIM_DISABLE_LOG_FILE=ON)
-        printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
-        cmake "${DEP_CMAKE_ARGS[@]}"
-        make --jobs 4
+        cd $GITHUB_WORKSPACE/dependencies
+        cmake . --preset ci-make-linux-release -LAH
+        cmake --build --preset ci-make-linux-release -j 4
 
     - name: Configure opensim-core
       id: configure
       run: |
-        mkdir $GITHUB_WORKSPACE/../build
-        cd $GITHUB_WORKSPACE/../build
-        OSIM_CMAKE_ARGS=($GITHUB_WORKSPACE -LAH)
-        OSIM_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/../opensim-core-install)
-        OSIM_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_C3D_PARSER=ezc3d)
-        OSIM_CMAKE_ARGS+=(-DBUILD_API_EXAMPLES=ON)
-        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
-        OSIM_CMAKE_ARGS+=(-DSWIG_DIR=~/swig/share/swig)
-        OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=~/swig/bin/swig)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_INSTALL_UNIX_FHS=OFF)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off)
-        # TODO: Update to simbody.github.io/latest
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simbody.github.io/simtk.org/api_docs/simbody/latest/")
-        OSIM_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-Werror")
-        printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
-        cmake "${OSIM_CMAKE_ARGS[@]}"
-        VERSION=`cmake -L . | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
-        echo $VERSION
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        cmake -S $GITHUB_WORKSPACE --preset ci-make-linux-release -LAH \
+            -DSWIG_EXECUTABLE=$HOME/swig/bin/swig
+
+        VERSION=`cmake -N -L $GITHUB_WORKSPACE/build/ci-make-linux-release | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
         echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "CMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/build/ci-make-linux-release/install" >> $GITHUB_OUTPUT
+        echo "OPENSIM_DEPENDENCIES_DIR=$GITHUB_WORKSPACE/build/dependencies/ci-make-linux-release/install" >> $GITHUB_OUTPUT
 
     - name: Build opensim-core
       run: |
-        cd $GITHUB_WORKSPACE/../build
-        make --jobs 4
+        cmake --build --preset ci-make-linux-release -j 4
 
     - name: Test opensim-core
       run: |
-        cd $GITHUB_WORKSPACE/../build
         # TODO: Temporary for python to find Simbody libraries.
-        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/opensim_dependencies_install/simbody/lib
-        ctest --parallel 4 --output-on-failure
+        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ steps.configure.outputs.OPENSIM_DEPENDENCIES_DIR }}/simbody/lib
+        ctest --preset ci-make-linux-release -j 4
 
     - name: Install opensim-core
       run: |
-        cd $GITHUB_WORKSPACE/../build
-        make doxygen
-        make --jobs 4 install
+        cmake --build --preset ci-make-linux-release --target doxygen
+        cmake --build --preset ci-make-linux-release --target install
         cd $GITHUB_WORKSPACE
-        mv $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ steps.configure.outputs.version }}
+        mv ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }} opensim-core-${{ steps.configure.outputs.version }}
         zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure.outputs.version }}-ubuntu22.zip opensim-core-${{ steps.configure.outputs.version }}
-        mv opensim-core-${{ steps.configure.outputs.version }} $GITHUB_WORKSPACE/../opensim-core-install
+        mv opensim-core-${{ steps.configure.outputs.version }} ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}
 
     - name: Test Python bindings
       run: |
-        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/opensim_dependencies_install/simbody/lib
-        cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ steps.configure.outputs.OPENSIM_DEPENDENCIES_DIR }}/simbody/lib
+        cd ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}/sdk/Python
         # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
@@ -411,15 +327,7 @@ jobs:
     - name: Install packages
       run: sudo apt-get update && sudo apt-get install --yes build-essential libtool autoconf pkg-config gfortran libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen patchelf
 
-    - name: Cache SWIG
-      id: cache-swig
-      uses: actions/cache@v3
-      with:
-        path: ~/swig
-        key: ${{ runner.os }}-swig
-
     - name: Install SWIG
-      # if: steps.cache-swig.outputs.cache-hit != 'true'
       run: |
         mkdir ~/swig-source && cd ~/swig-source
         wget https://github.com/swig/swig/archive/refs/tags/v4.1.1.tar.gz
@@ -431,83 +339,55 @@ jobs:
       id: cache-dependencies
       uses: actions/cache@v3
       with:
-        path: ~/opensim_dependencies_install
+        path: build/dependencies/ci-make-linux-release/install
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
 
     - name: Build dependencies
       if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
-        mkdir $GITHUB_WORKSPACE/../build_deps
-        cd $GITHUB_WORKSPACE/../build_deps
-        DEP_CMAKE_ARGS=($GITHUB_WORKSPACE/dependencies -LAH)
-        DEP_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install)
-        DEP_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
-        DEP_CMAKE_ARGS+=(-DSUPERBUILD_ezc3d=ON)
-        DEP_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
-        DEP_CMAKE_ARGS+=(-DOPENSIM_DISABLE_LOG_FILE=ON)
-        printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
-        cmake "${DEP_CMAKE_ARGS[@]}"
-        make --jobs 4
+        cd $GITHUB_WORKSPACE/dependencies
+        cmake . --preset ci-make-linux-release -LAH
+        cmake --build --preset ci-make-linux-release -j 4
 
     - name: Configure opensim-core
       id: configure
       run: |
-        mkdir $GITHUB_WORKSPACE/../build
-        cd $GITHUB_WORKSPACE/../build
-        OSIM_CMAKE_ARGS=($GITHUB_WORKSPACE -LAH)
-        OSIM_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/../opensim-core-install)
-        OSIM_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_C3D_PARSER=ezc3d)
-        OSIM_CMAKE_ARGS+=(-DBUILD_API_EXAMPLES=ON)
-        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on)
-        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WHEELS=on)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
-        OSIM_CMAKE_ARGS+=(-DSWIG_DIR=~/swig/share/swig)
-        OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=~/swig/bin/swig)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_INSTALL_UNIX_FHS=OFF)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off)
-        # TODO: Update to simbody.github.io/latest
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simbody.github.io/simtk.org/api_docs/simbody/latest/")
-        OSIM_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-Werror")
-        printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
-        cmake "${OSIM_CMAKE_ARGS[@]}"
-        VERSION=`cmake -L . | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
-        echo $VERSION
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        cmake -S $GITHUB_WORKSPACE --preset ci-make-linux-release -LAH \
+            -DSWIG_EXECUTABLE=$HOME/swig/bin/swig
+
+        VERSION=`cmake -N -L $GITHUB_WORKSPACE/build/ci-make-linux-release | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
         echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "CMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/build/ci-make-linux-release/install" >> $GITHUB_OUTPUT
+        echo "OPENSIM_DEPENDENCIES_DIR=$GITHUB_WORKSPACE/build/dependencies/ci-make-linux-release/install" >> $GITHUB_OUTPUT
 
     - name: Build opensim-core
       run: |
-        cd $GITHUB_WORKSPACE/../build
-        make --jobs 4
+        cmake --build --preset ci-make-linux-release -j 4
 
     - name: Test opensim-core
       run: |
-        cd $GITHUB_WORKSPACE/../build
         # TODO: Temporary for python to find Simbody libraries.
-        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/opensim_dependencies_install/simbody/lib
-        ctest --parallel 4 --output-on-failure
+        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ steps.configure.outputs.OPENSIM_DEPENDENCIES_DIR }}/simbody/lib
+        ctest --preset ci-make-linux-release -j 4
 
     - name: Install opensim-core
       run: |
-        cd $GITHUB_WORKSPACE/../build
-        make doxygen
-        make --jobs 4 install
+        cmake --build --preset ci-make-linux-release --target doxygen
+        cmake --build --preset ci-make-linux-release --target install
         cd $GITHUB_WORKSPACE
-        mv $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ steps.configure.outputs.version }}
+        mv ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }} opensim-core-${{ steps.configure.outputs.version }}
         zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure.outputs.version }}-ubuntu24.zip opensim-core-${{ steps.configure.outputs.version }}
-        mv opensim-core-${{ steps.configure.outputs.version }} $GITHUB_WORKSPACE/../opensim-core-install
+        mv opensim-core-${{ steps.configure.outputs.version }} ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}
 
     - name: Build wheel
       run: |
-        cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+        cd ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}/sdk/Python
         python3 -m build --wheel
 
     - name: Capture wheel path
       id: wheel
       run: |
-         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist
+         cd ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}/sdk/Python/dist
          ls -al
          echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
 
@@ -515,12 +395,12 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: ${{ steps.wheel.outputs.path }}
-        path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/${{ steps.wheel.outputs.path }}
+        path: ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}/sdk/Python/dist/${{ steps.wheel.outputs.path }}
 
     - name: Test Python bindings
       run: |
-        cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        pip3 install /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/${{ steps.wheel.outputs.path }}
+        cd ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}/sdk/Python
+        pip3 install ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}/sdk/Python/dist/${{ steps.wheel.outputs.path }}
         # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
