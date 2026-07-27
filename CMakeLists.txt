@@ -116,27 +116,14 @@ link_directories(${CMAKE_BINARY_DIR})
 # OpenSim options.
 # ----------------
 
-# Default to shared libraries (historical behavior before BUILD_SHARED_LIBS
-# was made explicit). Users who want a static build pass -DBUILD_SHARED_LIBS=OFF.
-if(NOT DEFINED BUILD_SHARED_LIBS)
-    set(BUILD_SHARED_LIBS ON)
-endif()
-
-# Plugin example targets are always SHARED regardless of BUILD_SHARED_LIBS.
-# When building static, the OpenSim libs they link against must be compiled
-# with -fPIC so that local-exec TLS symbols (e.g. thread_local in
-# Component.cpp) do not cause a link error when pulled into a shared object.
-# Shared libs already receive -fPIC from CMake automatically.
-if(NOT BUILD_SHARED_LIBS AND NOT DEFINED CMAKE_POSITION_INDEPENDENT_CODE)
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-endif()
-
 # Specify number of cores to run tests.
 include(ProcessorCount)
 ProcessorCount(PROCESSOR_COUNT)
 set(PROCESSOR_COUNT "${PROCESSOR_COUNT}" CACHE STRING
     "Number of concurrent jobs when running tests via RUN_TESTS_PARALLEL target.")
 mark_as_advanced(PROCESSOR_COUNT)
+
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 
 # Try to use MathJax for Doxygen equations.
 option(OPENSIM_DOXYGEN_USE_MATHJAX "Try to use MathJax to render Doxygen

@@ -228,6 +228,12 @@ function(OpenSimAddLibrary)
         )
     endif()
 
+    # Regardless of whether the library is built STATIC or SHARED, emit
+    # position-independent code. SHARED plugins must always be link-able.
+    set_target_properties(${OSIMADDLIB_LIBRARY_NAME} PROPERTIES
+        POSITION_INDEPENDENT_CODE ON
+    )
+
     # Set DLL export/import defines based on actual target type so that
     # both shared and static builds work without manual preprocessor flags.
     if(OSIMADDLIB_VENDORLIB)
