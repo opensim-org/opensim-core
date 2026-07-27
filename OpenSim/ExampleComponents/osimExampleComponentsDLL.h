@@ -33,10 +33,12 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
-#ifdef OSIMEXAMPLECOMPONENTS_EXPORTS
-#define OSIMEXAMPLECOMPONENTS_API __declspec(dllexport)
+#if defined(OPENSIM_EXAMPLECOMPONENTS_TYPE_STATIC)
+    #define OSIMEXAMPLECOMPONENTS_API
+#elif defined(OSIMEXAMPLECOMPONENTS_EXPORTS)
+    #define OSIMEXAMPLECOMPONENTS_API __declspec(dllexport)
 #else
-#define OSIMEXAMPLECOMPONENTS_API __declspec(dllimport)
+    #define OSIMEXAMPLECOMPONENTS_API __declspec(dllimport)
 #endif
 
 #endif // PLATFORM

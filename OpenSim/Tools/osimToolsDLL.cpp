@@ -49,6 +49,7 @@ static void Plugin_Detach()
 //
 // The code below handles both Windows and Linux library entrypoints
 //
+#ifndef OPENSIM_TOOLS_TYPE_STATIC
 #if defined(_WIN32)
 //=============================================================================
 // DLL Main Entry Point
@@ -89,3 +90,4 @@ static void __attribute__((destructor)) Shared_Object_Destructor()
    Plugin_Detach();
 }
 #endif
+#endif // OPENSIM_TOOLS_TYPE_STATIC

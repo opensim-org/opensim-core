@@ -21,7 +21,9 @@
 #ifndef _WIN32
     #define OSIMMOCO_API
 #else
-    #ifdef OSIMMOCO_EXPORTS
+    #if defined(OPENSIM_MOCO_TYPE_STATIC)
+        #define OSIMMOCO_API
+    #elif defined(OSIMMOCO_EXPORTS)
         #define OSIMMOCO_API __declspec(dllexport)
     #else
         #define OSIMMOCO_API __declspec(dllimport)

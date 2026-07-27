@@ -203,7 +203,8 @@ function(OpenSimAddLibrary)
     # These next few lines are the most important:
 
     # Create the library using the provided source and include files.
-    add_library(${OSIMADDLIB_LIBRARY_NAME} SHARED
+    # No explicit SHARED/STATIC keyword -- respects BUILD_SHARED_LIBS.
+    add_library(${OSIMADDLIB_LIBRARY_NAME}
         ${OSIMADDLIB_SOURCES} ${OSIMADDLIB_INCLUDES})
 
     target_include_directories(${OSIMADDLIB_LIBRARY_NAME} 
@@ -227,16 +228,31 @@ function(OpenSimAddLibrary)
         )
     endif()
 
-    # This is for exporting classes on Windows.
+    # Regardless of whether the library is built STATIC or SHARED, emit
+    # position-independent code. SHARED plugins must always be link-able.
+    set_target_properties(${OSIMADDLIB_LIBRARY_NAME} PROPERTIES
+        POSITION_INDEPENDENT_CODE ON
+    )
+
+    # Set the `FOLDER` property of the library (used by IDEs).
     if(OSIMADDLIB_VENDORLIB)
         set(OSIMADDLIB_FOLDER "Vendor Libraries")
     else()
         set(OSIMADDLIB_FOLDER "Libraries")
     endif()
-    set_target_properties(${OSIMADDLIB_LIBRARY_NAME} PROPERTIES
-       DEFINE_SYMBOL OSIM${OSIMADDLIB_UKIT}_EXPORTS
-       FOLDER "${OSIMADDLIB_FOLDER}" # For Visual Studio.
-    )
+    set_target_properties(${OSIMADDLIB_LIBRARY_NAME} PROPERTIES FOLDER "${OSIMADDLIB_FOLDER}")
+
+    # Set DLL `__declspec` behavior based on target type.
+    get_target_property(lib_type ${OSIMADDLIB_LIBRARY_NAME} TYPE)
+    if(lib_type STREQUAL "SHARED_LIBRARY")
+        # Define `OSIM*_EXPORTS`, which emits `__declspec(dllexport)` on Windows.
+        # It shouldn't be defined in downstream builds (PRIVATE)
+        target_compile_definitions(${OSIMADDLIB_LIBRARY_NAME} PRIVATE OSIM${OSIMADDLIB_UKIT}_EXPORTS)
+    elseif(lib_type STREQUAL "STATIC_LIBRARY")
+        # Define `OPENSIM_*_TYPE_STATIC`, which prevents `__declspec` emission on Windows.
+        # It should be defined in both this and downstream builds (PUBLIC).
+        target_compile_definitions(${OSIMADDLIB_LIBRARY_NAME} PUBLIC OPENSIM_${OSIMADDLIB_UKIT}_TYPE_STATIC)
+    endif()
 
     # Install.
     # --------

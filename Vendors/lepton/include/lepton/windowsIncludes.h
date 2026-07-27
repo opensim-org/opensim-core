@@ -27,12 +27,13 @@
     #pragma warning(disable:4996)
     // Keep MS VC++ quiet about lack of dll export of private members.
     #pragma warning(disable:4251)
-    #if defined(LEPTON_BUILDING_SHARED_LIBRARY)
-        #define LEPTON_EXPORT __declspec(dllexport)
-    #elif defined(LEPTON_BUILDING_STATIC_LIBRARY) || defined(LEPTON_USE_STATIC_LIBRARIES)
+
+    #if defined(OPENSIM_LEPTON_TYPE_STATIC)
         #define LEPTON_EXPORT
+    #elif defined(OSIMLEPTON_EXPORTS)
+        #define LEPTON_EXPORT __declspec(dllexport)
     #else
-        #define LEPTON_EXPORT __declspec(dllimport)   // i.e., a client of a shared library
+        #define LEPTON_EXPORT __declspec(dllimport)
     #endif
 #else
     #define LEPTON_EXPORT // Linux, Mac
