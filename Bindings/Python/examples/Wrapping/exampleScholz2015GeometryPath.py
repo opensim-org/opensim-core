@@ -29,6 +29,9 @@
 
 import opensim as osim
 
+# Log outputs to 'opensim.log'.
+osim.Logger.addFileSink('opensim.log')
+
 model = osim.ModelFactory.createDoublePendulum()
 model.setUseVisualizer(True)
 

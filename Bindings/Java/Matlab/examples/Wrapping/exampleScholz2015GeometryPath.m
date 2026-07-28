@@ -31,6 +31,9 @@ function exampleScholz2015GeometryPath()
 
 import org.opensim.modeling.*;
 
+% Log outputs to 'opensim.log'.
+Logger.addFileSink('opensim.log');
+
 model = ModelFactory.createDoublePendulum();
 model.setUseVisualizer(true);
 

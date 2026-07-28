@@ -36,6 +36,9 @@
 
 import org.opensim.modeling.*
 
+% Log outputs to 'opensim.log'.
+Logger.addFileSink('opensim.log');
+
 % Create a model with a single body representing a block that can move
 % relative to the ground via a free joint.
 model = Model();

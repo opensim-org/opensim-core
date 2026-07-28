@@ -31,6 +31,9 @@
 
 import opensim as osim
 
+# Log outputs to 'opensim.log'.
+osim.Logger.addFileSink('opensim.log')
+
 def solveMocoInverse():
 
     # Construct the MocoInverse tool.

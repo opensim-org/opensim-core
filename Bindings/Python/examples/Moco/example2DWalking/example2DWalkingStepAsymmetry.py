@@ -24,6 +24,9 @@ import math
 import sys
 import numpy as np
 
+# Log outputs to 'opensim.log'.
+osim.Logger.addFileSink('opensim.log')
+
 def findHeelStrikeIndex(verticalGRF, forceThreshold):
 
     contactIndices = np.where(verticalGRF > forceThreshold)[0]
