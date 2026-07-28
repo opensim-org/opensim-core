@@ -57,6 +57,10 @@ int main(int argc,char **argv)
     try {
     //----------------------
 
+    // The OpenSim library no longer creates 'opensim.log' on its own; opt in
+    // here so this application's logging behavior is unchanged.
+    Logger::addFileSink();
+
     // DEPRECATION NOTICE
     const std::string deprecationNotice = R"(
     THIS EXECUTABLE IS DEPRECATED AND WILL BE REMOVED IN A FUTURE RELEASE.

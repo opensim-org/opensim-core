@@ -9,6 +9,9 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.6.1
 ======
+- File logging (e.g. `opensim.log`) is now controlled at runtime via `Logger::addFileSink()` instead of at compile-time using the `OPENSIM_DISABLE_LOG_FILE` CMake option. The OpenSim *library* now defaults to not logging to file, but the defaults for CLI, the GUI, and the language bindings (Python/Java) remain unchanged (`opensim.log` created in the current working directory). Two new CLI options were added to `opensim-cmd` to expand user control over file logging at runtime:
+  - `--log-file=<path>` sets an alternative log file location. If the file cannot be opened, `opensim-cmd` reports an error and exits rather than continuing without a log file.
+  - `--no-log-file` disables log-file creation entirely (overrides the `--log-file=<path>` option if present)
 - Added `CantileverFreeBeamJoint`, a joint type providing a lightweight way for modeling flexible structures (e.g., the bending of the spinal column in a human or animal skeleton). (#4227)
 - Added `ExponentialCoordinateLimitForce`, a force element for enforcing coordinate limits using exponential spring functions. (#4231)
 - Added `CoordinateLinearStopForce`, a force element for enforcing coordinate limits using a

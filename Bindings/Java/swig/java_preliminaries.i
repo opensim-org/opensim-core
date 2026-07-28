@@ -9,6 +9,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
       try{
           // All OpenSim classes required for GUI operation.
           System.loadLibrary("osimJavaJNI");
+          Logger.enableDefaultFileLogOnce();
       }
       catch(UnsatisfiedLinkError e){
           String OS = System.getProperty("os.name").toLowerCase();

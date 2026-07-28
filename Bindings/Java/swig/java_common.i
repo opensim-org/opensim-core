@@ -216,6 +216,36 @@ using namespace SimTK;
       sink.markAdopted();
       private_addSink(sink);
   }
+
+  private static boolean defaultFileLogInitialized = false;
+  /**
+   * Restore the historical default of also writing OpenSim log messages to an
+   * 'opensim.log' file in the current working directory.
+   * The method is idempotent -- only the first call has an effect -- so it is
+   * safe to invoke it from the static initializer of every module's JNI class.
+   * <p>
+   * Deliberately not synchronized: it runs from class initializers, which hold
+   * the JVM's class-initialization locks, and taking another monitor there
+   * invites deadlock. Concurrent first calls are harmless -- the loser just
+   * gets Logger's "already logging to file" warning.
+   */
+  public static void enableDefaultFileLogOnce() {
+      if (defaultFileLogInitialized) {
+          return;
+      }
+      // Set the flag *before* calling addFileSink(): this method is invoked
+      // from the static initializer of every module's JNI class, and
+      // addFileSink() is itself a JNI call, so it re-enters this method while
+      // that initializer is still running. Setting the flag first is what
+      // terminates that recursion; do not move it below the call.
+      defaultFileLogInitialized = true;
+      try {
+          addFileSink("opensim.log");
+      } catch (Exception e) {
+          // Never let logging setup prevent the bindings from loading.
+          System.err.println("OpenSim: could not open 'opensim.log': " + e);
+      }
+  }
 %}
 
 %import "java_simbody.i"

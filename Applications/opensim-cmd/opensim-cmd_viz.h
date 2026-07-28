@@ -41,6 +41,8 @@ Usage:
 Options:
   -L <path>, --library <path>  Load a plugin.
   -o <level>, --log <level>  Logging level.
+  --log-file <path>  Write log messages to a file (default: opensim.log).
+  --no-log-file  Do not write a log file; overrides --log-file.
   -g <path>, --geometry <path> Search for geometry mesh files in this path.
   -m <path>, --model <model-file> Visualize data based on a model.
   -a <layout>, --layout <layout> Visualize orientations in a circle, line, etc.

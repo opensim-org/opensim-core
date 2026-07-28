@@ -28,6 +28,7 @@
 #include "opensim-cmd_viz.h"
 #include "parse_arguments.h"
 #include <Vendors/docopt/docopt.h>
+#include <fstream>
 #include <iostream>
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/version.h>
@@ -41,13 +42,16 @@ static const char HELP[] =
 R"(OpenSim: musculoskeletal modeling and simulation.
 
 Usage:
-  opensim-cmd [--library=<path>]... [--log=<level>] <command> [<args>...]
+  opensim-cmd [--library=<path>]... [--log=<level>]
+              [--log-file=<path>] [--no-log-file] <command> [<args>...]
   opensim-cmd -h | --help
   opensim-cmd -V | --version
 
 Options:
   -L <path>, --library <path>  Load a plugin.
   -o <level>, --log <level>  Logging level.
+  --log-file <path>  Write log messages to a file (default: opensim.log).
+  --no-log-file  Do not write a log file; overrides --log-file.
   -h, --help     Show this help description.
   -V, --version  Show the version number.
 
@@ -70,6 +74,12 @@ Description of options:
   o, log      Control the verbosity of OpenSim's console output.
               Levels: off, critical, error, warn, info, debug, trace.
               Default: info.
+  log-file    Also write log messages to the given file. By default,
+              opensim-cmd writes to 'opensim.log' in the current directory.
+              If the given file cannot be opened for writing, opensim-cmd
+              reports an error and exits.
+  no-log-file Disable writing log messages to a file (even if a different
+              --log-file is specified).
 
 Examples:
   opensim-cmd run-tool InverseDynamics_Setup.xml
@@ -79,6 +89,8 @@ Examples:
   opensim-cmd -L C:\Plugins\osimMyCustomForce.dll run-tool CMC_setup.xml
   opensim-cmd --library ../plugins/libosimMyPlugin.so print-xml MyCustomTool
   opensim-cmd --library=libosimMyCustomForce.dylib --log=debug info MyCustomForce
+  opensim-cmd --no-log-file run-tool CMC_setup.xml
+  opensim-cmd --log-file=run.log run-tool CMC_setup.xml
 
 )";
 
@@ -112,6 +124,25 @@ int main(int argc, const char** argv) {
             true, // show help if requested
             "OpenSim " + GetVersionAndDate(),
             true); // take options first; necessary for nested commands.
+
+    // File logging.
+    // -------------
+    // Writes log messages to a file unless --no-log-file is given.
+    if (!args["--no-log-file"].asBool()) {
+        const bool explicitLogFile = static_cast<bool>(args["--log-file"]);
+        const std::string logFilePath = explicitLogFile
+                ? args["--log-file"].asString() : "opensim.log";
+        // Check and error if requested path isn't writable
+        if (explicitLogFile) {
+            std::ofstream logFileProbe(logFilePath, std::ios_base::app);
+            if (!logFileProbe) {
+                log_error("Could not open log file '{}' for writing.",
+                        logFilePath);
+                return EXIT_FAILURE;
+            }
+        }
+        Logger::addFileSink(logFilePath);
+    }
 
     // Load the specified libraries.
     // -----------------------------

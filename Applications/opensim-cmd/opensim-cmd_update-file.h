@@ -38,6 +38,8 @@ Usage:
 Options:
   -L <path>, --library <path>  Load a plugin.
   -o <level>, --log <level>  Logging level.
+  --log-file <path>  Write log messages to a file (default: opensim.log).
+  --no-log-file  Do not write a log file; overrides --log-file.
 
 Description:
   In an OpenSim XML file, the XML file format version appears as

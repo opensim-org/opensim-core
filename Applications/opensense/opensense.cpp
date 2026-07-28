@@ -70,6 +70,10 @@ int main(int argc, char **argv)
     // Surrounding try block
     //----------------------
     try {
+        // The OpenSim library no longer creates 'opensim.log' on its own; opt
+        // in here so this application's logging behavior is unchanged.
+        Logger::addFileSink();
+
         //----------------------
         // PARSE COMMAND LINE
         string option = "";

@@ -168,12 +168,13 @@ option(BUILD_API_ONLY "Build/install only headers, libraries,
 wrapping, tests; not applications (opensim, ik, rra, etc.)." OFF)
 
 option(OPENSIM_DISABLE_LOG_FILE
-"Disable OpenSim from automatically creating 'opensim.log'.
+"[DEPRECATED] Has no effect; file logging is now controlled at runtime.
 
-By default, any application linking to osimCommon will create an
-'opensim.log' file in the current working directory. All log messages
-written by OpenSim (incl. during static initialization) are written to
-both this file and the standard output streams." OFF)
+osimCommon no longer creates an 'opensim.log' file on its own, so there is
+nothing left for this option to disable. Applications that want a log file
+call `Logger::addFileSink()`; the bundled applications, the GUI, and the
+Python/Java bindings all do so, and write 'opensim.log' in the current
+working directory as before." OFF)
 
 option(OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION
 "Disable OpenSim from registering bundled `Object` types at static
@@ -186,7 +187,9 @@ or by manually registering each type (e.g. `Object::registerType(PhysicalOffsetF
 mark_as_advanced(OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION)
 
 if(OPENSIM_DISABLE_LOG_FILE)
-    add_definitions(-DOPENSIM_DISABLE_LOG_FILE=1)
+    message(DEPRECATION "OPENSIM_DISABLE_LOG_FILE is deprecated and has no "
+        "effect: the OpenSim library no longer creates a log file "
+        "automatically. Call `Logger::addFileSink()` to restore file logging.")
 endif()
 if(OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION)
     add_definitions(-DOPENSIM_DISABLE_STATIC_TYPE_REGISTRATION=1)

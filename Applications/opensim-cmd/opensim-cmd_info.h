@@ -38,6 +38,8 @@ Usage:
 Options:
   -L <path>, --library <path>  Load a plugin.
   -o <level>, --log <level>  Logging level.
+  --log-file <path>  Write log messages to a file (default: opensim.log).
+  --no-log-file  Do not write a log file; overrides --log-file.
 
 Description:
   If you do not supply any arguments, you get a list of all registered

@@ -63,3 +63,12 @@ from .version import __version__
 geometry_path = os.path.join(curFolder, 'Geometry')
 if os.path.exists(geometry_path):
     ModelVisualizer.addDirToGeometrySearchPaths(geometry_path)
+
+# Restore the historical log-file behavior ('opensim.log' file in the current
+# working directory)
+try:
+    Logger.addFileSink()
+except Exception as e:
+    # Never let logging setup prevent importing the package.
+    import warnings
+    warnings.warn("OpenSim: could not set up file logging: {}".format(e))

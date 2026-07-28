@@ -167,8 +167,9 @@ public:
     }
 
     /// Use this function to log messages that would normally be sent to
-    /// std::cout. These messages always appear, and are also logged to the
-    /// filesink (addFileSink()) and any sinks added via addSink().
+    /// std::cout. These messages always appear, and are also logged to a file
+    /// sink (if one has been added via addFileSink()) and to any sinks added
+    /// via addSink().
     /// The main use case for this function is inside of functions whose intent
     /// is to print information (e.g., Component::printSubcomponentInfo()).
     /// Besides such use cases, this function should be used sparingly to
@@ -182,7 +183,9 @@ public:
     /// @}
 
     /// Log messages to a file at the level getLevel().
-    /// OpenSim logs messages to the file opensim.log by default.
+    /// OpenSim does not write log messages to any file unless this function is
+    /// called; "opensim.log" in the current working directory is the default
+    /// path used when no filepath is supplied.
     /// If we are already logging messages to a file, then this
     /// function issues a warning and returns; invoke removeFileSink() first.
     /// @note This function is not thread-safe. Do not invoke this function
