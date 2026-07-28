@@ -25,8 +25,13 @@
 #include "osimCommonDLL.h"              // for OSIMCOMMON_API
 #include <memory>                       // for shared_ptr
 #include <spdlog/common.h>              // for spdlog::format_string_t
+#if !defined(SPDLOG_FMT_EXTERNAL)
 #include <spdlog/fmt/bundled/base.h>    // for formatter
 #include <spdlog/fmt/bundled/ostream.h> // for ostream_formatter
+#else
+#include <fmt/base.h>    // for formatter
+#include <fmt/ostream.h> // for ostream_formatter
+#endif
 #include <spdlog/logger.h>              // for logger
 #include <string>                       // for basic_string, string
 #include <string_view>                  // for std::string_view

@@ -35,7 +35,11 @@
 #include <initializer_list>
 #include <iostream>
 #include <iterator>
+#if !defined(SPDLOG_FMT_EXTERNAL)
 #include <spdlog/fmt/bundled/ostream.h>
+#else
+#include <fmt/ostream.h>
+#endif
 #include <type_traits>
 #include <utility>
 #include <vector>

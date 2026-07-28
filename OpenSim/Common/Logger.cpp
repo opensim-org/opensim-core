@@ -26,7 +26,11 @@
 #include "IO.h"                              // for IO
 #include "LogSink.h"                         // for LogSink
 #include <algorithm>                         // for remove
+#if !defined(SPDLOG_FMT_EXTERNAL)
 #include <spdlog/fmt/bundled/format.h>       // for format
+#else
+#include <fmt/format.h>       // for format
+#endif
 #include <spdlog/sinks/basic_file_sink.h>    // for basic_file_sink_mt, bas...
 #include <spdlog/sinks/sink.h>               // for sink
 #include <spdlog/sinks/stdout_color_sinks.h> // for stdout_color_mt
