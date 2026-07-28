@@ -27,6 +27,9 @@ clear all;
 
 import org.opensim.modeling.*;
 
+% Log outputs to 'opensim.log'.
+    Logger.addFileSink('opensim.log');
+
 % This function builds the hopper model; no need to edit it.
 hopper = BuildHopper();
 

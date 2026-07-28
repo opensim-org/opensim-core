@@ -27,6 +27,11 @@
 
 function exampleMocoInverse()
 
+import org.opensim.modeling.*;
+
+% Log outputs to 'opensim.log'.
+Logger.addFileSink('opensim.log');
+
 % Solve the basic muscle redundancy problem with MocoInverse.
 solveMocoInverse();
 

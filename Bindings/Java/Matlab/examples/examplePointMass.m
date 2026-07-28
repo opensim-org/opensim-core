@@ -28,6 +28,9 @@
 
 import org.opensim.modeling.*;
 
+% Log outputs to 'opensim.log'.
+Logger.addFileSink('opensim.log');
+
 % Build a model.
 model = Model();
 body = Body('body', 1.0, Vec3(0), Inertia(0));

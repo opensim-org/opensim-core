@@ -29,6 +29,9 @@ function example3DWalking()
     % Import the OpenSim libraries.
     import org.opensim.modeling.*;
 
+    % Log outputs to 'opensim.log'.
+    Logger.addFileSink('opensim.log');
+
     % Model preparation.
     % -----------------
     % Update the model to prepare it for tracking optimization. The default 
