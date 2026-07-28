@@ -48,6 +48,9 @@ clear;
 % Load the Moco libraries
 import org.opensim.modeling.*;
 
+% Log outputs to 'opensim.log'.
+Logger.addFileSink('opensim.log');
+
 % Set a coordinate tracking problem where the goal is to minimize the
 % difference between provided and simulated coordinate values and speeds
 % as well as to minimize an effort cost (squared controls) and a metabolic

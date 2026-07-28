@@ -170,10 +170,11 @@ wrapping, tests; not applications (opensim, ik, rra, etc.)." OFF)
 option(OPENSIM_DISABLE_LOG_FILE
 "Disable OpenSim from automatically creating 'opensim.log'.
 
-By default, any application linking to osimCommon will create an
-'opensim.log' file in the current working directory. All log messages
-written by OpenSim (incl. during static initialization) are written to
-both this file and the standard output streams." OFF)
+When file logging is enabled (this flag set to `OFF`), applications
+linking to osimCommon will create an 'opensim.log' file in the
+current working directory. All log messages written by OpenSim
+(incl. during static initialization) are written to both this file
+and the standard output streams." ON)
 
 option(OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION
 "Disable OpenSim from registering bundled `Object` types at static

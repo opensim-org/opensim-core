@@ -31,6 +31,9 @@ from examplePolynomialPathFitter_plotting import (plot_coordinate_samples,
 # function-based representations of muscle-tendon lengths and moment arms using
 # multivariate polynomial functions.
 
+# Log outputs to 'opensim.log'.
+osim.Logger.addFileSink('opensim.log')
+
 # Create the PolynomialPathFitter
 # -------------------------------
 fitter = osim.PolynomialPathFitter()

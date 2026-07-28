@@ -18,6 +18,9 @@
 
 import org.opensim.modeling.*;
 
+% Log outputs to 'opensim.log'.
+Logger.addFileSink('opensim.log');
+
 model = Model();
 model.setName('sliding_mass');
 model.set_gravity(Vec3(0, 0, 0));
