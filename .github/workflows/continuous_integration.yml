@@ -416,7 +416,7 @@ jobs:
     name: Build GUI
     runs-on: ubuntu-latest
 
-    if: ${{ contains(github.event.pull_request.title, '[build-gui]') || contains(github.event.pull_request.body, '[build-gui]') }}
+    #if: ${{ contains(github.event.pull_request.title, '[build-gui]') || contains(github.event.pull_request.body, '[build-gui]') }}
 
     steps:
     - name: Dispatch opensim-gui workflow and get the run ID
