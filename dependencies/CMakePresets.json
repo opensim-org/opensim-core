@@ -11,6 +11,9 @@
             },
             "architecture": {
                 "value": "x64"
+            },
+            "cacheVariables": {
+                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDLL"
             }
         },
         {
@@ -69,20 +72,28 @@
             }
         },
         {
-            "hidden": true,
-            "name": "ci",
-            "description": "Base build configuration settings for CI",
-            "inherits": ["default"],
-            "cacheVariables": {
-                "OPENSIM_DISABLE_LOG_FILE": "ON"
-            }
+            "name": "msvc-default",
+            "displayName": "Default MSVC build configuration",
+            "description": "The right MSVC build configuration for most users",
+            "inherits": [
+                "windows",
+                "default"
+            ]
         },
         {
             "name": "dev-default",
             "description": "Recommended development configuration that builds all dependencies that a typical release requires",
             "inherits": [
-                "default",
-                "relwithdebinfo"
+                "relwithdebinfo",
+                "default"
+            ]
+        },
+        {
+            "name": "msvc-dev-default",
+            "description": "Recommended MSVC development configuration ",
+            "inherits": [
+                "dev-default",
+                "windows"
             ]
         },
         {
@@ -95,6 +106,12 @@
             }
         },
         {
+            "hidden": true,
+            "name": "ci",
+            "description": "Base build configuration settings for CI",
+            "inherits": ["default"]
+        },
+        {
             "name": "ci-msvc-windows-release",
             "displayName": "Windows CI default",
             "description": "Default CI configuration for Windows",
@@ -103,7 +120,7 @@
                 "windows"
             ],
             "environment": {
-                "CXXFLAGS": "/w /MD"
+                "CXXFLAGS": "/w"
             }
         },
         {
@@ -154,8 +171,24 @@
             }
         },
         {
+            "name": "default",
+            "configurePreset": "default"
+        },
+        {
+            "name": "msvc-default",
+            "configurePreset": "msvc-default",
+            "inherits": "windows",
+            "configuration": "Release"
+        },
+        {
             "name": "dev-default",
             "configurePreset": "dev-default"
+        },
+        {
+            "name": "msvc-dev-default",
+            "configurePreset": "msvc-dev-default",
+            "inherits": "windows",
+            "configuration": "RelWithDebInfo"
         },
         {
             "name": "dev-minimal",
@@ -180,10 +213,31 @@
     ],
     "workflowPresets": [
         {
+            "name": "default",
+            "steps": [
+                { "type": "configure", "name": "default" },
+                { "type": "build",     "name": "default" }
+            ]
+        },
+        {
+            "name": "msvc-default",
+            "steps": [
+                { "type": "configure", "name": "msvc-default" },
+                { "type": "build",     "name": "msvc-default" }
+            ]
+        },
+        {
             "name": "dev-default",
             "steps": [
                 { "type": "configure", "name": "dev-default" },
                 { "type": "build",     "name": "dev-default" }
+            ]
+        },
+        {
+            "name": "msvc-dev-default",
+            "steps": [
+                { "type": "configure", "name": "msvc-dev-default" },
+                { "type": "build",     "name": "msvc-dev-default" }
             ]
         },
         {
