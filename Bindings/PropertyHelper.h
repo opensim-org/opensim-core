@@ -136,9 +136,8 @@ public:
         for (int i=0; i< aStringArray.getSize(); i++)
             try {
                 p.appendValue<std::string>(aStringArray.get(i));
-            } catch (OpenSim::Exception e) {
-                OpenSim::Exception ex("ERROR- Invalid input (invalid character/spaces in input string)");
-                throw ex;
+            } catch (const OpenSim::Exception&) {
+                throw OpenSim::Exception("ERROR- Invalid input (invalid character/spaces in input string)");
             }
     }
 

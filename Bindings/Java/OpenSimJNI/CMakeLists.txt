@@ -91,6 +91,20 @@ add_library(osim${KIT}
     ${SWIG_JAVA_MOCO_H_FILE}
     OpenSimContext.cpp
     OpenSimContext.h)
+OpenSimConfigureTarget(osim${KIT})
+
+# Disable some warnings on SWIG-generated code
+target_compile_options(osim${KIT} PRIVATE
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+        -Wno-deprecated-declarations
+        -Wno-strict-aliasing
+        -Wno-uninitialized
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /wd4996  # disable warnings for deprecated functions.
+        /wd4114  # disable "const const T" warnings
+    >
+)
 
 target_include_directories(osim${KIT} PRIVATE
                            ${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
@@ -102,25 +116,6 @@ set_target_properties(osim${KIT} PROPERTIES
    PROJECT_LABEL "Java - osim${KIT}"
    FOLDER "Bindings"
 )
-
-# Compiler flags.
-if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
-        ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-    # We purposefully wrap deprecated functions, so no need to see such warnings.
-    set(COMPILE_FLAGS "-Wno-deprecated-declarations")
-elseif(${CMAKE_CXX_COMPILER_ID} MATCHES "MSVC")
-    # Don't warn about:
-    # 4996: deprecated functions.
-    # 4114: "const const T"
-    set(COMPILE_FLAGS "/wd4996 /wd4114")
-endif()
-set_source_files_properties(
-        ${SWIG_JAVA_SIMBODY_CXX_FILE}
-        ${SWIG_JAVA_COMMON_CXX_FILE}
-        ${SWIG_JAVA_SIMULATION_CXX_FILE}
-        ${SWIG_JAVA_ACTUATORS_CXX_FILE}
-        ${SWIG_JAVA_EXAMPLECOMPONENTS_CXX_FILE}
-        PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS}")
 
 # RPATH: The osim libraries that osimJavaJNI needs are in the same folder as
 # osimJavaJNI.
