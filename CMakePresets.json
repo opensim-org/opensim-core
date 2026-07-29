@@ -171,7 +171,8 @@
             "cacheVariables": {
                 "BUILD_JAVA_WRAPPING": "OFF",
                 "BUILD_TESTING": "OFF",
-                "BUILD_API_EXAMPLES": "OFF"
+                "BUILD_API_EXAMPLES": "OFF",
+                "SWIG_DOXYGEN": "OFF"
             }
         },
         {
