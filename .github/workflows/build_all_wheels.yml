@@ -10,7 +10,7 @@ permissions:
 jobs:
   build_windows_wheels:
 
-    runs-on: windows-2025
+    runs-on: windows-2022
 
     strategy:
       matrix:
