@@ -35,6 +35,9 @@
                 "type": "equals",
                 "lhs": "${hostSystemName}",
                 "rhs": "Linux"
+            },
+            "cacheVariables": {
+                "CMAKE_INSTALL_LIBDIR": "lib"
             }
         },
         {
@@ -140,6 +143,42 @@
                 "ci",
                 "linux"
             ]
+        },
+        {
+            "hidden": true,
+            "name": "wheels",
+            "description": "Base build configuration settings for Python wheels",
+            "inherits": ["default"]
+        },
+        {
+            "name": "wheels-msvc-windows-release",
+            "displayName": "Windows Python wheels default",
+            "description": "Default Python wheels configuration for Windows",
+            "inherits": [
+                "ci",
+                "windows"
+            ],
+            "environment": {
+                "CXXFLAGS": "/w"
+            }
+        },
+        {
+            "name": "wheels-make-macos-release",
+            "displayName": "MacOS Python wheels default",
+            "description": "Default Python wheels configuration for MacOS",
+            "inherits": [
+                "ci",
+                "macos"
+            ]
+        },
+        {
+            "name": "wheels-make-linux-release",
+            "displayName": "Linux Python wheels default",
+            "description": "Default Python wheels configuration for Linux",
+            "inherits": [
+                "ci",
+                "linux"
+            ]
         }
     ],
     "buildPresets": [
@@ -208,6 +247,22 @@
         {
             "name": "ci-make-linux-release",
             "configurePreset": "ci-make-linux-release",
+             "inherits": "linux"
+        },
+        {
+            "name": "wheels-msvc-windows-release",
+            "configurePreset": "wheels-msvc-windows-release",
+            "inherits": "windows",
+            "configuration": "Release"
+        },
+        {
+            "name": "wheels-make-macos-release",
+            "configurePreset": "wheels-make-macos-release",
+             "inherits": "macos"
+        },
+        {
+            "name": "wheels-make-linux-release",
+            "configurePreset": "wheels-make-linux-release",
              "inherits": "linux"
         }
     ],
