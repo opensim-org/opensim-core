@@ -122,6 +122,7 @@ macro(OpenSimAddPythonModule)
         $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
             -O0
             -Wno-deprecated-declarations
+            -Wno-error=missing-field-initializers
         >
 
         $<$<CXX_COMPILER_ID:MSVC>:
