@@ -235,7 +235,8 @@ jobs:
       run: |
         cmake -S $GITHUB_WORKSPACE --preset wheels-make-linux-release -LAH \
             -DSWIG_DIR=$HOME/swig/share/swig \
-            -DSWIG_EXECUTABLE=$HOME/swig/bin/swig
+            -DSWIG_EXECUTABLE=$HOME/swig/bin/swig \
+            -DPython3_EXECUTABLE=$PY
 
         VERSION=`cmake -N -L $GITHUB_WORKSPACE/build/wheels-make-linux-release | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
         echo "version=$VERSION" >> $GITHUB_OUTPUT
