@@ -143,9 +143,6 @@ function(AddDependency)
         if(SWIG_EXECUTABLE)
             list(APPEND CMAKE_ARGS -DSWIG_EXECUTABLE:FILEPATH=${SWIG_EXECUTABLE})
         endif()
-        if(CMAKE_INSTALL_LIBDIR)
-            list(APPEND CMAKE_ARGS -DCMAKE_INSTALL_LIBDIR:STRING=${CMAKE_INSTALL_LIBDIR})
-        endif()
 
         # Append the dependency-specific CMake arguments.
         list(APPEND CMAKE_ARGS ${DEP_CMAKE_ARGS})
