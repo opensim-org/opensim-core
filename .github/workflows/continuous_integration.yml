@@ -420,7 +420,7 @@ jobs:
 
     steps:
     - name: Dispatch opensim-gui workflow and get the run ID
-      uses: codex-/return-dispatch@v1
+      uses: codex-/return-dispatch@v4
       id: return_dispatch
       with:
         token: ${{ secrets.PAT_TOKEN }}
@@ -439,7 +439,7 @@ jobs:
           echo "Run ID:  ${{ steps.return_dispatch.outputs.run_id }}"
 
     - name: Await opensim-gui workflow
-      uses: Codex-/await-remote-run@v1.11.0
+      uses: Codex-/await-remote-run@v2
       with:
         token: ${{ secrets.PAT_TOKEN }}
         repo: opensim-gui
