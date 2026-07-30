@@ -11,7 +11,6 @@ if(BUILD_API_EXAMPLES)
         ControllerExample
         MuscleExample
         CustomActuatorExample
-        OptimizationExample_Arm26
         checkEnvironment
         SimpleOptimizationExample
         SymbolicExpressionReporter
@@ -34,7 +33,6 @@ else()
     add_subdirectory(ControllerExample)
     add_subdirectory(ExampleLuxoMuscle)
     add_subdirectory(ExampleMain)
-    add_subdirectory(OptimizationExample_Arm26)
     add_subdirectory(CustomActuatorExample)
     add_subdirectory(MuscleExample)
     add_subdirectory(checkEnvironment)

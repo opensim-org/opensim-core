@@ -27,6 +27,8 @@ the model's topology (e.g., `GeometryPath`) or via a user-defined list of coordi
 - The CI builds (GitHub Actions runners) were changed from Ubuntu 22.04 to ManyLinux 2.28. This is
   to better-support C++20 features (such as std::format, #4367), while remaining shippable to a
   wide range of OSes (see pypa/manylinux for a compatibility table).
+- `OptimizationExample_Arm26` was removed from the repository. It runs slow and is numerically
+  unstable (a forward integration to optimize a final velocity) across OSes/compilers.
 
 
 v4.6
