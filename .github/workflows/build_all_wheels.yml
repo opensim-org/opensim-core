@@ -48,8 +48,7 @@ jobs:
     - name: Configure opensim-core
       id: configure
       run: |
-        cmake -G "Visual Studio 17 2022" . --preset wheels-msvc-windows-release -LAH `
-            -DPython3_ROOT_DIR=$env:pythonLocation
+        cmake -G "Visual Studio 17 2022" . --preset wheels-msvc-windows-release -LAH
 
         $env:match = cmake -N -L build/wheels-msvc-windows-release | Select-String -Pattern OPENSIM_QUALIFIED_VERSION
         $version = $env:match.split('=')[1]
@@ -236,11 +235,7 @@ jobs:
       run: |
         cmake -S $GITHUB_WORKSPACE --preset wheels-make-linux-release -LAH \
             -DSWIG_DIR=$HOME/swig/share/swig \
-            -DSWIG_EXECUTABLE=$HOME/swig/bin/swig \
-            -DPython3_EXECUTABLE=$PY \
-            -DPython3_ROOT_DIR=$(dirname $(dirname $PY)) \
-            -DPython3_NumPy_INCLUDE_DIRS=$($PY -c "import numpy; print(numpy.get_include())")
-
+            -DSWIG_EXECUTABLE=$HOME/swig/bin/swig
 
         VERSION=`cmake -N -L $GITHUB_WORKSPACE/build/wheels-make-linux-release | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
         echo "version=$VERSION" >> $GITHUB_OUTPUT
