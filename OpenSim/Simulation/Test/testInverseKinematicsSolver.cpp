@@ -1042,11 +1042,12 @@ TEST_CASE("testStreamingIKWithBufferedMarkersReference") {
         "frame from the BufferedMarkersReference seed data.");
 
     // Stream the remaining frames into the buffer, as a live source would.
+    // Do not call setFinished() before consuming -- hasNext() is false when
+    // finished, even if rows remain in the buffer.
     const auto& times = markerTable.getIndependentColumn();
     for (int i = 1; i < N; ++i) {
         bufferedRef->putValues(times[i], markerTable.getRowAtIndex(i));
     }
-    bufferedRef->setFinished(true);
 
     ikSolver.setAdvanceTimeFromReference(true);
     int framesTracked = 0;
