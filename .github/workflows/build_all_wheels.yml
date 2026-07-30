@@ -29,12 +29,10 @@ jobs:
         python-version: '${{ matrix.python-version }}'
 
     - name: Install numpy
-      #Need numpy to use SWIG numpy typemaps.
+      # Need numpy to use SWIG numpy typemaps.
       run: |
-        python3 -m pip install numpy==2.4.2
-        python3 -m pip install wheel
-        python3 -m pip install build
-        pip install --upgrade pip setuptools wheel
+        python -m pip install --upgrade pip setuptools wheel
+        python -m pip install numpy==2.4.2 wheel build
 
     - name: Install SWIG
       run: |
