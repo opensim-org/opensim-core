@@ -361,15 +361,14 @@ jobs:
   build_gui:
     name: Build GUI
     runs-on: ubuntu-latest
-
-    if: ${{ contains(github.event.pull_request.title, '[build-gui]') || contains(github.event.pull_request.body, '[build-gui]') }}
-
+    # enable "build-gui" if part of title or PR body
+    if: contains(github.event.pull_request.title, '[build-gui]') || contains(github.event.pull_request.body, '[build-gui]') 
     steps:
     - name: Dispatch opensim-gui workflow and get the run ID
-      uses: codex-/return-dispatch@v1
+      uses: codex-/return-dispatch@v4
       id: return_dispatch
       with:
-        token: ${{ secrets.OPENSIM_GUI_PAT }}
+        token: ${{ secrets.PAT_TOKEN }}
         ref: main
         repo: opensim-gui
         owner: opensim-org
@@ -385,9 +384,9 @@ jobs:
           echo "Run ID:  ${{ steps.return_dispatch.outputs.run_id }}"
 
     - name: Await opensim-gui workflow
-      uses: Codex-/await-remote-run@v1.11.0
+      uses: Codex-/await-remote-run@v2
       with:
-        token: ${{ secrets.OPENSIM_GUI_PAT }}
+        token: ${{ secrets.PAT_TOKEN }}
         repo: opensim-gui
         owner: opensim-org
         run_id: ${{ steps.return_dispatch.outputs.run_id }}
