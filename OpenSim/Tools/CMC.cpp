@@ -30,7 +30,9 @@
 // INCLUDES
 //=============================================================================
 #include "CMC.h"
+
 #include "VectorFunctionForActuators.h"
+#include <OpenSim/Common/Detail/SimbodyFormatterShims.h>
 #include <OpenSim/Common/RootSolver.h>
 #include <OpenSim/Simulation/Control/ControlConstant.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>

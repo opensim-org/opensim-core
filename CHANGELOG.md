@@ -29,6 +29,9 @@ the model's topology (e.g., `GeometryPath`) or via a user-defined list of coordi
   wide range of OSes (see pypa/manylinux for a compatibility table).
 - `OptimizationExample_Arm26` was removed from the repository. It runs slow and is numerically
   unstable (a forward integration to optimize a final velocity) across OSes/compilers.
+- Replaced `spdlog` and (transitively) `fmt` with `std::format`. If downstream codebases depended on
+  either of these libraries then they should integrate them downstream (which means you can now
+  pick the version yourself!).
 
 
 v4.6

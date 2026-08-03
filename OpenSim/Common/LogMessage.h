@@ -1,7 +1,7 @@
-#ifndef OPENSIM_LOGSINK_H_
-#define OPENSIM_LOGSINK_H_
+#ifndef OPENSIM_LOG_MESSAGE_H_
+#define OPENSIM_LOG_MESSAGE_H_
 /* -------------------------------------------------------------------------- *
- *                         OpenSim:  LogSink.h                                *
+ *                       OpenSim:  LogMessage.h                               *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -23,53 +23,42 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Common/LogLevel.h>
-#include <OpenSim/Common/LogMessage.h>
 #include <OpenSim/Common/osimCommonDLL.h>
 
+#include <chrono>
 #include <string>
+#include <string_view>
+#include <utility>
 
-// This file is not included in osimCommon.h. Only include
-// this file when deriving from LogSink.
 namespace OpenSim {
 
-/// Derive from this class to implement your own way of reporting logged
-/// messages.
-class OSIMCOMMON_API LogSink {
-public:
-    virtual ~LogSink() noexcept = default;
+    class OSIMCOMMON_API LogMessage final {
+    public:
+        using clock_type = std::chrono::system_clock;
+        using time_point_type = clock_type::time_point;
 
-    /// Sinks `msg` into this `LogSink`.
-    void sink(const LogMessage& msg) {
-        sinkImpl(msg);
-        sinkImpl(msg.getPayload());
-    }
+        LogMessage() = default;
 
-    /// Tells this `LogSink` to flush any buffered content to its output.
-    void flush() { flushImpl(); }
+        explicit LogMessage(
+            std::string loggerName,
+            LogLevel level,
+            std::string payload) :
+            _loggerName{std::move(loggerName)},
+            _level{level},
+            _payload{std::move(payload)}
+        {}
 
-    LogLevel getLevel() const { return level_; }
-    void setLevel(LogLevel logLevel) { level_ = logLevel; }
-    bool shouldLog(LogLevel logLevel) { return logLevel >= level_; }
+        std::string_view getLoggerName() const { return _loggerName; }
+        time_point_type getTime() const { return _time; }
+        LogLevel getLevel() const { return _level; }
+        const std::string& getPayload() const { return _payload; }
 
-protected:
-    /// Implementors may override this function to provide their own
-    /// message sinking behavior.
-    virtual void sinkImpl(const LogMessage&) {}
+    private:
+        std::string _loggerName;
+        time_point_type _time = clock_type::now();
+        LogLevel _level = LogLevel::Off;
+        std::string _payload;
+    };
+}
 
-    /// Implementors may override this function to provide their own
-    /// message sinking behavior.
-    ///
-    /// Legacy shim: OpenSim 2019/11 to 2026/06 only provided this overload.
-    virtual void sinkImpl(const std::string& msg) {}
-
-    /// Implementors may override this function to provide their own
-    /// message flushing behavior.
-    virtual void flushImpl() {}
-
-private:
-    LogLevel level_ = LogLevel::Trace;
-};
-
-} // namespace OpenSim
-
-#endif // OPENSIM_LOGSINK_H_
+#endif // OPENSIM_LOG_MESSAGE_H_

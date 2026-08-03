@@ -26,6 +26,7 @@
 #include "ActuatorForceTarget.h"
 #include "ActuatorForceTargetFast.h"
 #include "VectorFunctionForActuators.h"
+#include <OpenSim/Common/Detail/SimbodyFormatterShims.h>
 #include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/GCVSplineSet.h>

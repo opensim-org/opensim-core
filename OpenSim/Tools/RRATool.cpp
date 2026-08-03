@@ -27,6 +27,7 @@
 #include "ActuatorForceTargetFast.h"
 #include "AnalyzeTool.h"
 #include "VectorFunctionForActuators.h"
+#include <OpenSim/Common/Detail/SimbodyFormatterShims.h>
 #include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/Model/Model.h>

@@ -32,6 +32,8 @@
 #include "Assertion.h"
 #include "XMLDocument.h"
 #include "Object.h"
+#include "Detail/SimbodyFormatterShims.h"
+
 #include <functional>
 
 

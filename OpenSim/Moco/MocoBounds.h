@@ -24,6 +24,9 @@
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/Array.h>
 
+#include <format>
+#include <ostream>
+
 namespace OpenSim {
 
 class MocoPhase;
@@ -107,16 +110,6 @@ private:
 
 };
 
-inline std::ostream& operator<<(
-        std::ostream& stream, const MocoBounds& bounds) {
-    if (bounds.isEquality()) {
-        stream << bounds.getLower();
-    } else {
-        stream << "[" << bounds.getLower() << ", " << bounds.getUpper() << "]";
-    }
-    return stream;
-}
-
 /// Used for specifying the bounds on a variable at the start of a phase.
 class OSIMMOCO_API MocoInitialBounds : public MocoBounds {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoInitialBounds, MocoBounds);
@@ -135,12 +128,40 @@ OpenSim_DECLARE_CONCRETE_OBJECT(MocoFinalBounds, MocoBounds);
 } // namespace OpenSim
 
 #ifndef SWIG
-// fmt library serializers for custom Moco objects
-template <> struct fmt::formatter<OpenSim::MocoBounds> : ostream_formatter {};
-template <>
-struct fmt::formatter<OpenSim::MocoInitialBounds> : ostream_formatter {};
-template <>
-struct fmt::formatter<OpenSim::MocoFinalBounds> : ostream_formatter {};
+template<>
+struct std::formatter<OpenSim::MocoBounds> {
+    // Parse format specifiers intended for the bound values (e.g., {:.2f})
+    constexpr auto parse(std::format_parse_context& ctx) {
+        return _inner.parse(ctx);
+    }
+
+    // Format the MocoBounds matching the original conditional layout
+    template<class FormatContext>
+    auto format(const OpenSim::MocoBounds& bounds, FormatContext& ctx) const -> decltype(ctx.out()) {
+        auto out = ctx.out();
+
+        if (bounds.isEquality()) {
+            out = _inner.format(bounds.getLower(), ctx);
+        } else {
+            out = std::format_to(out, "[");
+            out = _inner.format(bounds.getLower(), ctx);
+            out = std::format_to(out, ", ");
+            out = _inner.format(bounds.getUpper(), ctx);
+            out = std::format_to(out, "]");
+        }
+
+        return out;
+    }
+
+private:
+    std::formatter<double> _inner;
+};
+template<> struct std::formatter<OpenSim::MocoInitialBounds> : std::formatter<OpenSim::MocoBounds> {};
+template<> struct std::formatter<OpenSim::MocoFinalBounds> : std::formatter<OpenSim::MocoBounds> {};
 #endif
+
+inline std::ostream& operator<<(std::ostream& lhs, const OpenSim::MocoBounds& rhs) {
+    return lhs << std::format("{}", rhs);
+}
 
 #endif // OPENSIM_MOCOBOUNDS_H

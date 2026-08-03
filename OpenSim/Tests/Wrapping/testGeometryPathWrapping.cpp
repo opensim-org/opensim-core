@@ -466,7 +466,7 @@ TEST_CASE("findIndependentCoordinates") {
 
     SECTION("hip muscles") {
         const std::string muscle_name = GENERATE("iliopsoas_r", "glut_max_r");
-        const std::string muscle_path = fmt::format("/forceset/{}", muscle_name);
+        const std::string muscle_path = std::format("/forceset/{}", muscle_name);
         const auto& path = model.getComponent<Muscle>(muscle_path).getPath();
         auto coords = path.findIndependentCoordinates(state);
         CHECK(coords.size() == 1);
@@ -475,7 +475,7 @@ TEST_CASE("findIndependentCoordinates") {
 
     SECTION("hip/knee biarticular muscles") {
         const std::string muscle_name = GENERATE("rect_fem_r", "hamstrings_r");
-        const std::string muscle_path = fmt::format("/forceset/{}", muscle_name);
+        const std::string muscle_path = std::format("/forceset/{}", muscle_name);
         const auto& muscle = model.getComponent<Muscle>(muscle_path);
         const auto& path = model.getComponent<Muscle>(muscle_path).getPath();
         auto coords = path.findIndependentCoordinates(state);
@@ -486,7 +486,7 @@ TEST_CASE("findIndependentCoordinates") {
 
     SECTION("knee muscles") {
         const std::string muscle_name = GENERATE("vasti_r", "bifemsh_r");
-        const std::string muscle_path = fmt::format("/forceset/{}", muscle_name);
+        const std::string muscle_path = std::format("/forceset/{}", muscle_name);
         const auto& muscle = model.getComponent<Muscle>(muscle_path);
         const auto& path = model.getComponent<Muscle>(muscle_path).getPath();
         auto coords = path.findIndependentCoordinates(state);
@@ -505,7 +505,7 @@ TEST_CASE("findIndependentCoordinates") {
 
     SECTION("ankle muscles") {
         const std::string muscle_name = GENERATE("tib_ant_r", "soleus_r");
-        const std::string muscle_path = fmt::format("/forceset/{}", muscle_name);
+        const std::string muscle_path = std::format("/forceset/{}", muscle_name);
         const auto& path = model.getComponent<Muscle>(muscle_path).getPath();
         auto coords = path.findIndependentCoordinates(state);
         CHECK(coords.size() == 1);

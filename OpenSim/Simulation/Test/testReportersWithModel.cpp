@@ -24,6 +24,7 @@
 
 #include <OpenSim/Common/LogSink.h>
 #include <OpenSim/Common/Logger.h>
+#include <OpenSim/Common/LogMessage.h>
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -31,9 +32,22 @@
 
 #include <catch2/catch_all.hpp>
 
+#include <string>
+
 using namespace std;
 using namespace SimTK;
 using namespace OpenSim;
+
+namespace {
+    class StringLogSink : public LogSink {
+    public:
+        const std::string& getString() const { return m_Buffer; }
+    private:
+        void sinkImpl(const LogMessage& logMessage) { m_Buffer += logMessage.getPayload(); }
+
+        std::string m_Buffer;
+    };
+}
 
 TEST_CASE("testConsoleReporterLabels") {
     // Create a model consisting of a falling ball.

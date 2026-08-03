@@ -31,11 +31,12 @@
 #include "Exception.h"
 #include "Logger.h"
 #include "osimCommonDLL.h"
+
 #include <algorithm>
+#include <format>
 #include <initializer_list>
 #include <iostream>
 #include <iterator>
-#include <spdlog/fmt/bundled/ostream.h>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -143,10 +144,7 @@ public:
      */
     friend std::ostream& operator<<(std::ostream& out, const Array& rhs)
     {
-        for (auto const& el : rhs._storage) {
-            out << " " << el;
-        }
-        return out;
+        return out << std::format("{}", rhs);
     }
 
     /**
@@ -601,9 +599,25 @@ private:
 }; //namespace
 
 #ifndef SWIG
-// fmt library serializers for OpenSim Array objects
-template <>
-struct fmt::formatter<OpenSim::Array<double>> : ostream_formatter {};
-#endif
+template<typename T>
+struct std::formatter<OpenSim::Array<T>> {
+    constexpr auto parse(std::format_parse_context& ctx) {
+        return _inner.parse(ctx);
+    }
+
+    // Format the vector by iterating through elements and applying the specifier
+    template<class FormatContext>
+    auto format(const OpenSim::Array<T>& ary, FormatContext& ctx) const {
+        auto out = ctx.out();
+        for (int i = 0; i < ary.size(); ++i) {
+            out = std::format_to(out, " ");
+            out = _inner.format(ary[i], ctx);
+        }
+        return out;
+    }
+private:
+    std::formatter<T> _inner;
+};
+#endif // SWIG
 
 #endif // OPENSIM_ARRAY_H_

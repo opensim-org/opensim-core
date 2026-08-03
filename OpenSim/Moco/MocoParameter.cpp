@@ -20,6 +20,8 @@
 #include "MocoUtilities.h"
 #include <OpenSim/Simulation/Model/Model.h>
 
+#include <format>
+
 using namespace OpenSim;
 
 MocoParameter::MocoParameter() {
@@ -137,12 +139,12 @@ void MocoParameter::printDescription() const {
         propertyElementStr = "n/a";
     } else {
         propertyElementStr =
-                fmt::format("{}", getProperty_property_element().getValue());
+                std::format("{}", getProperty_property_element().getValue());
     }
 
     log_info("  {}. model property name: {}. component paths: {}. "
              "property element: {}. bounds: {}",
-            getName(), getPropertyName(), fmt::join(componentPaths, ", "),
+            getName(), getPropertyName(), detail::join(componentPaths, ", "),
             propertyElementStr, getBounds());
 }
 

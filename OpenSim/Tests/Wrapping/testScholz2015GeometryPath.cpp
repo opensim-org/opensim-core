@@ -745,28 +745,28 @@ TEST_CASE("Touchdown and liftoff") {
         const SimTK::Vec3& sceneOffset) {
 
         auto* originBody = new Body(
-            fmt::format("{}_origin_body", name), 1.0, SimTK::Vec3(0),
+            std::format("{}_origin_body", name), 1.0, SimTK::Vec3(0),
             SimTK::Inertia(1.0));
         model.addComponent(originBody);
-        auto* originJoint = new FreeJoint(fmt::format("{}_origin_joint", name),
+        auto* originJoint = new FreeJoint(std::format("{}_origin_joint", name),
             model.getGround(), sceneOffset + originShift, SimTK::Vec3(0),
             *originBody, SimTK::Vec3(0), SimTK::Vec3(0));
         model.addComponent(originJoint);
 
         // Termination body and joint.
         auto* terminationBody = new Body(
-            fmt::format("{}_termination_body", name), 1.0, SimTK::Vec3(0),
+            std::format("{}_termination_body", name), 1.0, SimTK::Vec3(0),
             SimTK::Inertia(1.0));
         model.addComponent(terminationBody);
         auto* terminationJoint = new FreeJoint(
-            fmt::format("{}_termination_joint", name),
+            std::format("{}_termination_joint", name),
             model.getGround(), sceneOffset + terminationShift, SimTK::Vec3(0),
             *terminationBody, SimTK::Vec3(0), SimTK::Vec3(0));
         model.addComponent(terminationJoint);
 
         // Create the path object.
         Scholz2015GeometryPath* path = new Scholz2015GeometryPath();
-        path->setName(fmt::format("{}_path", name));
+        path->setName(std::format("{}_path", name));
         path->appendPathPoint(*originBody, SimTK::Vec3(0.));
         path->appendObstacle(obstacle, SimTK::Vec3(SimTK::NaN));
         path->appendPathPoint(*terminationBody, SimTK::Vec3(0.));

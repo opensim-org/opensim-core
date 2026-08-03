@@ -23,6 +23,7 @@
 
 #include "ComponentSocket.h"
 #include "Component.h"
+#include "Detail/SimbodyFormatterShims.h"
 
 using namespace OpenSim;
 

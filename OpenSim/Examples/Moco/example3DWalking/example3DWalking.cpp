@@ -23,6 +23,8 @@
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 
+#include <format>
+
 using namespace OpenSim;
 
 /// This example demonstrates how to solve 3D walking optimization problems 
@@ -216,19 +218,19 @@ void runTrackingStudy(Model model, bool muscleDriven) {
     // Solve!
     // ------
     MocoSolution solution = study.solve();
-    solution.write(fmt::format("example3DWalking_{}_solution.sto", study_name));
+    solution.write(std::format("example3DWalking_{}_solution.sto", study_name));
 
     // Print the model.
     Model modelSolution = modelProcessor.process();
     modelSolution.initSystem();
-    modelSolution.print(fmt::format(
+    modelSolution.print(std::format(
             "example3DWalking_{}_model.osim", study_name));
 
     // Extract the ground reaction forces.
     TimeSeriesTable externalForcesTableFlat = createExternalLoadsTableForGait(
             modelSolution, solution, contactForcesRight, contactForcesLeft);
     STOFileAdapter::write(externalForcesTableFlat,
-            fmt::format("example3DWalking_{}_ground_reactions.sto", study_name));
+            std::format("example3DWalking_{}_ground_reactions.sto", study_name));
 
     // Visualize the solution.
     study.visualize(solution);

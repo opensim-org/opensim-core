@@ -22,11 +22,12 @@
 #include "DebugUtilities.h"
 
 #include "Logger.h"
+
 #include <cstdlib>
 #include <exception>
+#include <format>
 #include <fstream>
 #include <iostream>
-#include <sstream>
 #include <stdexcept>
 
 namespace OpenSim {
@@ -34,7 +35,7 @@ namespace DebugUtilities {
 
 void Fatal_Error(const char* msg, const char* function, const char* file,
         unsigned int line) {
-    std::string str = fmt::format("Fatal Error: {} (function = {}, file = {}, "
+    std::string str = std::format("Fatal Error: {} (function = {}, file = {}, "
                                   "line = {})", msg, function, file, line);
     log_critical(str);
     throw std::runtime_error(str);

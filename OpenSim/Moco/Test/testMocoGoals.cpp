@@ -1403,7 +1403,7 @@ TEST_CASE("MocoExpressionBasedParameterGoal - MocoCasADiSolver") {
                                           "stiffness", MocoBounds(0, 100));
         auto* spring_goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
         // minimum is when p = 0.5*STIFFNESS
-        spring_goal->setExpression(fmt::format("(p-{})^2", 0.5*STIFFNESS));
+        spring_goal->setExpression(std::format("(p-{})^2", 0.5*STIFFNESS));
         spring_goal->addParameter(*parameter, "p");
 
         auto& ms = study.initCasADiSolver();
@@ -1424,7 +1424,7 @@ TEST_CASE("MocoExpressionBasedParameterGoal - MocoCasADiSolver") {
                                           "stiffness", MocoBounds(0, 100));
         auto* spring_goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
         // minimum is when p + q = STIFFNESS
-        spring_goal->setExpression(fmt::format("square( p+q-{} )", STIFFNESS));
+        spring_goal->setExpression(std::format("square( p+q-{} )", STIFFNESS));
         spring_goal->addParameter(*parameter, "p");
         spring_goal->addParameter(*parameter2, "q");
 
@@ -1446,7 +1446,7 @@ TEST_CASE("MocoExpressionBasedParameterGoal - MocoCasADiSolver") {
                                           "stiffness", MocoBounds(0, 100));
 
         auto* spring_goal = mp.addGoal<MocoExpressionBasedParameterGoal>(
-                "stiffness", 1, fmt::format("(p+q-{})^2", STIFFNESS));
+                "stiffness", 1, std::format("(p+q-{})^2", STIFFNESS));
         spring_goal->addParameter(*parameter, "p");
 
         CHECK_THROWS(study.initCasADiSolver()); // missing q
@@ -1460,7 +1460,7 @@ TEST_CASE("MocoExpressionBasedParameterGoal - MocoCasADiSolver") {
                                           "stiffness", MocoBounds(0, 100));
 
         auto* spring_goal = mp.addGoal<MocoExpressionBasedParameterGoal>(
-                "stiffness", 1, fmt::format("(p-{})^2", STIFFNESS));
+                "stiffness", 1, std::format("(p-{})^2", STIFFNESS));
         spring_goal->addParameter(*parameter, "p");
         // second parameter is ignored
         spring_goal->addParameter(*parameter2, "a");
@@ -1474,7 +1474,7 @@ TEST_CASE("MocoExpressionBasedParameterGoal - MocoCasADiSolver") {
         auto* parameter2 = mp.addParameter("spring2_stiffness", "spring2",
                                           "stiffness", MocoBounds(0, 100));
         auto* spring_goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
-        spring_goal->setExpression(fmt::format("square( p+q-{} )", STIFFNESS));
+        spring_goal->setExpression(std::format("square( p+q-{} )", STIFFNESS));
         spring_goal->addParameter(*parameter, "p");
         spring_goal->addParameter(*parameter2, "q");
         // set as endpoint constraint

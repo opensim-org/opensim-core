@@ -198,18 +198,6 @@ AddDependency(NAME       simbody
                          -DBUILD_TESTING:BOOL=OFF
                          ${SIMBODY_EXTRA_CMAKE_ARGS})
 
-set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-
-AddDependency(NAME       spdlog
-              DEFAULT    ON
-              GIT_URL    https://github.com/gabime/spdlog.git
-              GIT_TAG    v1.15.3
-              CMAKE_ARGS -DSPDLOG_BUILD_BENCH:BOOL=OFF
-                         -DSPDLOG_BUILD_TESTS:BOOL=OFF
-                         -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
-                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON
-                         -DCMAKE_CXX_FLAGS:STRING=${SPDLOG_CXX_FLAGS})
-
 AddDependency(NAME       catch2
               DEFAULT    ON
               GIT_URL    https://github.com/catchorg/Catch2.git

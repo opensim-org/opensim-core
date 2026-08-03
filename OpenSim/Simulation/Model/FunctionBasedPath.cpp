@@ -105,7 +105,7 @@ const Function& FunctionBasedPath::getMomentArmFunction(
 {
     auto it = _coordinateIndices.find(coordinatePath);
     OPENSIM_THROW_IF_FRMOBJ(it == _coordinateIndices.end(), Exception,
-            fmt::format("Path does not depend on Coordinate '{}'.",
+            std::format("Path does not depend on Coordinate '{}'.",
                     coordinatePath))
     return get_moment_arm_functions(it->second);
 }
@@ -300,7 +300,7 @@ void FunctionBasedPath::extendFinalizeFromProperties() {
                       uniqueCoordinatePaths.end(),
                     coordinatePath) != uniqueCoordinatePaths.end()) {
             OPENSIM_THROW_FRMOBJ(Exception,
-                    fmt::format("Coordinate '{}' was provided more than once.",
+                    std::format("Coordinate '{}' was provided more than once.",
                             coordinatePath))
         }
         uniqueCoordinatePaths.push_back(coordinatePath);
@@ -308,7 +308,7 @@ void FunctionBasedPath::extendFinalizeFromProperties() {
 
     OPENSIM_THROW_IF_FRMOBJ(getLengthFunction().getArgumentSize() !=
             getProperty_coordinate_paths().size(), Exception,
-            fmt::format("Expected the number of arguments in 'length_function' "
+            std::format("Expected the number of arguments in 'length_function' "
                         "({}) to equal the number of coordinates ({}).",
                         getLengthFunction().getArgumentSize(),
                         getProperty_coordinate_paths().size()))
@@ -323,7 +323,7 @@ void FunctionBasedPath::extendFinalizeFromProperties() {
     } else {
         OPENSIM_THROW_IF_FRMOBJ(getProperty_moment_arm_functions().size() !=
                                 getProperty_coordinate_paths().size(), Exception,
-                fmt::format("Expected the number of moment arm functions ({}) "
+                std::format("Expected the number of moment arm functions ({}) "
                             "to equal the number of coordinates ({}).",
                         getProperty_moment_arm_functions().size(),
                         getProperty_coordinate_paths().size()))
@@ -332,7 +332,7 @@ void FunctionBasedPath::extendFinalizeFromProperties() {
             OPENSIM_THROW_IF_FRMOBJ(
                     get_moment_arm_functions(i).getArgumentSize() !=
                             getProperty_coordinate_paths().size(), Exception,
-                    fmt::format("Expected the number of arguments in "
+                    std::format("Expected the number of arguments in "
                                 "'moment_arm_functions[{}]' ({}) to equal the "
                                 "number of coordinates ({}).",
                             i, get_moment_arm_functions(i).getArgumentSize(),
@@ -346,7 +346,7 @@ void FunctionBasedPath::extendFinalizeFromProperties() {
         OPENSIM_THROW_IF_FRMOBJ(
                 getLengtheningSpeedFunction().getArgumentSize() !=
                 2*getProperty_coordinate_paths().size(), Exception,
-                fmt::format("Expected the number of arguments in "
+                std::format("Expected the number of arguments in "
                             "'speed_function' ({}) to equal to twice the "
                             "number of coordinates ({}).",
                         getLengtheningSpeedFunction().getArgumentSize(),
@@ -371,7 +371,7 @@ void FunctionBasedPath::extendConnectToModel(Model& model) {
         const auto& coordinatePath = get_coordinate_paths(i);
         OPENSIM_THROW_IF_FRMOBJ(!model.hasComponent<Coordinate>(coordinatePath),
                 Exception,
-                fmt::format("Coordinate '{}' does not exist in the model.",
+                std::format("Coordinate '{}' does not exist in the model.",
                         coordinatePath))
 
         _coordinates.emplace_back(

@@ -26,8 +26,8 @@
 //=============================================================================
 #include "IMUPlacer.h"
 
-#include "OpenSenseUtilities.h"
-
+#include <OpenSim/Common/Detail/SimbodyFormatterShims.h>
+#include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include <OpenSim/Simulation/MarkersReference.h>
 #include <OpenSim/Simulation/Model/Model.h>

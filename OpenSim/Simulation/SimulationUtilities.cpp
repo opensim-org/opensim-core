@@ -370,7 +370,7 @@ std::unordered_map<std::string, int> OpenSim::createSystemControlIndexMap(
             if (nc == 1) {
                 controlIndices[actuPath] = i;
             } else {
-                controlIndices[fmt::format("{}_{}", actuPath, j)] = i;
+                controlIndices[std::format("{}_{}", actuPath, j)] = i;
             }
             ++i;
         }
@@ -456,7 +456,7 @@ void OpenSim::appendCoupledCoordinateValues(TimeSeriesTable& table,
         const Coordinate& coordinate = coordinateSet.get(
                 couplerConstraint.getDependentCoordinateName());
         const std::string& coupledCoordinatePath =
-                fmt::format("{}/value", coordinate.getAbsolutePathString());
+                std::format("{}/value", coordinate.getAbsolutePathString());
         if (table.hasColumn(coupledCoordinatePath)) {
             if (overwriteExistingColumns) {
                 table.removeColumn(coupledCoordinatePath);
@@ -473,7 +473,7 @@ void OpenSim::appendCoupledCoordinateValues(TimeSeriesTable& table,
             const Coordinate& independentCoordinate = coordinateSet.get(
                     independentCoordinateNames[i]);
             independentCoordinatePaths.push_back(
-                    fmt::format("{}/value",
+                    std::format("{}/value",
                         independentCoordinate.getAbsolutePathString()));
             OPENSIM_THROW_IF(
                     !table.hasColumn(independentCoordinatePaths.back()),
@@ -522,7 +522,7 @@ void OpenSim::appendCoordinateValueDerivativesAsSpeeds(TimeSeriesTable& table,
             if (!model.hasComponent<Coordinate>(valuePath)) {
                 continue;
             }
-            speedPath = fmt::format("{}/speed", valuePath);
+            speedPath = std::format("{}/speed", valuePath);
         } else {
             continue;
         }

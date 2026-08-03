@@ -88,7 +88,7 @@ void InputController::extendConnectToModel(Model& model) {
                 // Use the control name format based on
                 // SimulationUtilities::createControlNamesFromModel().
                 m_controlNames.push_back(
-                        fmt::format("{}_{}", actu.getAbsolutePathString(), j));
+                        std::format("{}_{}", actu.getAbsolutePathString(), j));
                 auto it = std::find(modelControlNames.begin(),
                         modelControlNames.end(), m_controlNames.back());
                 m_controlIndexes.push_back(

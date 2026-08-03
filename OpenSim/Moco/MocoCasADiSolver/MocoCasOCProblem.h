@@ -644,7 +644,7 @@ private:
     void intermediateCallbackWithIterateImpl(
             const CasOC::Iterate& iterate) const override {
         std::string filename =
-                fmt::format("MocoCasADiSolver_{}_trajectory{:06d}.sto",
+                std::format("MocoCasADiSolver_{}_trajectory{:06d}.sto",
                         m_formattedTimeString, iterate.iteration);
         convertToMocoTrajectory(iterate).write(filename);
     }

@@ -22,7 +22,8 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-// INCLUDE
+
+#include <OpenSim/Common/Detail/SimbodyFormatterShims.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 
@@ -301,9 +302,9 @@ private:
 
                 // Time column.
                 if (row == numHeaderRows-1)
-                    msg += fmt::format("{:>{}}| ", "time", _width);
+                    msg += std::format("{:>{}}| ", "time", _width);
                 else
-                    msg += fmt::format("{:>{}}| ", "", _width);
+                    msg += std::format("{:>{}}| ", "", _width);
 
                 // Data columns.
                 for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
@@ -311,7 +312,7 @@ private:
                     const std::string lbl =
                         std::string(numHeaderRows*_width - outName.size(), ' ')
                         + outName;
-                    msg += fmt::format("{}| ", lbl.substr(_width*row, _width));
+                    msg += std::format("{}| ", lbl.substr(_width*row, _width));
                 }
                 log_cout(msg);
             }
@@ -325,14 +326,13 @@ private:
 
         // TODO set width based on number of significant digits.
         std::string msg;
-        msg += fmt::format("{:>{}}| ", state.getTime(), _width);
+        msg += std::format("{:>{}}| ", state.getTime(), _width);
         for (const auto& chan : input.getChannels()) {
             const auto& value = chan->getValue(state);
             const auto& nSigFigs = chan->getOutput().getNumberOfSignificantDigits();
             // Print `value` right-justified in a column with width `_width`,
             // using `nSigFigs`: {:>{_width}.{nSigFigs}g}
-            msg += fmt::format(fmt::runtime("{:>{}.{}g}| "), value, _width,
-                    nSigFigs);
+            msg += std::format("{:>{}.{}g}| ", value, _width, nSigFigs);
         }
         log_cout(msg);
 
