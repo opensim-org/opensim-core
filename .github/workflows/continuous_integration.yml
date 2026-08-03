@@ -415,8 +415,8 @@ jobs:
   build_gui:
     name: Build GUI
     runs-on: ubuntu-latest
+    # enable "build-gui" if part of title or PR body
     if: contains(github.event.pull_request.title, '[build-gui]') || contains(github.event.pull_request.body, '[build-gui]') 
-    # enable "build-gui" if part of commit message
     steps:
     - name: Dispatch opensim-gui workflow and get the run ID
       uses: codex-/return-dispatch@v4
