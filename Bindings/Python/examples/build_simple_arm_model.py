@@ -33,6 +33,9 @@
 
 import opensim as osim
 
+# Log outputs to 'opensim.log'.
+osim.Logger.addFileSink('opensim.log')
+
 import sys
 # Are we running this script as a test? Users can ignore this line!
 running_as_test = 'unittest' in str().join(sys.argv)

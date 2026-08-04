@@ -27,6 +27,9 @@
 import os
 import opensim as osim
 
+# Log outputs to 'opensim.log'.
+osim.Logger.addFileSink('opensim.log')
+
 # Construct a MocoStudy to track joint kinematics and ground reaction forces
 # using a torque-driven or muscle-driven model with foot-ground contact
 # elements. The objective function weights were chosen such that the optimized 

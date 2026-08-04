@@ -30,6 +30,9 @@ function examplePolynomialPathFitter
 
 import org.opensim.modeling.*;
 
+% Log outputs to 'opensim.log'.
+Logger.addFileSink('opensim.log');
+
 % Create the PolynomialPathFitter
 % -------------------------------
 fitter = PolynomialPathFitter();

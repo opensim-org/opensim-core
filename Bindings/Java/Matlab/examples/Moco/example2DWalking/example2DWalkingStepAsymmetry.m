@@ -76,6 +76,9 @@ function stepTimeAsymmetry()
 
 import org.opensim.modeling.*;
 
+% Log outputs to 'opensim.log'.
+Logger.addFileSink('opensim.log');
+
 % Create a MocoStudy
 % ------------------
 study = MocoStudy();
