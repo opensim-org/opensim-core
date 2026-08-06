@@ -406,18 +406,30 @@ void Scholz2015GeometryPath::generateDecorations(
         SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const {
 
     if (fixed) { return; }
-    if (hints.get_discretize_path()){
+    const SimTK::Vec3 color = getColor(s);
+    int index = 0;
+    if (hints.get_discretize_path()) {
         int numInteriorPoints = hints.get_num_samples_per_wrap_segment();
         // Total number of points will always be numPoints + numObstracles * numInteriorPoints
         // If an Obstacle is not in contact, it will not be sampled instead points will be 
         // coincident with previous points on the path.
         // All points will be in ground frame and will be in the order specified by the path elements.
-        
+        getCableSpan().calcResampledDecorativePathPoints(
+                s, numInteriorPoints, [&](SimTK::Vec3 x_G) {
+                    geoms.push_back(SimTK::DecorativeSphere(0.005)
+                                    .setTransform(x_G)
+                                    .setScaleFactors(SimTK::Vec3{1.0})
+                                    .setColor(color)
+                                    .setBodyId(0)
+                                    .setIndexOnBody(index++));
+                    //std::cout << "In generateDecorations add sphere at ..."
+                    //          << x_G.toString() << std::endl;
+            });
+        return;
     }
     const bool showPathPoints = hints.get_show_path_points();
-    const SimTK::Vec3 color = getColor(s);
-    int index = 0;
     std::optional<SimTK::Vec3> previous;
+    //std::cout << "In generateDecorations ..." << std::endl;
     getCableSpan().calcDecorativePathPoints(s, [&](SimTK::Vec3 x_G) {
         if (previous) {
             // Emit line between points
@@ -428,6 +440,8 @@ void Scholz2015GeometryPath::generateDecorations(
                 .setBodyId(0)
                 .setIndexOnBody(index++)
             );
+            //std::cout << "In generateDecorations add line to ..."
+            //          << x_G.toString() << std::endl;
         }
         if (showPathPoints) {
             geoms.push_back(SimTK::DecorativeSphere(0.005)
@@ -441,6 +455,7 @@ void Scholz2015GeometryPath::generateDecorations(
 
         previous = x_G;
     });
+    //std::cout << "In generateDecorations end ..." << std::endl;
 }
 
 void Scholz2015GeometryPath::extendPreScale(const SimTK::State& s,
