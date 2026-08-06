@@ -32,6 +32,11 @@
 
 function exampleMocoTrack()
 
+import org.opensim.modeling.*;
+
+% Log outputs to 'opensim.log'.
+Logger.addFileSink('opensim.log');
+
 % Solve the torque-driven marker tracking problem.
 torqueDrivenMarkerTracking();
 
@@ -46,6 +51,9 @@ end
 function torqueDrivenMarkerTracking()
 
 import org.opensim.modeling.*;
+
+% Log outputs to 'opensim.log'.
+Logger.addFileSink('opensim.log');
 
 % Create and name an instance of the MocoTrack tool.
 track = MocoTrack();

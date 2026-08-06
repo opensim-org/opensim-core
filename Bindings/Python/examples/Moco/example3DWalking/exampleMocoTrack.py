@@ -30,6 +30,9 @@
 import os
 import opensim as osim
 
+# Log outputs to 'opensim.log'.
+osim.Logger.addFileSink('opensim.log')
+
 def torqueDrivenMarkerTracking():
 
     # Create and name an instance of the MocoTrack tool.

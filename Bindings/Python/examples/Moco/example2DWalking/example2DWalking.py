@@ -53,6 +53,9 @@ import re
 import math
 import sys
 
+# Log outputs to 'opensim.log'.
+osim.Logger.addFileSink('opensim.log')
+
 # ---------------------------------------------------------------------------
 # Set up a coordinate tracking problem where the goal is to minimize the
 # difference between provided and simulated coordinate values and speeds (and

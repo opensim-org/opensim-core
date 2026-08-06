@@ -19,6 +19,9 @@
 import os
 import opensim as osim
 
+# Log outputs to 'opensim.log'.
+osim.Logger.addFileSink('opensim.log')
+
 model = osim.Model()
 model.setName('sliding_mass')
 model.set_gravity(osim.Vec3(0, 0, 0))

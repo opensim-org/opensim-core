@@ -37,6 +37,9 @@
 import math
 import opensim as osim
 
+# Log outputs to 'opensim.log'.
+osim.Logger.addFileSink('opensim.log')
+
 # Create a model with a single body representing a block that can move
 # relative to the ground via a free joint.
 model = osim.Model()
