@@ -101,7 +101,7 @@
         },
         {
           "name": "msvc-dev-gui-default",
-          "description": "Recommended MSVC development configuration for gui builds ",
+          "description": "Recommended MSVC development configuration for GUI builds ",
           "inherits": [
                 "dev-default",
                 "windows"

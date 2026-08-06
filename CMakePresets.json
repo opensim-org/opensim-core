@@ -104,8 +104,8 @@
         },
         {
             "name": "msvc-dev-gui-default",
-            "description": "Recommended MSVC development configuration for gui builds ",
-            "binaryDir": "${sourceDir}/bld/",
+            "description": "Recommended MSVC development configuration for GUI builds ",
+            "binaryDir": "${sourceDir}/build/",
             "installDir": "${sourceDir}/install",
             "inherits": [
                "dev-default",
