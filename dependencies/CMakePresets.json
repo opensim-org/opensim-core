@@ -100,6 +100,17 @@
             ]
         },
         {
+          "name": "msvc-dev-gui-default",
+          "description": "Recommended MSVC development configuration for gui builds ",
+          "inherits": [
+                "dev-default",
+                "windows"
+          ],
+          "cacheVariables": {
+            "OPENSIM_WITH_CASADI": "OFF"
+          }
+        },
+        {
             "name": "dev-minimal",
             "description": "Minimal development configuration that only build the dependencies necessary for a minimal build (no Moco, no ezc3d)",
             "inherits": ["dev-default"],

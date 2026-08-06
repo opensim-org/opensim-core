@@ -103,6 +103,19 @@
             ]
         },
         {
+            "name": "msvc-dev-gui-default",
+            "description": "Recommended MSVC development configuration for gui builds ",
+            "inherits": [
+               "dev-default",
+               "windows"
+            ],
+            "cacheVariables": {
+               "OPENSIM_WITH_CASADI": "OFF",
+               "BUILD_PYTHON_WRAPPING": "OFF",
+               "BUILD_API_EXAMPLES": "OFF"
+           }
+        },
+        {
             "name": "dev-minimal",
             "description": "Minimal development configuration that builds OpenSim without Moco, ezc3d, and bindings",
             "inherits": [
