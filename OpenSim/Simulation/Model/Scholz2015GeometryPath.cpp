@@ -406,6 +406,14 @@ void Scholz2015GeometryPath::generateDecorations(
         SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const {
 
     if (fixed) { return; }
+    if (hints.get_discretize_path()){
+        int numInteriorPoints = hints.get_num_samples_per_wrap_segment();
+        // Total number of points will always be numPoints + numObstracles * numInteriorPoints
+        // If an Obstacle is not in contact, it will not be sampled instead points will be 
+        // coincident with previous points on the path.
+        // All points will be in ground frame and will be in the order specified by the path elements.
+        
+    }
     const bool showPathPoints = hints.get_show_path_points();
     const SimTK::Vec3 color = getColor(s);
     int index = 0;
