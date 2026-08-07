@@ -241,6 +241,12 @@
             "configuration": "RelWithDebInfo"
         },
         {
+            "name": "msvc-dev-gui-default",
+            "configurePreset": "msvc-dev-gui-default",
+            "inherits": "windows",
+            "configuration": "RelWithDebInfo"
+        },
+        {
             "name": "dev-minimal",
             "configurePreset": "dev-minimal"
         },
@@ -304,6 +310,13 @@
             "steps": [
                 { "type": "configure", "name": "msvc-dev-default" },
                 { "type": "build",     "name": "msvc-dev-default" }
+            ]
+        },
+        {
+            "name": "msvc-dev-gui-default",
+            "steps": [
+                { "type": "configure", "name": "msvc-dev-gui-default" },
+                { "type": "build",     "name": "msvc-dev-gui-default" }
             ]
         },
         {
