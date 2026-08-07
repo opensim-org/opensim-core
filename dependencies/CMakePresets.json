@@ -93,11 +93,22 @@
         },
         {
             "name": "msvc-dev-default",
-            "description": "Recommended MSVC development configuration ",
+            "description": "Recommended MSVC development configuration",
             "inherits": [
                 "dev-default",
                 "windows"
             ]
+        },
+        {
+          "name": "msvc-dev-gui-default",
+          "description": "Recommended MSVC development configuration for GUI builds",
+          "inherits": [
+                "dev-default",
+                "windows"
+          ],
+          "cacheVariables": {
+            "OPENSIM_WITH_CASADI": "OFF"
+          }
         },
         {
             "name": "dev-minimal",
