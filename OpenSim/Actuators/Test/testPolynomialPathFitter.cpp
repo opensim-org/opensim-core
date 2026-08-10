@@ -181,33 +181,60 @@ TEST_CASE("Using one thread does not segfault") {
 
 TEST_CASE("Verify fitted path: double pendulum with wrap cylinder") {
 
-    // The double pendulum model used in this test is based on
-    // exampleScholz2015GeometryPath.cpp.
-    Model model = ModelFactory::createDoublePendulum();
+    // Create a 3-link pendulum with one mono-articular path and one
+    // bi-articular path.
+    Model model = ModelFactory::createNLinkPendulum(3);
 
-    // Create a PathSpring with a Scholz2015GeometryPath.
-    auto* spring = new PathSpring();
-    spring->setName("path_spring");
-    spring->setRestingLength(0.25);
-    spring->setDissipation(0.75);
-    spring->setStiffness(10.0);
-    spring->set_path(Scholz2015GeometryPath());
-    model.addComponent(spring);
+    // Create two PathSprings, each with a Scholz2015GeometryPath.
+    auto* spring1 = new PathSpring();
+    spring1->setName("path_spring_1");
+    spring1->setRestingLength(0.25);
+    spring1->setDissipation(0.75);
+    spring1->setStiffness(10.0);
+    spring1->set_path(Scholz2015GeometryPath());
+    model.addComponent(spring1);
 
-    // Create a cylinder wrapping obstacle.
-    auto* obstacle = new ContactCylinder(0.15,
+    auto* spring2 = new PathSpring();
+    spring2->setName("path_spring_2");
+    spring2->setRestingLength(0.25);
+    spring2->setDissipation(0.75);
+    spring2->setStiffness(10.0);
+    spring2->set_path(Scholz2015GeometryPath());
+    model.addComponent(spring2);
+
+    // Add a cylinder wrapping obstacle to body 'b0'.
+    auto* cylinder = new ContactCylinder(0.15,
         SimTK::Vec3(-0.2, 0.2, 0.), SimTK::Vec3(0),
         model.getComponent<Body>("/bodyset/b0"));
-    model.addComponent(obstacle);
+    model.addComponent(cylinder);
 
-    // Define the path.
-    Scholz2015GeometryPath& path = spring->updPath<Scholz2015GeometryPath>();
-    path.setName("path");
-    path.appendPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0.));
-    path.appendPathPoint(model.getComponent<Body>("/bodyset/b0"),
+    // Add an ellipsoid wrapping obstacle to body 'b1'.
+    auto* ellipsoid = new ContactEllipsoid(SimTK::Vec3(0.15, 0.15, 1.0),
+        SimTK::Vec3(-0.2, 0.2, 0.), SimTK::Vec3(0),
+        model.getComponent<Body>("/bodyset/b1"));
+    model.addComponent(ellipsoid);
+
+    // Define the path for `spring1`.
+    Scholz2015GeometryPath& path1 = spring1->updPath<Scholz2015GeometryPath>();
+    path1.setName("path1");
+    path1.appendPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0.));
+    path1.appendPathPoint(model.getComponent<Body>("/bodyset/b0"),
             SimTK::Vec3(-0.5, 0.1, 0.));
-    path.appendObstacle(*obstacle, SimTK::Vec3(0., 0.15, 0.));
-    path.appendPathPoint(model.getComponent<Body>("/bodyset/b1"),
+    path1.appendObstacle(*cylinder, SimTK::Vec3(0., 0.15, 0.));
+    path1.appendPathPoint(model.getComponent<Body>("/bodyset/b1"),
+            SimTK::Vec3(-0.5, 0.1, 0.));
+
+    // Define the path for `spring2`.
+    Scholz2015GeometryPath& path2 = spring2->updPath<Scholz2015GeometryPath>();
+    path2.setName("path2");
+    path2.appendPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0.));
+    path2.appendPathPoint(model.getComponent<Body>("/bodyset/b0"),
+            SimTK::Vec3(-0.5, 0.1, 0.));
+    path2.appendObstacle(*cylinder, SimTK::Vec3(0., 0.15, 0.));
+    path2.appendPathPoint(model.getComponent<Body>("/bodyset/b1"),
+            SimTK::Vec3(-0.5, 0.1, 0.));
+    path2.appendObstacle(*ellipsoid, SimTK::Vec3(0., 0.15, 0.));
+    path2.appendPathPoint(model.getComponent<Body>("/bodyset/b2"),
             SimTK::Vec3(-0.5, 0.1, 0.));
 
     // Simulate the model to generate states data.
@@ -230,9 +257,9 @@ TEST_CASE("Verify fitted path: double pendulum with wrap cylinder") {
 
         // Expected number of samples.
         TimeSeriesTable coordinateValues(
-            (tmp / "double_pendulum_coordinate_values.sto").string());
+            (tmp / "3_link_pendulum_coordinate_values.sto").string());
         TimeSeriesTable coordinateValuesSampled(
-            (tmp / "double_pendulum_coordinate_values_sampled.sto").string());
+            (tmp / "3_link_pendulum_coordinate_values_sampled.sto").string());
 
         // Expected number of samples.
         CHECK(coordinateValues.getNumRows() == states.getNumRows());
@@ -248,9 +275,9 @@ TEST_CASE("Verify fitted path: double pendulum with wrap cylinder") {
 
         // Path length error.
         TimeSeriesTable pathLengths(
-            (tmp / "double_pendulum_path_lengths.sto").string());
+            (tmp / "3_link_pendulum_path_lengths.sto").string());
         TimeSeriesTable pathLengthsFitted(
-            (tmp / "double_pendulum_path_lengths_fitted.sto").string());
+            (tmp / "3_link_pendulum_path_lengths_fitted.sto").string());
         double pathLengthMSE =
                 (pathLengths.getDependentColumnAtIndex(0) -
                 pathLengthsFitted.getDependentColumnAtIndex(0)).normSqr() /
@@ -260,9 +287,9 @@ TEST_CASE("Verify fitted path: double pendulum with wrap cylinder") {
 
         // Moment arm errors.
         TimeSeriesTable momentArms(
-            (tmp / "double_pendulum_moment_arms.sto").string());
+            (tmp / "3_link_pendulum_moment_arms.sto").string());
         TimeSeriesTable momentArmsFitted(
-            (tmp / "double_pendulum_moment_arms_fitted.sto").string());
+            (tmp / "3_link_pendulum_moment_arms_fitted.sto").string());
         double momentArmQ0MSE =
                 (momentArms.getDependentColumnAtIndex(0) -
                 momentArmsFitted.getDependentColumnAtIndex(0)).normSqr() /
@@ -297,11 +324,11 @@ TEST_CASE("Verify fitted path: double pendulum with wrap cylinder") {
         // Check that the tables from path fitting have the expected number
         // of rows.
         TimeSeriesTable filteredStates(
-            (tmp / "double_pendulum_coordinate_values.sto").string());
+            (tmp / "3_link_pendulum_coordinate_values.sto").string());
         TimeSeriesTable filteredPathLengths(
-            (tmp / "double_pendulum_path_lengths.sto").string());
+            (tmp / "3_link_pendulum_path_lengths.sto").string());
         TimeSeriesTable filteredMomentArms(
-            (tmp / "double_pendulum_moment_arms.sto").string());
+            (tmp / "3_link_pendulum_moment_arms.sto").string());
         CHECK(filteredStates.getNumRows() == states.getNumRows() - 2);
         CHECK(filteredPathLengths.getNumRows() == states.getNumRows() - 2);
         CHECK(filteredMomentArms.getNumRows() == states.getNumRows() - 2);

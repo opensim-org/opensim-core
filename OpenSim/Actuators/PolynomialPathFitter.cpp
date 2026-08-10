@@ -285,25 +285,30 @@ TimeSeriesTable sampleCoordinateValues(
     int timeIdx = 0;
     const auto& times = values.getIndependentColumn();
     TimeSeriesTable valuesSampled;
-    double dt = (times.size() < 2) ? 0.01 :
-                (times[1] - times[0]) / (settings.numSamplesPerFrame + 2);
+
+    // Use CommonUtilities::createVectorLinspace() to uniformly sample
+    // coordinate values across the full time range to guarantee a monotonically
+    // increasing time vector. This may result in samples that are slightly
+    // inconsistent with the original time vector, but the time vector is
+    // irrelevant for fitting anyway.
+    const int numSampledRows = numTimePoints * (settings.numSamplesPerFrame + 1);
+    const double startTime = times.front();
+    const double endTime = (times.back() > startTime) ?
+            times.back() : startTime + numSampledRows;
+    const SimTK::Vector sampledTimes =
+            createVectorLinspace(numSampledRows, startTime, endTime);
+
+    int rowIdx = 0;
     for (int i = 0; i < numThreads; ++i) {
         int numTimeIndexes = outputs[i].nrow() / settings.numSamplesPerFrame;
         for (int j = 0; j < numTimeIndexes; ++j) {
             // Append the original values.
-            valuesSampled.appendRow(times[timeIdx],
+            valuesSampled.appendRow(sampledTimes[rowIdx++],
                     values.getRowAtIndex(timeIdx));
-
-            // Update the time step, if possible. Otherwise, use the last time
-            // step.
-            if (timeIdx+1 < static_cast<int>(values.getNumRows())) {
-                dt = (times[timeIdx+1] - times[timeIdx]) /
-                     (settings.numSamplesPerFrame + 2);
-            }
 
             // Append the sampled values.
             for (int irow = 0; irow < settings.numSamplesPerFrame; ++irow) {
-                valuesSampled.appendRow(times[timeIdx] + (irow + 1)*dt,
+                valuesSampled.appendRow(sampledTimes[rowIdx++],
                         outputs[i].row(irow + j*settings.numSamplesPerFrame));
             }
             ++timeIdx;
