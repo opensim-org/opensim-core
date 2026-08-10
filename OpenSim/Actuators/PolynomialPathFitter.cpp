@@ -41,9 +41,9 @@ using namespace OpenSim;
 
 namespace {
 
-// Type alias for the moment arm map. The keys are the paths in the model
-// and the values are vectors containing the (model) paths to coordinates on
-// which the (wrapping) paths depend.
+// Type alias for the moment arm map. The keys are the component paths to
+// Force's in the model, and the values are vectors containing component paths
+// to the Coordinate's on which Force's geometry path depend.
 using MomentArmMap = std::unordered_map<std::string, std::vector<std::string>>;
 
 // Type alias for the coordinate bounds and coordinate range maps. The keys are
@@ -318,8 +318,10 @@ TimeSeriesTable sampleCoordinateValues(
 // Helper function to compute path lengths and moment arms for the
 // geometry-based paths in the model. The path lengths and moment arms
 // are computed using the coordinate values in the `coordinateValues`
-// table. The `numThreads` argument specifies the number of threads used
-// to parallelize the computations.
+// table. `forcePaths` is the list of all Force elements in the model containing
+// geometry-based wrapping paths, and `momentArmMap` maps each Force element
+// to a list of Component paths to the Coordinate's which the Force's geometry
+// path depends on.
 void computePathLengthsAndMomentArms(
         const Model& model,
         const TimeSeriesTable& coordinateValues,
@@ -342,16 +344,16 @@ void computePathLengthsAndMomentArms(
         numMomentArms += coordinatePaths.size();
     }
 
-    // Define the path calculation worker. The atomic integer 'nextPathIndex'
-    // controls the path from a thread should perform length and moment arm
-    //  calculations.
-    std::atomic<int> nextPathIndex(0);
+    // Define the path calculation worker. The atomic integer 'pathIndex'
+    // provides a thread-safe index to the next available geometry path from
+    // which to compute path lengths and moment arms.
+    std::atomic<int> pathIndex(0);
     std::vector<SimTK::Matrix> pathResults(numPaths);
     auto pathCalculationWorker = [&](Model model, StatesTrajectory statesTraj) {
         model.initSystem();
 
         int ipath;
-        while ((ipath = nextPathIndex.fetch_add(1)) < numPaths) {
+        while ((ipath = pathIndex.fetch_add(1)) < numPaths) {
             const std::string& forcePath = forcePaths[ipath];
             log_info("Computing values for path {} of {}: '{}'...",
                      ipath+1, numPaths, forcePath);
@@ -426,15 +428,15 @@ void computePathLengthsAndMomentArms(
     // lengths and moment arms.
     SimTK::Matrix lengthsMatrix(numTimes, numPaths);
     SimTK::Matrix momentArmsMatrix(numTimes, numMomentArms);
-    int ipath = 0;
     int offset = 0;
-    for (const auto& path : forcePaths) {
+    for (int ipath = 0; ipath < numPaths; ipath++) {
         const SimTK::Matrix& results = pathResults[ipath];
-        const int numCoords = results.ncol() - 1;
+        const auto& path = forcePaths[ipath];
+        const int numCoords = static_cast<int>(momentArmMap.at(path).size());
+        OPENSIM_ASSERT(numCoords == results.ncol() - 1);
         lengthsMatrix.updCol(ipath) = results.col(0);
         momentArmsMatrix.updBlock(0, offset, numTimes,
                 numCoords) = results.block(0, 1, numTimes, numCoords);
-        ++ipath;
         offset += numCoords;
     }
 
@@ -1120,7 +1122,7 @@ void PolynomialPathFitter::run() {
 
     // Load the model.
     m_model = get_model().process(getDocumentDirectory());
-    SimTK::State state = m_model.initSystem();
+    const SimTK::State& state = m_model.initSystem();
 
     // Load the coordinate values table.
     m_values = loadCoordinateValuesAndValidateModel(
