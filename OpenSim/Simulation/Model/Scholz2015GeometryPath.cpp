@@ -447,8 +447,6 @@ void Scholz2015GeometryPath::generateDecorations(
                 .setBodyId(0)
                 .setIndexOnBody(index++)
             );
-            //std::cout << "In generateDecorations add line to ..."
-            //          << x_G.toString() << std::endl;
         }
         if (showPathPoints) {
             geoms.push_back(SimTK::DecorativeSphere(0.005)
@@ -462,7 +460,6 @@ void Scholz2015GeometryPath::generateDecorations(
 
         previous = x_G;
     });
-    //std::cout << "In generateDecorations end ..." << std::endl;
 }
 
 void Scholz2015GeometryPath::extendPreScale(const SimTK::State& s,
