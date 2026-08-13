@@ -84,10 +84,6 @@ int main() {
 
     // Initialize the system.
     SimTK::State state = model.initSystem();
-    // The following 3 lines change how path is displayed to use exactly 4 points per wrap-segment.
-    ModelDisplayHints& hints = model.upd_ModelVisualPreferences().upd_ModelDisplayHints();
-    hints.set_num_samples_per_wrap_segment(4);
-    hints.set_discretize_path(true);
     model.updVisualizer().updSimbodyVisualizer().setBackgroundType(
             SimTK::Visualizer::SolidColor);
     model.updVisualizer().updSimbodyVisualizer().setCameraTransform(
