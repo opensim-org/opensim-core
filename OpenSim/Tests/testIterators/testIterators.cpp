@@ -32,6 +32,8 @@
 #include <iostream>
 #include <type_traits>
 
+#include <opensim-core/tests/opensim_tests_config.h>
+
 using namespace OpenSim;
 using namespace std;
 
@@ -61,7 +63,8 @@ public:
     }
 };
 
-const std::string modelFilename = "arm26.osim";
+const std::string modelFilename =
+    (opensim_tests_resources_directory() / "models" / "Arm26" / "arm26.osim").string();
 // TODO: Hard-coding these numbers is not ideal. As we introduce more components
 // to recompose existing components, this will need continual updating. For example,
 // Joint's often add PhysicalOffsetFrames to handle what used to be baked in location
@@ -72,16 +75,19 @@ const std::string modelFilename = "arm26.osim";
 // 2022-03-16
 //     Subtracted 14 from the count because PathWrapPoint no longer inherits from
 //     PathPoint (which internally creates a Station subcomponent)
-const int expectedNumComponents = 186;
+// 2026: arm26.osim (v40600) adds a 'base' body welded to ground, its weld
+//     'offset' joint (with two PhysicalOffsetFrames + FrameGeometry), so the
+//     component/frame counts increased.
+const int expectedNumComponents = 196;
 const int expectedNumJointsWithStateVariables = 2;
 // 2018-08-22 added 2 for JointSet and ForceSet that contain Components with states
 const int expectedNumModelComponentsWithStateVariables = 12;
 // Below updated from 1 to 7 to account for offset frame and its geometry and
 // wrapobjectset that are now part of the Joint
-const int expectedNumJntComponents = 7;
+const int expectedNumJntComponents = 6;
 // Test using the iterator to skip over every other Component (Frame in this case)
-// nf = 1 ground + 2 bodies + 4 joint offsets = 7, skipping - 3 = 4
-const int expectedNumCountSkipFrames = 4;
+// nf = 1 ground + 3 bodies + 6 joint offsets = 10, skipping every other -> 5
+const int expectedNumCountSkipFrames = 5;
 
 class Device : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(Device, ModelComponent);
@@ -141,11 +147,12 @@ TEST_CASE("testNestedComponentListConsistency") {
         }
     }
 
-    // Joints list should be a unique set.
-    ASSERT(std::set<const Joint*>{joints1.begin(), joints1.end()}.size() == 4);
+    // Joints list should be a unique set: 3 model joints (r_shoulder, r_elbow,
+    // and the base 'offset' WeldJoint) + 2 device joints.
+    ASSERT(std::set<const Joint*>{joints1.begin(), joints1.end()}.size() == 5);
     // Joints1 and Joints2 must be identical.
     ASSERT(joints1 == joints2);
-    // Expected number of unique coordinates.
+    // Expected number of unique coordinates (the WeldJoint adds none).
     ASSERT(coords.size() == 4);
 }
 
@@ -239,7 +246,7 @@ TEST_CASE("testComponentListConst") {
             ++numCoords;
         }
     }
-    ASSERT(numJoints == 2);
+    ASSERT(numJoints == 3);
     ASSERT(numCoords == 2);
 
     int numJointsWithStateVariables = 0;

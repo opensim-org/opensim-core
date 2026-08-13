@@ -27,8 +27,11 @@
 #include <OpenSim/Tools/ForwardTool.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Actuators/ModelFactory.h>
+#include <opensim-core/tests/opensim_tests_config.h>
 
 #include <catch2/catch_all.hpp>
+
+#include <filesystem>
 
 using namespace OpenSim;
 using namespace std;
@@ -114,10 +117,17 @@ TEST_CASE("testPendulumExternalLoadWithPointInGround") {
 TEST_CASE("testArm26") {
     Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
 
-    ForwardTool forward("arm26_Setup_Forward.xml");
+    const auto arm26Dir = opensim_tests_resources_directory() / "models" / "Arm26";
+    // Absolute results dir under the CWD: the tool writes results relative to
+    // the Setup XML's directory, which now lives in the read-only resources
+    // tree, so an absolute path keeps output in the CWD.
+    const string fwdResultsDir =
+            (std::filesystem::current_path() / "Results").string();
+    ForwardTool forward((arm26Dir / "arm26_Setup_Forward.xml").string());
+    forward.setResultsDir(fwdResultsDir);
     forward.run();
 
-    Storage results("Results/arm26_states.sto");
+    Storage results(fwdResultsDir + "/arm26_states.sto");
     Storage* standard = new Storage();
     string statesFileName("std_arm26_states.sto");
     forward.loadStatesStorage( statesFileName, standard );

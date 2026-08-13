@@ -6,5 +6,5 @@ list(APPEND TEST_FILES ${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/ThoracoscapularS
 OpenSimAddTests(
     TESTPROGRAMS ${TEST_PROGS}
     DATAFILES ${TEST_FILES}
-    LINKLIBS osimTools
+    LINKLIBS osimTools opensim_testing
     )

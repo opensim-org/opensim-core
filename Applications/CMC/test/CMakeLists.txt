@@ -7,5 +7,5 @@ file(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
 OpenSimAddTests(
     TESTPROGRAMS ${TEST_PROGS}
     DATAFILES ${TEST_FILES}
-    LINKLIBS osimTools Catch2::Catch2WithMain
+    LINKLIBS osimTools Catch2::Catch2WithMain opensim_testing
     )

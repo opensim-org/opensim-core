@@ -26,19 +26,32 @@
 #include <OpenSim/Tools/CMCTool.h>
 #include <OpenSim/Tools/ForwardTool.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <opensim-core/tests/opensim_tests_config.h>
+
+#include <catch2/catch_all.hpp>
+
+#include <filesystem>
 
 using namespace OpenSim;
 using namespace std;
 
-void testCMCEMGDrivenArm() {
+TEST_CASE("testCMCEMGDrivenArm_Millard") {
+    Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
+
     cout<<"\n******************************************************************" << endl;
     cout << "*                 testCMCEMGDrivenArm_Millard                    *" << endl;
     cout << "******************************************************************\n" << endl;
-    CMCTool cmc("arm26_Setup_ComputedMuscleControl_EMG.xml");
-    cmc.setResultsDir("Results_Arm26_EMG_Millard");
+    const auto arm26Dir = opensim_tests_resources_directory() / "models" / "Arm26";
+    // Absolute results dir under the CWD (tool writes results relative to the
+    // Setup XML's now read-only resources directory).
+    const string cmcResultsDir =
+            (std::filesystem::current_path() / "Results_Arm26_EMG_Millard").string();
+    CMCTool cmc((arm26Dir / "arm26_Setup_ComputedMuscleControl_EMG.xml").string());
+    cmc.setResultsDir(cmcResultsDir);
     cmc.run();
 
-    Storage results("Results_Arm26_EMG_Millard/arm26_states.sto"), temp("std_arm26_states.sto");
+    Storage results(cmcResultsDir + "/arm26_states.sto"),
+            temp("std_arm26_states.sto");
     Storage standard{};
     cmc.getModel().formStateStorage(temp, standard);
 
@@ -53,27 +66,5 @@ void testCMCEMGDrivenArm() {
 
     const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
     cout << "\ntestCMCEMGDrivenArm_ "+muscleType+ " passed\n" << endl;
-}
-
-int main() {
-
-    SimTK::Array_<std::string> failures;
-
-    Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
-
-    try{
-        testCMCEMGDrivenArm();
-    } catch (const std::exception& e) {
-        cout << e.what() <<endl; failures.push_back("testCMCEMGDrivenArm_Millard");
-    }
-
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "Done" << endl;
-
-    return 0;
 }
 

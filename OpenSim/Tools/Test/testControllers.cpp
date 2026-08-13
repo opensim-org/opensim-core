@@ -39,6 +39,7 @@
 
 #include <catch2/catch_all.hpp>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <opensim-core/tests/opensim_tests_config.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -312,8 +313,9 @@ TEST_CASE("testCorrectionControllerOnBlock") {
 TEST_CASE("testPrescribedControllerFromFile") {
     using namespace SimTK;
 
-    std::string modelFile = "arm26.osim";
-    std::string actuatorsFile = "arm26_Reserve_Actuators.xml";
+    auto arm26Dir = opensim_tests_resources_directory() / "models" / "Arm26";
+    std::string modelFile = (arm26Dir / "arm26.osim").string();
+    std::string actuatorsFile = (arm26Dir / "arm26_Reserve_Actuators.xml").string();
     std::string controlsFile = "arm26_controls.xml";
 
     double initialTime = 0.03;

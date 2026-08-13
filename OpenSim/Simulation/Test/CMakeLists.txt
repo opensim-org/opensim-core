@@ -7,7 +7,7 @@ file(GLOB TEST_FILES *.osim *.xml *.sto *.mot *.obj *.vtp *.stl)
 OpenSimAddTests(
     TESTPROGRAMS ${TEST_PROGS}
     DATAFILES ${TEST_FILES}
-    LINKLIBS osimCommon osimSimulation osimAnalyses osimActuators osimLepton Catch2::Catch2WithMain
+    LINKLIBS osimCommon osimSimulation osimAnalyses osimActuators osimLepton Catch2::Catch2WithMain opensim_testing
     )
 
 OpenSimCopySharedTestFiles(std_subject01_walk1_states.sto)

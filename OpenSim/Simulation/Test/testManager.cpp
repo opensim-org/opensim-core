@@ -31,6 +31,7 @@
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Analyses/BodyKinematics.h>
 #include <OpenSim/Common/Constant.h>
+#include <opensim-core/tests/opensim_tests_config.h>
 
 #include <catch2/catch_all.hpp>
 using Catch::Matchers::WithinAbs;
@@ -273,7 +274,7 @@ TEST_CASE("State changes between integration") {
 // Update the excitation of a muscle in the arm26 model between subsequent 
 // integrations.
 TEST_CASE("Excitation updates with Manager") {
-    Model arm("arm26.osim");
+    Model arm((opensim_tests_resources_directory() / "models" / "Arm26" / "arm26.osim").string());
 
     const Set<Muscle> &muscleSet = arm.getMuscles();
     PrescribedController* controller = new PrescribedController();
@@ -437,7 +438,7 @@ TEST_CASE("Integrator interface") {
 
 // Test that misuse actually triggers exceptions.
 TEST_CASE("Exceptions") {
-    Model arm1("arm26.osim");
+    Model arm1((opensim_tests_resources_directory() / "models" / "Arm26" / "arm26.osim").string());
 
     // model must have initSystem() called first
     CHECK_THROWS_AS(Manager(arm1), Exception);

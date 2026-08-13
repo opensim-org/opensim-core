@@ -33,6 +33,9 @@
 #include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
 #include <OpenSim/Common/GCVSplineSet.h>
+#include <opensim-core/tests/opensim_tests_config.h>
+
+#include <filesystem>
 
 using namespace OpenSim;
 using namespace std;
@@ -43,20 +46,36 @@ void testBallJoint();
 int main()
 {
     try {
-        InverseDynamicsTool id1("arm26_Setup_InverseDynamics.xml");
+        const auto arm26Dir =
+                opensim_tests_resources_directory() / "models" / "Arm26";
+        // Absolute results dir under the CWD: the tool writes results relative
+        // to the Setup XML's directory, which now lives in the read-only
+        // resources tree, so an absolute path keeps output in the CWD.
+        const std::string idResultsDir =
+                (std::filesystem::current_path() / "Results").string();
+        InverseDynamicsTool id1(
+                (arm26Dir / "arm26_Setup_InverseDynamics.xml").string());
+        // The tool loads the model relative to the CWD (before it switches to
+        // the setup file's directory), so point it at the absolute model path.
+        id1.setModelFileName((arm26Dir / "arm26.osim").string());
+        id1.setResultsDir(idResultsDir);
         id1.run();
-        Storage result1("Results/arm26_InverseDynamics.sto"), standard1("std_arm26_InverseDynamics.sto");
+        Storage result1(idResultsDir + "/arm26_InverseDynamics.sto"),
+                standard1("std_arm26_InverseDynamics.sto");
         CHECK_STORAGE_AGAINST_STANDARD( result1, standard1,
             std::vector<double>(23, 1e-2), __FILE__, __LINE__,
             "testArm failed");
         cout << "testArm passed" << endl;
         // setOutputGenForceFileName including folder name, test
         // that folder will be ignored and file is written to Results
-        InverseDynamicsTool id12("arm26_Setup_InverseDynamics.xml");
+        InverseDynamicsTool id12(
+                (arm26Dir / "arm26_Setup_InverseDynamics.xml").string());
+        id12.setModelFileName((arm26Dir / "arm26.osim").string());
+        id12.setResultsDir(idResultsDir);
         id12.setOutputGenForceFileName(
                 "unused_folder/arm26_InverseDynamics_rerun.sto");
         id12.run();
-        Storage result12("Results/arm26_InverseDynamics_rerun.sto");
+        Storage result12(idResultsDir + "/arm26_InverseDynamics_rerun.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result1, result12,
                 std::vector<double>(23, 1e-5), __FILE__, __LINE__,
                 "testArm ignore path in output file spec. failed");

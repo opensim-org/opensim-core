@@ -25,6 +25,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Actuators/PointActuator.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <opensim-core/tests/opensim_tests_config.h>
 
 #include <catch2/catch_all.hpp>
 
@@ -36,9 +37,14 @@ namespace {
 // Test copying, serializing and deserializing models and verify 
 // that the number of bodies (nbods) and the number of attached geometry
 // (ngeom) on a given PhysicalFrame (by name) are preserved.
-void testCopyModel(const string& fileName, const int nbod, 
+void testCopyModel(const string& fileName, const int nbod,
     const string& physicalFrameName, const int ngeom)
 {
+    // fileName may be an absolute path; use just its filename component when
+    // constructing output file names so they land in the CWD.
+    const std::string baseName =
+        std::filesystem::path(fileName).filename().string();
+
     const size_t mem0 = getCurrentRSS();
 
     // Automatically finalizes properties by default when loading from file
@@ -58,7 +64,7 @@ void testCopyModel(const string& fileName, const int nbod,
         delete test;
     }
     // verify that the print is const and has no side-effects on the model
-    model->print("clone_" + fileName);
+    model->print("clone_" + baseName);
     
     Model* modelCopy = new Model(*model);
     modelCopy->finalizeFromProperties();
@@ -86,7 +92,7 @@ void testCopyModel(const string& fileName, const int nbod,
     //ASSERT ((defaultState.getY()-defaultStateOfCopy2.getY()).norm() < 1e-7);
     //ASSERT ((defaultState.getZ()-defaultStateOfCopy2.getZ()).norm() < 1e-7);
 
-    std::string latestFile = "lastest_" + fileName;
+    std::string latestFile = "lastest_" + baseName;
     modelCopy->print(latestFile);
     modelCopy->finalizeFromProperties();
 
@@ -160,12 +166,14 @@ TEST_CASE("Copy a model") {
     { PointActuator t; }
 
     SECTION("arm26") {
-        Model arm("arm26.osim");
+        const std::string arm26 = (opensim_tests_resources_directory()
+                / "models" / "Arm26" / "arm26.osim").string();
+        Model arm(arm26);
         Model armAssigned;
         armAssigned = arm;
         ASSERT(armAssigned == arm);
 
-        testCopyModel("arm26.osim", 2, "ground", 6);
+        testCopyModel(arm26, 3, "bodyset/base", 6);
     }
 
     SECTION("3 DOF neck w/ point constraint") {

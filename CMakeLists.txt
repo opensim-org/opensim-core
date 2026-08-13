@@ -873,6 +873,13 @@ set(OPENSIM_SHARED_TEST_FILES_DIR "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared")
 
 add_subdirectory(Vendors)
 
+# Defines the opensim_testing INTERFACE library and generates the shared test
+# config header (opensim_tests_config.h) that gives tests a unified accessor for
+# the test resources directory. Must precede the directories whose tests link it.
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
+
 add_subdirectory(OpenSim)
 if(NOT BUILD_API_ONLY)
     add_subdirectory(Applications)

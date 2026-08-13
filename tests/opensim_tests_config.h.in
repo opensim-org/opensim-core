@@ -1,0 +1,15 @@
+#pragma once
+
+// char[]
+//
+// Absolute path to the resources directory for the OpenSim test suite.
+#define OPENSIM_TESTS_RESOURCES_DIR "@CMAKE_CURRENT_SOURCE_DIR@/resources"
+
+#include <filesystem>
+
+namespace OpenSim
+{
+    inline std::filesystem::path opensim_tests_resources_directory() {
+        return OPENSIM_TESTS_RESOURCES_DIR;
+    }
+}

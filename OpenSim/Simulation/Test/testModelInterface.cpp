@@ -29,6 +29,7 @@
 
 #include <memory>
 
+#include <opensim-core/tests/opensim_tests_config.h>
 #include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
@@ -42,7 +43,7 @@ TEST_CASE("testModelFinalizePropertiesAndConnections") {
     // startup.
     { PointActuator t; }
 
-    Model model("arm26.osim");
+    Model model((opensim_tests_resources_directory() / "models" / "Arm26" / "arm26.osim").string());
 
     model.printSubcomponentInfo();
 
@@ -148,17 +149,18 @@ TEST_CASE("testModelTopologyErrors") {
     // startup.
     { PointActuator t; }
 
-    Model model("arm26.osim");
+    Model model((opensim_tests_resources_directory() / "models" / "Arm26" / "arm26.osim").string());
     model.initSystem();
 
-    // connect the shoulder joint from torso to ground instead of r_humerus
-    // this is an invalid tree since the underlying PhysicalFrame in both
-    // cases is ground.
+    // Reconnect the shoulder's child frame to the 'base' body, which is the
+    // base frame of the shoulder's parent frame. This makes an invalid tree
+    // since both joint frames then resolve to the same base frame.
     Joint& shoulder = model.updComponent<Joint>("./jointset/r_shoulder");
     const PhysicalFrame& shoulderOnHumerus = shoulder.getChildFrame();
-    shoulder.connectSocket_child_frame(model.getGround());
+    shoulder.connectSocket_child_frame(
+            model.getComponent<PhysicalFrame>("./bodyset/base"));
 
-    // both shoulder joint frames have Ground as the base frame
+    // both shoulder joint frames now have the 'base' body as the base frame
     ASSERT_THROW( JointFramesHaveSameBaseFrame,  model.initSystem() );
 
     // restore the previous frame connected to the shoulder

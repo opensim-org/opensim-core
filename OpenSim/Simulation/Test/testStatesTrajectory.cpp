@@ -28,6 +28,7 @@
 #include <cstdio>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
+#include <opensim-core/tests/opensim_tests_config.h>
 #include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
@@ -243,7 +244,7 @@ void testPopulateTrajectoryAndStatesTrajectoryReporter() {
 }
 
 void testFrontBack() {
-    Model model("arm26.osim");
+    Model model((opensim_tests_resources_directory() / "models" / "Arm26" / "arm26.osim").string());
     const auto& state = model.initSystem();
     StatesTrajectory states;
     states.append(state);
@@ -637,7 +638,7 @@ void testBoundsCheck() {
 }
 
 void testIntegrityChecks() {
-    Model arm26("arm26.osim");
+    Model arm26((opensim_tests_resources_directory() / "models" / "Arm26" / "arm26.osim").string());
     const auto& s26 = arm26.initSystem();
 
     Model gait2354("gait2354_simbody.osim");
@@ -760,7 +761,7 @@ void testExport() {
 
     // Trying to export the trajectory with an incompatible model.
     {
-        Model arm26("arm26.osim");
+        Model arm26((opensim_tests_resources_directory() / "models" / "Arm26" / "arm26.osim").string());
         SimTK::State differentState = arm26.initSystem();
         SimTK_TEST_MUST_THROW_EXC(states.exportToTable(arm26),
                                   StatesTrajectory::IncompatibleModel);

@@ -26,6 +26,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Actuators/PointActuator.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <opensim-core/tests/opensim_tests_config.h>
 #include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
@@ -51,7 +52,8 @@ TEST_CASE("testStates")
 
     //==========================================================================
     // Setup OpenSim model
-    std::string modelFile = "arm26.osim";
+    auto arm26Dir = opensim_tests_resources_directory() / "models" / "Arm26";
+    std::string modelFile = (arm26Dir / "arm26.osim").string();
     Model model(modelFile);
     ControlSetController* controller = new ControlSetController();
     controller->setControlSetFileName("arm26_StaticOptimization_controls.xml");
