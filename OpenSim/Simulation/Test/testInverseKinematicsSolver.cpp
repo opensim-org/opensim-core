@@ -32,6 +32,7 @@
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/STOFileAdapter.h>
+#include <OpenSim/Common/DataQueue.h>
 #include <cmath>
 #include <random>
 #include <catch2/catch_all.hpp>
@@ -914,10 +915,58 @@ TEST_CASE("testNumberOfOrientationsMismatch") {
             ikSolver.updateOrientationWeight("junk", 0.1), Exception);
 }
 
+TEST_CASE("testDataQueueVec3RoundTrip") {
+    // Regression test for a bug in DataQueue_<T>::pop_front() where the
+    // front-of-queue entry was hardcoded to DataQueueEntry_<SimTK::Rotation>
+    // instead of the template parameter T. For any T other than
+    // SimTK::Rotation (e.g., the SimTK::Vec3 data used by
+    // BufferedMarkersReference below), that mismatch would not compile, so
+    // this test (and BufferedMarkersReference, which is implemented on top
+    // of DataQueue_<SimTK::Vec3>) exercises the fix directly.
+    DataQueue_<SimTK::Vec3> queue;
+
+    const double time0 = 0.1;
+    SimTK::RowVector_<SimTK::Vec3> row0(2, SimTK::Vec3(1, 2, 3));
+    queue.push_back(time0, row0);
+
+    const double time1 = 0.2;
+    SimTK::RowVector_<SimTK::Vec3> row1(2, SimTK::Vec3(4, 5, 6));
+    queue.push_back(time1, row1);
+
+    double poppedTime;
+    SimTK::RowVector_<SimTK::Vec3> poppedRow;
+
+    queue.pop_front(poppedTime, poppedRow);
+    SimTK_ASSERT_ALWAYS(std::abs(poppedTime - time0) < SimTK::Eps,
+            "DataQueue_<Vec3>::pop_front() returned an unexpected time.");
+    SimTK_ASSERT_ALWAYS(poppedRow.size() == row0.size(),
+            "DataQueue_<Vec3>::pop_front() returned an unexpected number "
+            "of columns.");
+    for (int i = 0; i < poppedRow.size(); ++i) {
+        SimTK_ASSERT_ALWAYS((poppedRow[i] - row0[i]).norm() < SimTK::Eps,
+                "DataQueue_<Vec3>::pop_front() returned unexpected data.");
+    }
+
+    queue.pop_front(poppedTime, poppedRow);
+    SimTK_ASSERT_ALWAYS(std::abs(poppedTime - time1) < SimTK::Eps,
+            "DataQueue_<Vec3>::pop_front() returned an unexpected time for "
+            "the second entry (FIFO order violated).");
+    for (int i = 0; i < poppedRow.size(); ++i) {
+        SimTK_ASSERT_ALWAYS((poppedRow[i] - row1[i]).norm() < SimTK::Eps,
+                "DataQueue_<Vec3>::pop_front() returned unexpected data for "
+                "the second entry.");
+    }
+}
+
 TEST_CASE("testBufferedMarkersReference") {
     // Unit-level test of the BufferedMarkersReference streaming API:
     // putValues()/getNextValuesAndTime()/hasNext(), independent of the
-    // InverseKinematicsSolver.
+    // InverseKinematicsSolver. Like BufferedOrientationsReference, hasNext()
+    // reports whether the reference has been marked finished (i.e., whether
+    // a producer might still supply more data), not whether the internal
+    // queue currently holds data -- getNextValuesAndTime() blocks until
+    // data is available, so it is only called here once data is known to
+    // be queued.
     vector<std::string> labels{"m0", "m1", "m2"};
     size_t nc = labels.size();
 
@@ -939,10 +988,11 @@ TEST_CASE("testBufferedMarkersReference") {
         "BufferedMarkersReference should report the same number of "
         "references as the seed marker table.");
 
-    // No streamed data has been queued yet.
-    SimTK_ASSERT_ALWAYS(!bufferedRef.hasNext(),
-        "BufferedMarkersReference should report hasNext() == false "
-        "before any data has been streamed in.");
+    // hasNext() defaults to true (not finished) even before any data has
+    // been queued, since a producer may push data at any time.
+    SimTK_ASSERT_ALWAYS(bufferedRef.hasNext(),
+        "BufferedMarkersReference should report hasNext() == true before "
+        "being marked finished, regardless of queued data.");
 
     // Stream a few frames of data into the buffer.
     for (int i = 1; i <= 3; ++i) {
@@ -951,11 +1001,7 @@ TEST_CASE("testBufferedMarkersReference") {
         bufferedRef.putValues(0.1 * i, row);
     }
 
-    SimTK_ASSERT_ALWAYS(bufferedRef.hasNext(),
-        "BufferedMarkersReference should report hasNext() == true "
-        "once data has been streamed in.");
-
-    // Values should be returned in FIFO order and the buffer should drain.
+    // Values should be returned in FIFO order.
     for (int i = 1; i <= 3; ++i) {
         SimTK::Array_<SimTK::Vec3> values;
         double time = bufferedRef.getNextValuesAndTime(values);
@@ -973,20 +1019,15 @@ TEST_CASE("testBufferedMarkersReference") {
         }
     }
 
-    SimTK_ASSERT_ALWAYS(!bufferedRef.hasNext(),
-        "BufferedMarkersReference should report hasNext() == false once "
-        "the buffer has been drained.");
-
-    // setFinished() should force hasNext() to false even with data queued.
-    bufferedRef.putValues(0.4,
-            SimTK::RowVector_<SimTK::Vec3>(int(nc), SimTK::Vec3(0)));
     SimTK_ASSERT_ALWAYS(bufferedRef.hasNext(),
-        "BufferedMarkersReference should report hasNext() == true while "
-        "data is queued and it has not been marked finished.");
+        "BufferedMarkersReference should still report hasNext() == true "
+        "after the queue is drained, since it has not been marked "
+        "finished and a producer may push more data.");
+
     bufferedRef.setFinished(true);
     SimTK_ASSERT_ALWAYS(!bufferedRef.hasNext(),
         "BufferedMarkersReference should report hasNext() == false once "
-        "marked as finished, even with data still queued.");
+        "marked as finished.");
 }
 
 TEST_CASE("testStreamingIKWithBufferedMarkersReference") {
@@ -1042,16 +1083,27 @@ TEST_CASE("testStreamingIKWithBufferedMarkersReference") {
         "frame from the BufferedMarkersReference seed data.");
 
     // Stream the remaining frames into the buffer, as a live source would.
-    // Do not call setFinished() before consuming -- hasNext() is false when
-    // finished, even if rows remain in the buffer.
+    // All frames are known ahead of time in this single-threaded test, so
+    // they are pushed up front and then drained with a fixed number of
+    // track() calls. hasNext() reports whether the reference has been
+    // marked finished (see BufferedOrientationsReference), not whether the
+    // queue currently holds data, so it is not used as the loop bound here
+    // -- getNextValuesAndTime() would otherwise block waiting for more data
+    // that no producer thread is available to supply (see testLiveIK.cpp
+    // for the producer-thread pattern where hasNext() is used together
+    // with a known end time to safely bound such a loop).
     const auto& times = markerTable.getIndependentColumn();
     for (int i = 1; i < N; ++i) {
         bufferedRef->putValues(times[i], markerTable.getRowAtIndex(i));
     }
 
+    SimTK_ASSERT_ALWAYS(bufferedRef->hasNext(),
+        "BufferedMarkersReference should report hasNext() == true before "
+        "being marked finished.");
+
     ikSolver.setAdvanceTimeFromReference(true);
     int framesTracked = 0;
-    while (bufferedRef->hasNext()) {
+    for (int i = 1; i < N; ++i) {
         ikSolver.track(state);
         ++framesTracked;
 
@@ -1064,6 +1116,11 @@ TEST_CASE("testStreamingIKWithBufferedMarkersReference") {
             "Streaming InverseKinematicsSolver failed to track the "
             "expected coordinate value for a streamed marker frame.");
     }
+
+    bufferedRef->setFinished(true);
+    SimTK_ASSERT_ALWAYS(!bufferedRef->hasNext(),
+        "BufferedMarkersReference should report hasNext() == false once "
+        "marked as finished.");
 
     SimTK_ASSERT_ALWAYS(framesTracked == N - 1,
         "Streaming InverseKinematicsSolver did not process the expected "

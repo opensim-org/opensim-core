@@ -81,9 +81,9 @@ private:
  * @author Ajay Seth
  */
 class OSIMSIMULATION_API MarkersReference
-        : public Reference_<SimTK::Vec3> {
+        : public StreamableReference_<SimTK::Vec3> {
     OpenSim_DECLARE_CONCRETE_OBJECT(
-            MarkersReference, Reference_<SimTK::Vec3>);
+            MarkersReference, StreamableReference_<SimTK::Vec3>);
     //=============================================================================
 // Properties
 //=============================================================================
@@ -159,6 +159,14 @@ public:
         same order as names*/
     void getWeights(const SimTK::State &s,
                     SimTK::Array_<double> &weights) const override;
+    /** Default implementation does not support streaming. */
+    virtual double getNextValuesAndTime(
+            SimTK::Array_<SimTK::Vec3>& values) override {
+        throw Exception("getNextValuesAndTime method is not supported for "
+                         "this reference {}.",
+                this->getName());
+    };
+    virtual bool hasNext() const override { return false; };
     /** get the marker trajectories in a table*/
     const TimeSeriesTable_<SimTK::Vec3>& getMarkerTable() const;
 

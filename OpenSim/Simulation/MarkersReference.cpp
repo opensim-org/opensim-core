@@ -31,7 +31,7 @@ using namespace SimTK;
 
 namespace OpenSim {
 
-MarkersReference::MarkersReference() : Reference_<SimTK::Vec3>() {
+MarkersReference::MarkersReference() : StreamableReference_<SimTK::Vec3>() {
     constructProperties();
     setAuthors("Ajay Seth");
 }

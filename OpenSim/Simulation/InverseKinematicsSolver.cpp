@@ -22,7 +22,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "InverseKinematicsSolver.h"
-#include "BufferedMarkersReference.h"
 #include "Model/Model.h"
 #include "Model/MarkerSet.h"
 
@@ -501,24 +500,35 @@ void InverseKinematicsSolver::setupOrientationsGoal(SimTK::State &s)
     on the state */
 void InverseKinematicsSolver::updateGoals(SimTK::State &s)
 {
-    // get time from References and update s time
-    int x = 0;
-
     if (_advanceTimeFromReference) {
         double nextTime = SimTK::NaN;
-        // If a BufferedMarkersReference with streaming data is present,
-        // advance time from the marker buffer; otherwise fall back to the
-        // orientations reference as before.
-        auto bufferedMarkersRef =
-                std::dynamic_pointer_cast<BufferedMarkersReference>(
-                        _markersReference);
-        if (bufferedMarkersRef && bufferedMarkersRef->hasNext()) {
+        // A Reference (Markers or Orientations) is considered "streaming"
+        // when it has active references and indicates that it can still
+        // provide data (e.g., a BufferedMarkersReference/
+        // BufferedOrientationsReference that has not been marked finished).
+        // Non-streaming references simply report hasNext() == false, so no
+        // downcasting is needed here to distinguish them.
+        const bool markersCanStream = _markersReference &&
+                _markersReference->getNumRefs() > 0 &&
+                _markersReference->hasNext();
+        const bool orientationsCanStream = _orientationsReference &&
+                _orientationsReference->getNumRefs() > 0 &&
+                _orientationsReference->hasNext();
+
+        if (markersCanStream && orientationsCanStream) {
+            throw Exception("InverseKinematicsSolver: streaming from both a "
+                    "buffered MarkersReference and a buffered "
+                    "OrientationsReference simultaneously is not "
+                    "supported. Provide only one streaming reference when "
+                    "advancing time from a Reference.");
+        }
+
+        if (markersCanStream) {
             SimTK::Array_<SimTK::Vec3> markerValues;
-            nextTime = bufferedMarkersRef->getNextValuesAndTime(markerValues);
+            nextTime = _markersReference->getNextValuesAndTime(markerValues);
             s.setTime(nextTime);
             _markerAssemblyCondition->moveAllObservations(markerValues);
-        } else if (_orientationsReference &&
-                _orientationsReference->getNumRefs() > 0) {
+        } else if (orientationsCanStream) {
             SimTK::Array_<SimTK::Rotation> orientationValues;
             nextTime = _orientationsReference->getNextValuesAndTime(
                     orientationValues);
@@ -537,17 +547,7 @@ void InverseKinematicsSolver::updateGoals(SimTK::State &s)
     // specify the marker observations to be matched
     if (_markersReference && _markersReference->getNumRefs() > 0) {
         SimTK::Array_<SimTK::Vec3> markerValues;
-        // Use the streaming path when a BufferedMarkersReference has data
-        // queued; otherwise use the regular time-based lookup.
-        auto bufferedMarkersRef =
-                std::dynamic_pointer_cast<BufferedMarkersReference>(
-                        _markersReference);
-        if (bufferedMarkersRef && bufferedMarkersRef->hasNext()) {
-            nextTime = bufferedMarkersRef->getNextValuesAndTime(markerValues);
-            s.setTime(nextTime);
-        } else {
-            _markersReference->getValuesAtTime(nextTime, markerValues);
-        }
+        _markersReference->getValuesAtTime(nextTime, markerValues);
         _markerAssemblyCondition->moveAllObservations(markerValues);
     }
 

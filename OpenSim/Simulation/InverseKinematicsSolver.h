@@ -91,11 +91,11 @@ public:
                         double constraintWeight = SimTK::Infinity);
     // Backward compatible constructors
     InverseKinematicsSolver(const Model& model,
-            MarkersReference* markersReference,
+            const MarkersReference& markersReference,
             SimTK::Array_<CoordinateReference>& coordinateReferences,
             double constraintWeight = SimTK::Infinity): 
         InverseKinematicsSolver(model,
-                        std::shared_ptr<MarkersReference>(markersReference),
+                        std::make_shared<MarkersReference>(markersReference),
                         nullptr,
                         coordinateReferences, constraintWeight){};
 

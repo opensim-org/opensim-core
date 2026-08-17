@@ -233,6 +233,7 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %template(ReferenceVec3) OpenSim::Reference_<SimTK::Vec3>;
 %template(ReferenceDouble) OpenSim::Reference_<double>;
 %template(ReferenceRotation) OpenSim::Reference_<SimTK::Rotation_<double>>;
+%template(StreamableReferenceVec3) OpenSim::StreamableReference_<SimTK::Vec3>;
 %template(StreamableReferenceRotation) OpenSim::StreamableReference_<SimTK::Rotation_<double>>;
 
 %template(SimTKArrayCoordinateReference) SimTK::Array_<OpenSim::CoordinateReference>;
@@ -258,17 +259,8 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %template(SharedOrientationsReference) std::shared_ptr<OpenSim::OrientationsReference>;
 %include <OpenSim/Simulation/BufferedOrientationsReference.h>
 %shared_ptr(OpenSim::BufferedOrientationsReference);
-%include <OpenSim/Simulation/BufferedMarkersReference.h>
 %shared_ptr(OpenSim::BufferedMarkersReference);
-
-%inline %{
-OpenSim::BufferedMarkersReference* make_buffered_markers_reference(
-    const OpenSim::TimeSeriesTableVec3& table,
-    const OpenSim::Set<OpenSim::MarkerWeight>& weights)
-{
-    return new OpenSim::BufferedMarkersReference(table, weights);
-};
-%}
+%include <OpenSim/Simulation/BufferedMarkersReference.h>
 
 %include <OpenSim/Simulation/AssemblySolver.h>
 %include <OpenSim/Simulation/InverseKinematicsSolver.h>
