@@ -3,5 +3,5 @@ if(OPENSIM_BUILD_INDIVIDUAL_APPS)
 endif()
 
 if(BUILD_TESTING)
-    subdirs(test)
+    subdirs(tests)
 endif(BUILD_TESTING)
