@@ -267,7 +267,7 @@ foreach(test_file
         "${CMAKE_SOURCE_DIR}/OpenSim/Sandbox/futureOrientationInverseKinematics.trc"
         "${CMAKE_SOURCE_DIR}/OpenSim/Common/Test/dataWithNaNsOfDifferentCases.trc"
         "${CMAKE_SOURCE_DIR}/Applications/Analyze/tests/resources/subject02_grf_HiFreq.mot"
-        "${CMAKE_SOURCE_DIR}/Applications/IK/test/std_subject01_walk1_ik.mot"
+        "${CMAKE_SOURCE_DIR}/Applications/IK/tests/resources/std_subject01_walk1_ik.mot"
         "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/walking2.c3d"
         "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/walking5.c3d"
         "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/orientation_quats.sto"
