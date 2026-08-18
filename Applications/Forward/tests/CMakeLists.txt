@@ -2,7 +2,10 @@ find_package(Catch2 REQUIRED
         HINTS "${OPENSIM_DEPENDENCIES_DIR}/catch2")
 
 file(GLOB TEST_PROGS "test*.cpp")
-file(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
+file(GLOB TEST_FILES resources/*.osim
+                     resources/*.xml
+                     resources/*.sto
+                     resources/*.mot)
 
 OpenSimAddTests(
     TESTPROGRAMS ${TEST_PROGS}
