@@ -1,6 +1,9 @@
 
 file(GLOB TEST_PROGS "test*.cpp")
-file(GLOB TEST_FILES *.osim *.xml *.sto *.mot *.trc)
+file(GLOB TEST_FILES resources/*.osim
+                     resources/*.xml
+                     resources/*.sto
+                     resources/*.mot)
 list(APPEND TEST_FILES ${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/ThoracoscapularShoulderModel.osim)
 
 OpenSimAddTests(
