@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2025 Stanford University and the Authors                *
+ * Copyright (c) 2005-2026 Stanford University and the Authors                *
  * Author(s): Nicholas Bianco                                                 *
  * Contributor(s): Pepijn van den Bos, Andreas Scholz                         *
  *                                                                            *
@@ -34,7 +34,7 @@
 namespace OpenSim {
 
 /**
- * \section Scholz2015GeometryPathPoint
+ * \section Scholz2015GeometryPathElement
  * An abstract class representing an element in a `Scholz2015GeometryPath`.
  *
  * Concrete implementations of this class should represent geometric elements
@@ -144,7 +144,7 @@ public:
 //=============================================================================
 
 /**
- * \section Scholz2015GeometryPath
+ * @section Scholz2015GeometryPath
  * A concrete class representing a geometric path object defined by a list of
  * path points and wrapping obstacles.
  *
@@ -162,8 +162,7 @@ public:
  * can touchdown on the obstacle if the surface obstructs the straight line
  * segment again.
  *
- * The path is computed as an optimization problem using the previous optimal
- * path as the warm start. This is done by computing natural geodesic
+ * The path is computed as an optimization problem by computing natural geodesic
  * corrections for each curve segment to compute the locally shortest path,
  * as described in the following publication:
  *
@@ -172,13 +171,21 @@ public:
  *     System Dynamics 36, 195–219.
  *
  * The overall path is locally the shortest, allowing winding over an obstacle
- * multiple times, without flipping to the other side.
+ * multiple times, without flipping to the other side. By default, path
+ * solutions are computed from scratch using the user-specified "contact hints"
+ * associated with each wrap obstacle (see @ref appending_obstacles for
+ * details). Alternatively, the wrapping solver can use the most recently
+ * computed solution (e.g., from a previous time step in a forward integration)
+ * as a warm start to improve performance (see method `getUseWarmStart()` for
+ * more information). In other scenarios where the configuration of the model,
+ * and therefore path solutions, may change rapidly, it is recommended to
+ * disable this warm starts to avoid inconsistent path solutions.
  *
  * This class encapsulates `SimTK::CableSpan`, the Simbody implementation of
  * this algorithm. For the full details concerning this class, see the Simbody
  * API documentation.
  *
- * ## Constructing a Scholz2015GeometryPath
+ * @subsection construction Constructing a Scholz2015GeometryPath
  *
  * The simplest valid path consists of two path points: an origin and an
  * insertion point:
@@ -219,7 +226,7 @@ public:
  * each `PathPoint` was appended, the `Socket` connections would be broken when
  * the `Scholz2015GeometryPath` is copied into the `PathSpring`.
  *
- * ## Appending Wrap Obstacles
+ * @subsection appending_obstacles Appending Wrap Obstacles
  *
  * Wrap obstacles are defined by `ContactGeometry` objects which encapsulate
  * a wrapping geometry, the `PhysicalFrame` that the geometry is attached to,
@@ -259,7 +266,7 @@ public:
  *         SimTK::Vec3(-0.5, 0.1, 0.));
  * \endcode
  *
- * ## Path Ordering
+ * @subsection path_ordering Path Ordering
  *
  * The order in which obstacles and path points are appended to the path is
  * important. For example, consider the path we constructed above:
@@ -296,7 +303,7 @@ public:
  * behavior. Note also that both of the path examples above are valid, since
  * each begins and ends with a path point.
  *
- * ## Changing Obstacle Properties
+ * @subsection obstacle_properties Changing Obstacle Properties
  *
  * The properties of a `ContactGeometry` obstacle can be changed after it has
  * been appended to the path. However, if `ContactGeometry` properties are
@@ -425,6 +432,28 @@ public:
      */
     int getNumPathElements() const;
 
+     /**
+     * Set whether the path uses the most recently computed solution as a warm
+     * start for the wrapping solver.
+     *
+     * Enable this setting when performing forward dynamics simulations or any
+     * simulation where path solutions will be computed sequentially in time
+     * (using reasonably small time steps). In other scenarios where the
+     * configuration of the model, and therefore path solutions, may change
+     * rapidly, it is recommended to disable this setting to avoid inconsistent
+     * path solutions. If false, the path will always be computed from the curve
+     * contact hints when realizing to SimTK::Stage::Position. Default: false.
+     */
+    void setUseWarmStart(bool useWarmStart);
+
+    /**
+     * Get whether the path uses the most recently computed solution as a warm
+     * start for the wrapping solver.
+     *
+     * @see setUseWarmStart()
+     */
+    bool getUseWarmStart() const;
+
     // @}
 
     //** @name `AbstractGeometryPath` interface */
@@ -466,6 +495,11 @@ private:
     // PROPERTIES
     OpenSim_DECLARE_LIST_PROPERTY(path_elements, Scholz2015GeometryPathElement,
         "The list of elements (path points or obstacles) defining the path.");
+    OpenSim_DECLARE_PROPERTY(use_warm_start, bool,
+        "Whether to use the most recently computed soluation as a warm start "
+        "for the wrapping solver. If false, the path will always be computed "
+        "from the curve contact hints when realizing to SimTK::Stage::Position. "
+        "Default: false.");
 
     // MODEL COMPONENT INTERFACE
     void extendConnectToModel(Model& model) override;

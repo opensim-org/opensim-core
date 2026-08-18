@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2025 Stanford University and the Authors                *
+ * Copyright (c) 2005-2026 Stanford University and the Authors                *
  * Author(s): Nicholas Bianco                                                 *
  * Contributor(s): Pepijn van den Bos, Andreas Scholz                         *
  *                                                                            *
@@ -188,6 +188,17 @@ int Scholz2015GeometryPath::getNumObstacles() const {
 
 int Scholz2015GeometryPath::getNumPathElements() const {
     return getProperty_path_elements().size();
+}
+
+void Scholz2015GeometryPath::setUseWarmStart(bool useWarmStart) {
+    if (_index.isValid()) {
+        updCableSpan().setUseWarmStart(useWarmStart);
+    }
+    set_use_warm_start(useWarmStart);
+}
+
+bool Scholz2015GeometryPath::getUseWarmStart() const {
+    return get_use_warm_start();
 }
 
 //=============================================================================
@@ -396,6 +407,7 @@ void Scholz2015GeometryPath::extendAddToSystem(
     cable.setCurveSegmentAccuracy(1e-10);
     cable.setSolverMaxIterations(50);
     cable.setAlgorithm(SimTK::CableSpanAlgorithm::Scholz2015);
+    cable.setUseWarmStart(get_use_warm_start());
     _index = cable.getIndex();
 }
 
@@ -452,6 +464,7 @@ void Scholz2015GeometryPath::extendPostScale(const SimTK::State& s,
 //=============================================================================
 void Scholz2015GeometryPath::constructProperties() {
     constructProperty_path_elements();
+    constructProperty_use_warm_start(false);
 }
 
 const Scholz2015GeometryPathObstacle* Scholz2015GeometryPath::getObstacle(

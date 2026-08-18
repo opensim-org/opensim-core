@@ -82,6 +82,11 @@ int main() {
     path.appendPathPoint(model.getComponent<Body>("/bodyset/b1"),
             SimTK::Vec3(-0.5, 0.1, 0.));
 
+    // Enable warm starts in the wrapping solver. At each time step, the
+    // wrapping solver will use the solution from the previous time step as an
+    // initial guess for the current time step.
+    path.setUseWarmStart(true);
+
     // Initialize the system.
     SimTK::State state = model.initSystem();
     model.updVisualizer().updSimbodyVisualizer().setBackgroundType(
