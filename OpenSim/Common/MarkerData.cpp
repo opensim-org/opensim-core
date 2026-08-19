@@ -24,15 +24,16 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <fstream>
-#include <math.h>
-#include <float.h>
 #include "MarkerData.h"
+
 #include "SimmIO.h"
-#include "SimmMacros.h"
 #include "Storage.h"
-#include "OpenSim/Common/STOFileAdapter.h"
+
+#include <cmath>
+#include <cfloat>
+#include <fstream>
+#include <iostream>
+#include <memory>
 #include <regex>
 
 //=============================================================================
@@ -216,7 +217,7 @@ void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
 #endif
       }
 
-        MarkerFrame *frame = new MarkerFrame(aSMD._numMarkers, frameNum, time, aSMD._units);
+      auto frame = std::make_unique<MarkerFrame>(aSMD._numMarkers, frameNum, time, aSMD._units);
 
       /* keep reading sets of coordinates until the end of the line is
        * reached. If more coordinates were read than there are markers,
@@ -257,7 +258,7 @@ void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
          goto cleanup;
 #endif
       }
-        aSMD._frames.append(frame);
+      aSMD._frames.append(frame.release());
    }
 
    if (aSMD._frames.getSize() < aSMD._numFrames)
@@ -699,10 +700,9 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
         return;
 
     int startIndex = 0, endIndex = 1;
-    double *minX = NULL, *minY = NULL, *minZ = NULL, *maxX = NULL, *maxY = NULL, *maxZ = NULL;
-
+    std::vector<Vec3> mins, maxs;
     findFrameRange(aStartTime, aEndTime, startIndex, endIndex);
-    MarkerFrame *averagedFrame = new MarkerFrame(*_frames[startIndex]);
+    auto averagedFrame = std::make_unique<MarkerFrame>(*_frames[startIndex]);
 
     /* If aThreshold is greater than zero, then calculate
      * the movement of each marker so you can check if it
@@ -710,17 +710,8 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
      */
     if (aThreshold > 0.0)
     {
-        minX = new double [_numMarkers];
-        minY = new double [_numMarkers];
-        minZ = new double [_numMarkers];
-        maxX = new double [_numMarkers];
-        maxY = new double [_numMarkers];
-        maxZ = new double [_numMarkers];
-        for (int i = 0; i < _numMarkers; i++)
-        {
-            minX[i] = minY[i] = minZ[i] =  SimTK::Infinity;
-            maxX[i] = maxY[i] = maxZ[i] = -SimTK::Infinity;
-        }
+        mins.resize(_numMarkers, Vec3(SimTK::Infinity));
+        maxs.resize(_numMarkers, Vec3(-SimTK::Infinity));
     }
 
     /* Initialize all the averaged marker locations to 0,0,0. Then
@@ -744,18 +735,8 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
                 numFrames++;
                 if (aThreshold > 0.0)
                 {
-                    if (coords[0] < minX[i])
-                        minX[i] = coords[0];
-                    if (coords[0] > maxX[i])
-                        maxX[i] = coords[0];
-                    if (coords[1] < minY[i])
-                        minY[i] = coords[1];
-                    if (coords[1] > maxY[i])
-                        maxY[i] = coords[1];
-                    if (coords[2] < minZ[i])
-                        minZ[i] = coords[2];
-                    if (coords[2] > maxZ[i])
-                        maxZ[i] = coords[2];
+                    mins[i] = std::min(mins[i], coords);
+                    maxs[i] = std::max(maxs[i], coords);
                 }
             }
         }
@@ -775,7 +756,7 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
 
     /* Now delete all the existing frames and insert the averaged one. */
     _frames.clearAndDestroy();
-    _frames.append(averagedFrame);
+    _frames.append(averagedFrame.release());
     _numFrames = 1;
     _firstFrameNumber = _frames[0]->getFrameNumber();
 
@@ -790,32 +771,19 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
                 log_warn("Marker {} is missing in frames {} to {}. Coordinate "
                          "will be set to NAN.", _markerNames[i], startUserIndex,
                         endUserIndex);
-            }
-            else if (maxX[i] - minX[i] > aThreshold ||
-                      maxY[i] - minY[i] > aThreshold ||
-                      maxZ[i] - minZ[i] > aThreshold)
-            {
-                double maxDim = maxX[i] - minX[i];
-                maxDim = MAX(maxDim, (maxY[i] - minY[i]));
-                maxDim = MAX(maxDim, (maxZ[i] - minZ[i]));
-                log_warn("Movement of marker {} in {} is {} (threshold = {})",
-                        _markerNames[i], _fileName, maxDim, aThreshold);
+            } else {
+                Vec3 maxVec = maxs[i] - mins[i];
+                double maxDim = std::max({maxVec[0], maxVec[1], maxVec[2]});
+                if (maxDim > aThreshold) {
+                   log_warn("Movement of marker {} in {} is {} (threshold = {})",
+                            _markerNames[i], _fileName, maxDim, aThreshold);
+                }
             }
         }
     }
 
     log_info("Averaged frames from time {} to {} in {} (frames {} to {})",
             aStartTime, aEndTime, _fileName, startUserIndex, endUserIndex);
-
-    if (aThreshold > 0.0)
-    {
-        delete [] minX;
-        delete [] minY;
-        delete [] minZ;
-        delete [] maxX;
-        delete [] maxY;
-        delete [] maxZ;
-    }
 }
 
 //_____________________________________________________________________________
