@@ -20,50 +20,18 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-// INCLUDE
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Tools/CMCTool.h>
 #include <OpenSim/Tools/ForwardTool.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
+#include <catch2/catch_all.hpp>
+
 using namespace OpenSim;
 using namespace std;
 
-void testSingleRigidTendonMuscle();
-void testSingleMillardRigidTendonMuscle();
-
-int main() {
-
-    SimTK::Array_<std::string> failures;
-
-    try {testSingleRigidTendonMuscle();}
-    catch (const std::exception& e)
-        {  cout << e.what() <<endl; failures.push_back("testSingleRigidTendonMuscle"); }
-
-    // redo with the Millard2012EquilibriumMuscle
-    Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
-
-    try {testSingleMillardRigidTendonMuscle();}
-    catch (const std::exception& e)
-        {   cout << e.what() <<endl;
-            failures.push_back("testSingleMillardRigidTendonMuscle"); }
-
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "Done" << endl;
-
-    return 0;
-}
-
-void testSingleRigidTendonMuscle() {
-    cout << "\n******************************************************************" << endl;
-    cout << "*                   testSingleRigidTendonMuscle                  *" << endl;
-    cout << "******************************************************************\n" << endl;
-
+TEST_CASE("testSingleRigidTendonMuscle") {
     ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
     forward.setResultsDir("block_hanging_from_rigid_thelen_muscle_ForwardResults");
     forward.run();
@@ -84,15 +52,12 @@ void testSingleRigidTendonMuscle() {
     CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result,
         std::vector<double>(4, 0.002), __FILE__, __LINE__,
         "testSingleRigidTendonMuscle failed");
-
-    cout << "testSingleRigidTendonMuscle passed\n" << endl;
 }
 
 
-void testSingleMillardRigidTendonMuscle() {
-    cout<<"\n******************************************************************" << endl;
-    cout << "*               testSingleMillardRigidTendonMuscle               *" << endl;
-    cout << "******************************************************************\n" << endl;
+TEST_CASE("testSingleMillardRigidTendonMuscle") {
+    Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
+
     ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
     forward.setResultsDir("block_hanging_from_rigid_millard_muscle_ForwardResults");
     Model& fwdModel = forward.getModel();
@@ -114,6 +79,4 @@ void testSingleMillardRigidTendonMuscle() {
     CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result,
         std::vector<double>(3, 0.002), __FILE__, __LINE__,
         "testSingleMillardRigidTendonMuscle failed");
-
-    cout << "testSingleMillardRigidTendonMuscle passed\n" << endl;
 }

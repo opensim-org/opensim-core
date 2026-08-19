@@ -20,126 +20,47 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-// INCLUDE
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Tools/CMCTool.h>
 #include <OpenSim/Tools/ForwardTool.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
+#include <catch2/catch_all.hpp>
+
 using namespace OpenSim;
 using namespace std;
 
-void testTwoMusclesOnBlock();
+namespace {
 
-int main() {
+    void testTwoMusclesOnBlock() {
+        ForwardTool forward("twoMusclesOnBlock_Setup_Forward.xml");
+        forward.run();
 
-    SimTK::Array_<std::string> failures;
+        CMCTool cmc("twoMusclesOnBlock_Setup_CMC.xml");
+        cmc.run();
 
-    try {testTwoMusclesOnBlock();}
-    catch (const std::exception& e)
-        {  cout << e.what() <<endl; failures.push_back("testTwoMusclesOnBlock"); }
+        Storage fwd_result("twoMusclesOnBlock_ForwardResults/twoMusclesOnBlock_forward_states.sto");
+        Storage cmc_result("twoMusclesOnBlock_ResultsCMC/twoMusclesOnBlock_tugOfWar_states.sto");
 
-    // redo with the Millard2012EquilibriumMuscle
-    Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
+        std::vector<double> rms_tols(6, 0.001);
+        rms_tols[1] = 0.0025; // block_u
+        rms_tols[2] = 0.05;  // muscle 1 activation
+        rms_tols[4] = 0.05;  // muscle 2 activation
 
-    try {testTwoMusclesOnBlock();}
-    catch (const std::exception& e)
-        {   cout << e.what() <<endl;
-            failures.push_back("testTwoMusclesOnBlock_Millard"); }
+        const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
+        string base = "testTwoMusclesOnBlock "+ muscleType;
 
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
+        CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, rms_tols,
+            __FILE__, __LINE__, base+" failed");
     }
-
-    cout << "Done" << endl;
-
-    return 0;
 }
 
-void testSingleRigidTendonMuscle() {
-    cout << "\n******************************************************************" << endl;
-    cout << "*                   testSingleRigidTendonMuscle                  *" << endl;
-    cout << "******************************************************************\n" << endl;
-
-    Model model("block_hanging_RigidTendonMuscle.osim");
-    Model* modelCopy = model.clone();
-    modelCopy->setup();
-    ASSERT(model == *modelCopy);
-
-    ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
-    forward.setModel(model);
-    forward.run();
-
-    // Use copy of the model because forward adds a ControlSetController to the model and the controls from CMC
-    // are added in with those "feedforward" controls. Instead we want to verify that CMC can compute these
-    // same controls
-    CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
-    cmc.setModel(*modelCopy);
-    cmc.run();
-
-    Storage fwd_result("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto");
-    Storage cmc_result("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
-
-    // Tolerance of 2mm or position error and 2mm/s translational velocity of the block
-    CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result,
-        std::vector<double>(4, 0.0025), __FILE__, __LINE__,
-        "testSingleRigidTendonMuscle failed");
-
-    cout << "testSingleRigidTendonMuscle passed\n" << endl;
+TEST_CASE("testTwoMusclesOnBlock_Thelen") {
+    testTwoMusclesOnBlock();
 }
 
-
-void testSingleMillardRigidTendonMuscle() {
-    cout<<"\n******************************************************************" << endl;
-    cout << "*               testSingleMillardRigidTendonMuscle               *" << endl;
-    cout << "******************************************************************\n" << endl;
-    ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
-    Model& fwdModel = forward.getModel();
-    fwdModel.getMuscles()[0].set_ignore_tendon_compliance(true); //make tendon rigid
-    forward.run();
-
-    CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
-    Model& cmcModel = cmc.getModel();
-    cmcModel.getMuscles()[0].set_ignore_tendon_compliance(true); //make tendon rigid
-    cmc.run();
-
-    Storage fwd_result("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto");
-    Storage cmc_result("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
-
-    CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result,
-        std::vector<double>(3, 0.002), __FILE__, __LINE__,
-        "testSingleMillardRigidTendonMuscle failed");
-
-    cout << "testSingleMillardRigidTendonMuscle passed\n" << endl;
+TEST_CASE("testTwoMusclesOnBlock_Millard") {
+    Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
+    testTwoMusclesOnBlock();
 }
-
-void testTwoMusclesOnBlock() {
-    cout<<"\n******************************************************************" << endl;
-    cout << "*                       testTwoMusclesOnBlock                    *" << endl;
-    cout << "******************************************************************\n" << endl;
-
-    ForwardTool forward("twoMusclesOnBlock_Setup_Forward.xml");
-    forward.run();
-
-    CMCTool cmc("twoMusclesOnBlock_Setup_CMC.xml");
-    cmc.run();
-
-    Storage fwd_result("twoMusclesOnBlock_ForwardResults/twoMusclesOnBlock_forward_states.sto");
-    Storage cmc_result("twoMusclesOnBlock_ResultsCMC/twoMusclesOnBlock_tugOfWar_states.sto");
-
-    std::vector<double> rms_tols(6, 0.001);
-    rms_tols[1] = 0.0025; // block_u
-    rms_tols[2] = 0.05;  // muscle 1 activation
-    rms_tols[4] = 0.05;  // muscle 2 activation
-
-    const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
-    string base = "testTwoMusclesOnBlock "+ muscleType;
-
-    CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, rms_tols,
-        __FILE__, __LINE__, base+" failed");
-
-    cout << "\n" << base << " passed\n" << endl;
-}
-

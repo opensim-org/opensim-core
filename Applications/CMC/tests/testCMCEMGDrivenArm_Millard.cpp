@@ -20,20 +20,20 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-// INCLUDE
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Tools/CMCTool.h>
 #include <OpenSim/Tools/ForwardTool.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
+#include <catch2/catch_all.hpp>
+
 using namespace OpenSim;
 using namespace std;
 
-void testCMCEMGDrivenArm() {
-    cout<<"\n******************************************************************" << endl;
-    cout << "*                 testCMCEMGDrivenArm_Millard                    *" << endl;
-    cout << "******************************************************************\n" << endl;
+TEST_CASE("testCMCEMGDrivenArm_Millard") {
+    Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
+
     CMCTool cmc("arm26_Setup_ComputedMuscleControl_EMG.xml");
     cmc.setResultsDir("Results_Arm26_EMG_Millard");
     cmc.run();
@@ -49,31 +49,6 @@ void testCMCEMGDrivenArm() {
     rms_tols[10] = 0.50;  // biceps long normally low but because of EMG tracking should be on more
     rms_tols[12] = 0.50;  // biceps short normally on but because of EMG tracking should be lower
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__, "testCMCEMGDrivenArm failed");
-
-    const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
-    cout << "\ntestCMCEMGDrivenArm_ "+muscleType+ " passed\n" << endl;
+    CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols,
+        __FILE__, __LINE__, "testCMCEMGDrivenArm_Millard failed");
 }
-
-int main() {
-
-    SimTK::Array_<std::string> failures;
-
-    Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
-
-    try{
-        testCMCEMGDrivenArm();
-    } catch (const std::exception& e) {
-        cout << e.what() <<endl; failures.push_back("testCMCEMGDrivenArm_Millard");
-    }
-
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "Done" << endl;
-
-    return 0;
-}
-

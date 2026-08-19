@@ -20,20 +20,18 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-// INCLUDE
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Tools/CMCTool.h>
 #include <OpenSim/Tools/ForwardTool.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
+#include <catch2/catch_all.hpp>
+
 using namespace OpenSim;
 using namespace std;
 
-void testCMCArm26() {
-    cout<<"\n******************************************************************" << endl;
-    cout << "*                      testCMCArm26_Thelen                          *" << endl;
-    cout << "******************************************************************\n" << endl;
+TEST_CASE("testCMCArm26_Thelen") {
     CMCTool cmc("arm26_Setup_CMC.xml");
     cmc.run();
 
@@ -48,29 +46,4 @@ void testCMCArm26() {
 
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__,
         base+" failed");
-
-
-    cout << "\n" << base <<" passed\n" << endl;
 }
-
-
-int main() {
-
-    SimTK::Array_<std::string> failures;
-
-    try{
-        testCMCArm26();
-    } catch(const std::exception& e) {
-        cout << e.what() <<endl; failures.push_back("testCMCArm26");
-    }
-
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "Done" << endl;
-
-    return 0;
-}
-
