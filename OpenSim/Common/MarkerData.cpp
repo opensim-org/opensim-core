@@ -700,52 +700,29 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
         return;
 
     int startIndex = 0, endIndex = 1;
-    std::vector<Vec3> mins, maxs;
     findFrameRange(aStartTime, aEndTime, startIndex, endIndex);
-    auto averagedFrame = std::make_unique<MarkerFrame>(*_frames[startIndex]);
+    auto framesBegin = _frames[0] + startIndex;
+    auto framesEnd = _frames[0] + endIndex + 1;
 
-    /* If aThreshold is greater than zero, then calculate
-     * the movement of each marker so you can check if it
-     * is greater than aThreshold.
-     */
-    if (aThreshold > 0.0)
-    {
-        mins.resize(_numMarkers, Vec3(SimTK::Infinity));
-        maxs.resize(_numMarkers, Vec3(-SimTK::Infinity));
-    }
+    auto* averagedFrame = _frames[startIndex];
 
-    /* Initialize all the averaged marker locations to 0,0,0. Then
-     * loop through the frames to be averaged, adding each marker location
-     * to averagedFrame. Keep track of the min/max XYZ for each marker
-     * so you can compare it to aThreshold when you're done.
-     */
-    for (int i = 0; i < _numMarkers; i++)
-    {
-        int numFrames = 0;
-        Vec3& avePt = averagedFrame->updMarker(i);
-        avePt = Vec3(0);
+    // Compute the average
+    for (int i = 0; i < _numMarkers; ++i) {
+        // Number of non-NaN frames
+        int n = std::count_if(framesBegin, framesEnd,
+                [i](auto& f) { return !f.getMarker(i).isNaN(); });
 
-        for (int j = startIndex; j <= endIndex; j++)
-        {
-            Vec3& pt = _frames[j]->updMarker(i);
-            if (!pt.isNaN())
-            {
-                Vec3& coords = pt; //.get();
-                avePt += coords;
-                numFrames++;
-                if (aThreshold > 0.0)
-                {
-                    mins[i] = std::min(mins[i], coords);
-                    maxs[i] = std::max(maxs[i], coords);
-                }
-            }
+        if (n == 0) {
+            averagedFrame->updMarker(i) = Vec3(SimTK::NaN);
+        } else {
+            auto sum = std::accumulate(
+                    framesBegin, framesEnd, Vec3(0), [i](Vec3 s, auto& f) {
+                        const auto& p = f.getMarker(i);
+                        return p.isNaN() ? s : s + p;
+                    });
+            // Now divide by the number of frames to get the average.
+            averagedFrame->updMarker(i) = sum / n;
         }
-
-        /* Now divide by the number of frames to get the average. */
-        if (numFrames > 0)
-            avePt /= (double)numFrames;
-        else
-            avePt = Vec3(SimTK::NaN) ;//(SimTK::NaN, SimTK::NaN, SimTK::NaN);
     }
 
     /* Store the indices from the file of the first frame and
@@ -754,33 +731,45 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
     int startUserIndex = _frames[startIndex]->getFrameNumber();
     int endUserIndex = _frames[endIndex]->getFrameNumber();
 
-    /* Now delete all the existing frames and insert the averaged one. */
-    _frames.clearAndDestroy();
-    _frames.append(averagedFrame.release());
-    _numFrames = 1;
-    _firstFrameNumber = _frames[0]->getFrameNumber();
-
+    /* If aThreshold is greater than zero, then calculate
+     * the movement of each marker so you can check if it
+     * is greater than aThreshold.
+     */
     if (aThreshold > 0.0)
     {
-        for (int i = 0; i < _numMarkers; i++)
-        {
-            Vec3& pt = _frames[0]->updMarker(i);
-
-            if (pt.isNaN())
-            {
+        for (int i = 0; i < _numMarkers; ++i) {
+            if (averagedFrame->getMarker(i).isNaN()) {
                 log_warn("Marker {} is missing in frames {} to {}. Coordinate "
                          "will be set to NAN.", _markerNames[i], startUserIndex,
                         endUserIndex);
-            } else {
-                Vec3 maxVec = maxs[i] - mins[i];
-                double maxDim = std::max({maxVec[0], maxVec[1], maxVec[2]});
-                if (maxDim > aThreshold) {
-                   log_warn("Movement of marker {} in {} is {} (threshold = {})",
-                            _markerNames[i], _fileName, maxDim, aThreshold);
-                }
+                continue;
+            }
+            Vec3 mn = std::accumulate(framesBegin, framesEnd,
+                    Vec3(SimTK::Infinity), [i](Vec3 m, auto& f) {
+                        const Vec3& p = f.getMarker(i);
+                        return p.isNaN() ? m : std::min(m, p);
+                    });
+
+            Vec3 mx = std::accumulate(framesBegin, framesEnd,
+                    Vec3(-SimTK::Infinity), [i](Vec3 m, auto& f) {
+                        const Vec3& p = f.getMarker(i);
+                        return p.isNaN() ? m : std::max(m, p);
+                    });
+            Vec3 rng = mx - mn;
+            double maxDim = std::max({rng[0], rng[1], rng[2]});
+            if (maxDim > aThreshold) {
+                log_warn("Movement of marker {} in {} is {} (threshold = {})",
+                        _markerNames[i], _fileName, maxDim, aThreshold);
             }
         }
     }
+
+    // Now delete all existing frames in place, except the averaged frame.
+    auto keep = _frames[startIndex];
+    for (int i = _numFrames - 1; i >= 0; --i) {
+        if (_frames[i] != keep) { _frames.remove(_frames[i]); }
+    }
+    _numFrames = 1;
 
     log_info("Averaged frames from time {} to {} in {} (frames {} to {})",
             aStartTime, aEndTime, _fileName, startUserIndex, endUserIndex);
