@@ -9,6 +9,8 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.6.1
 ======
+- Added `BufferedMarkersReference` and `BufferedInverseKinematicsSolver` for
+real-time inverse kinematics from queued marker observations. (#4248)
 - Added `CantileverFreeBeamJoint`, a joint type providing a lightweight way for modeling flexible structures (e.g., the bending of the spinal column in a human or animal skeleton). (#4227)
 - Added `ExponentialCoordinateLimitForce`, a force element for enforcing coordinate limits using exponential spring functions. (#4231)
 - Added `CoordinateLinearStopForce`, a force element for enforcing coordinate limits using a

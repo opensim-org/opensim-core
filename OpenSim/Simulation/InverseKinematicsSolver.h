@@ -220,6 +220,19 @@ protected:
         weights that define the goals, based on the provided state. */
     void updateGoals(SimTK::State &s) override;
 
+    /** Return whether updateGoals() should advance the state time from a
+        streaming reference. */
+    bool getAdvanceTimeFromReference() const {
+        return _advanceTimeFromReference;
+    }
+
+    /** Replace all marker observations without exposing the assembly
+        condition to derived solvers. */
+    void moveAllMarkerObservations(
+            const SimTK::Array_<SimTK::Vec3>& markerValues) {
+        _markerAssemblyCondition->moveAllObservations(markerValues);
+    }
+
 private:
     /** Define and apply marker tracking goal to the assembly problem. */
     void setupMarkersGoal(SimTK::State &s);
