@@ -321,7 +321,6 @@ bool compareStdScaleToComputed(
         const ScaleSet& standard, const ScaleSet& comparison) {
     for (int i = 0; i < standard.getSize(); ++i) {
         const Scale& expected = standard[i];
-
         const Scale* actual = nullptr;
         for (int j = 0; j < comparison.getSize(); ++j) {
             if (comparison[j].getSegmentName() == expected.getSegmentName()) {
@@ -331,8 +330,7 @@ bool compareStdScaleToComputed(
         }
 
         if (!actual) {
-            cout << "Missing scale for segment: "
-                      << expected.getSegmentName() << '\n';
+            log_cout("Missing scale for segment: {}", expected.getSegmentName());
             return false;
         }
 
@@ -347,21 +345,14 @@ bool compareStdScaleToComputed(
         for (int i = 0; i < 3; ++i) {
             const double diff = std::abs(expectedScales[i] - actualScales[i]);
             if (diff > tol) {
-                cout << "Scale mismatch for segment "
-                          << expected.getSegmentName() << " at index " << i
-                          << '\n'
-                          << "Expected: " << expectedScales[i] << '\n'
-                          << "Actual:   " << actualScales[i] << '\n'
-                          << "Difference: " << diff << '\n'
-                          << "Full expected:\n"
-                          << expected.dump() << '\n'
-                          << "Full actual:\n"
-                          << actual->dump() << '\n';
+                log_cout("Scale mismatch for segment {} at index {}", expected.getSegmentName(), i);
+                log_cout("Expected: {}", expectedScales[i]);
+                log_cout("Actual:   {}", actualScales[i]);
+                log_cout("Difference: {}", diff);
                 return false;
             }
         }
     }
-
     return true;
 }
 
