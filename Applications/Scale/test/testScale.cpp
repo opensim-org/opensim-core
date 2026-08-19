@@ -53,7 +53,8 @@ using std::cout; using std::endl;
 void scaleGait2354();
 void scaleGait2354_GUI(bool useMarkerPlacement);
 void scaleModelWithLigament();
-bool compareStdScaleToComputed(const ScaleSet& std, const ScaleSet& comp);
+bool compareStdScaleToComputed(
+        const ScaleSet& standard, const ScaleSet& comparison);
 
 // Test scaling PhysicalOffsetFrames and models with atypical ownership trees.
 void scalePhysicalOffsetFrames();
@@ -316,26 +317,51 @@ void scaleModelWithLigament()
                            std_scaledModelFile, 1.0e-6);
 }
 
-bool compareStdScaleToComputed(const ScaleSet& std, const ScaleSet& comp) {
-    for (int i = 0; i < std.getSize(); ++i) {
-        const Scale& scaleStd = std[i];
-        int fix = -1;
-        //find corresponding scale factor by segment name
-        for (int j = 0 ; j < comp.getSize(); ++j) {
-            if (comp[j].getSegmentName() == scaleStd.getSegmentName()) {
-                fix = j;
+bool compareStdScaleToComputed(
+        const ScaleSet& standard, const ScaleSet& comparison) {
+    for (int i = 0; i < standard.getSize(); ++i) {
+        const Scale& expected = standard[i];
+
+        const Scale* actual = nullptr;
+        for (int j = 0; j < comparison.getSize(); ++j) {
+            if (comparison[j].getSegmentName() == expected.getSegmentName()) {
+                actual = &comparison[j];
                 break;
             }
         }
-        if (fix < 0) {
-            cout << "Computed ScaleSet does not contain factors for ";
-            cout << std[i].getSegmentName() << "." << endl;
+
+        if (!actual) {
+            cout << "Missing scale for segment: "
+                      << expected.getSegmentName() << '\n';
             return false;
         }
-        if (!(scaleStd == comp[fix])) {
-            return false;
+
+        SimTK::Vec3 expectedScales;
+        expected.getScaleFactors(expectedScales);
+
+        SimTK::Vec3 actualScales;
+        actual->getScaleFactors(actualScales);
+
+        const auto& tol = SimTK::SignificantReal;
+
+        for (int i = 0; i < 3; ++i) {
+            const double diff = std::abs(expectedScales[i] - actualScales[i]);
+            if (diff > tol) {
+                cout << "Scale mismatch for segment "
+                          << expected.getSegmentName() << " at index " << i
+                          << '\n'
+                          << "Expected: " << expectedScales[i] << '\n'
+                          << "Actual:   " << actualScales[i] << '\n'
+                          << "Difference: " << diff << '\n'
+                          << "Full expected:\n"
+                          << expected.dump() << '\n'
+                          << "Full actual:\n"
+                          << actual->dump() << '\n';
+                return false;
+            }
         }
     }
+
     return true;
 }
 
