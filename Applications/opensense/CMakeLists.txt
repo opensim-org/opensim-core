@@ -1,5 +1,5 @@
 OpenSimAddApplication(NAME opensense)
 
 if(BUILD_TESTING)
-    subdirs(test)
+    subdirs(tests)
 endif(BUILD_TESTING)
