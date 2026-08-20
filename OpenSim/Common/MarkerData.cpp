@@ -176,7 +176,7 @@ void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
       if (findFirstNonWhiteSpace(line) == -1)
          continue;
 
-      if (aSMD._frames.size() == aSMD._numFrames) { break; }
+      if (static_cast<int>(aSMD._frames.size()) == aSMD._numFrames) { break; }
       if (!readIntegerFromString(line, &frameNum)) { continue; }
       if (!readDoubleFromString(line, &time)) { continue; }
       auto& frame = aSMD._frames.emplace_back(
@@ -196,8 +196,8 @@ void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
       }
    }
 
-   if (aSMD._frames.size() < aSMD._numFrames) {
-       aSMD._numFrames = aSMD._frames.size();
+   if (static_cast<int>(aSMD._frames.size()) < aSMD._numFrames) {
+       aSMD._numFrames = static_cast<int>(aSMD._frames.size());
    }
 
    /* If the user-defined frame numbers are not contiguous from the first frame to the
@@ -636,7 +636,7 @@ void MarkerData::convertToUnits(const Units& aUnits)
     if (!SimTK::isNaN(scaleFactor))
     {
         /* Scale all marker locations by the conversion factor. */
-        for (int i = 0; i < _frames.size(); i++) _frames[i].scale(scaleFactor);
+        for (auto& frame : _frames) { frame.scale(scaleFactor); }
 
         /* Change the units for this object to the new ones. */
         _units = aUnits;
