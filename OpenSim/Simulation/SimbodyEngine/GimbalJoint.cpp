@@ -45,37 +45,4 @@ void GimbalJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
     createMobilizedBody<MobilizedBody::Gimbal>(system);
 }
 
-void GimbalJoint::extendInitStateFromProperties(SimTK::State& s) const
-{
-    Super::extendInitStateFromProperties(s);
 
-    const MultibodySystem& system = _model->getMultibodySystem();
-    const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
-    if (matter.getUseEulerAngles(s))
-        return;
-
-    double xangle = getCoordinate(GimbalJoint::Coord::Rotation1X).getDefaultValue();
-    double yangle = getCoordinate(GimbalJoint::Coord::Rotation2Y).getDefaultValue();
-    double zangle = getCoordinate(GimbalJoint::Coord::Rotation3Z).getDefaultValue();
-    Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
-
-    //GimbalJoint* mutableThis = const_cast<GimbalJoint*>(this);
-    getChildFrame().getMobilizedBody().setQToFitRotation(s, r);
-}
-
-void GimbalJoint::extendSetPropertiesFromState(const SimTK::State& state)
-{
-    Super::extendSetPropertiesFromState(state);
-
-    // Override default behavior in case of quaternions.
-    const MultibodySystem&        system = _model->getMultibodySystem();
-    const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
-    if (!matter.getUseEulerAngles(state)) {
-        Rotation r = getChildFrame().getMobilizedBody().getBodyRotation(state);
-
-        Vec3 angles = r.convertRotationToBodyFixedXYZ();
-        updCoordinate(GimbalJoint::Coord::Rotation1X).setDefaultValue(angles[0]);
-        updCoordinate(GimbalJoint::Coord::Rotation2Y).setDefaultValue(angles[1]);
-        updCoordinate(GimbalJoint::Coord::Rotation3Z).setDefaultValue(angles[2]);
-    }
-}
