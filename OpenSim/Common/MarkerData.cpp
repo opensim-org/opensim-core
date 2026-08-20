@@ -174,8 +174,8 @@ void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
          continue;
 
       if (aSMD._frames.getSize() == aSMD._numFrames) { break; }
-      if (!readIntegerFromString(line, &frameNum)) {}
-      if (!readDoubleFromString(line, &time)) {}
+      if (!readIntegerFromString(line, &frameNum)) { continue; }
+      if (!readDoubleFromString(line, &time)) { continue; }
       MarkerFrame* frame =
               new MarkerFrame(aSMD._numMarkers, frameNum, time, aSMD._units);
 
@@ -211,7 +211,6 @@ void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
             aSMD._frames[i]->setFrameNumber(firstIndex + i);
    }
 
-//cleanup:
    in.close();
 }
 
