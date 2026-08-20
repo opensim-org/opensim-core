@@ -108,7 +108,6 @@ jobs:
       run: |
         brew install pkgconfig autoconf libtool automake wget pcre llvm bison
         brew reinstall gcc
-        echo "$(brew --prefix bison)/bin" >> "$GITHUB_PATH"
         pip3 install numpy==2.4.2
         pip3 install wheel
         pip3 install build
@@ -118,7 +117,7 @@ jobs:
         mkdir ~/swig-source && cd ~/swig-source
         wget https://github.com/swig/swig/archive/refs/tags/v4.2.1.tar.gz
         tar xzf v4.2.1.tar.gz && cd swig-4.2.1
-        sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
+        sh autogen.sh && BISON="$(brew --prefix bison)/bin/bison" ./configure --prefix=$HOME/swig --disable-ccache
         make && make -j4 install
 
     - name: Build dependencies
@@ -218,6 +217,7 @@ jobs:
         ./configure --prefix=/usr/local
         make -j"$(nproc)"
         make install
+
     - name: Install SWIG
       run: |
         mkdir ~/swig-source && cd ~/swig-source
