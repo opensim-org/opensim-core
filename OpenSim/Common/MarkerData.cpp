@@ -536,7 +536,7 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
         // Number of non-NaN frames
         const auto [sum, n, lo, hi] = std::accumulate(frameSlice.begin(),
                 frameSlice.end(),
-                std::make_tuple(Vec3(0), 0, Vec3(SimTK::Infinity),
+                std::make_tuple(Vec3(0), size_t{0}, Vec3(SimTK::Infinity),
                         Vec3(SimTK::Infinity)),
                 [i](std::tuple<Vec3, size_t, Vec3, Vec3> acc, auto& value) {
                     const auto& p = value.getMarker(i);
@@ -552,7 +552,7 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
 
         if (n != 0) {
             // Divide by the number of frames to get the average.
-            averagedFrame.updMarker(i) = sum / n;
+            averagedFrame.updMarker(i) = sum / static_cast<double>(n);
         } else {
 
             averagedFrame.updMarker(i) = Vec3(SimTK::NaN);
