@@ -20,20 +20,18 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-// INCLUDE
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Tools/CMCTool.h>
 #include <OpenSim/Tools/ForwardTool.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
+#include <catch2/catch_all.hpp>
+
 using namespace OpenSim;
 using namespace std;
 
-void testCMCEMGDrivenArm() {
-    cout<<"\n******************************************************************" << endl;
-    cout << "*               testCMCEMGDrivenArm_Thelen                       *" << endl;
-    cout << "******************************************************************\n" << endl;
+TEST_CASE("testCMCEMGDrivenArm_Thelen") {
     CMCTool cmc("arm26_Setup_ComputedMuscleControl_EMG.xml");
     cmc.setResultsDir("Results_Arm26_EMG_Thelen");
     cmc.run();
@@ -54,28 +52,4 @@ void testCMCEMGDrivenArm() {
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
                                     __FILE__, __LINE__,
                                     "testCMCEMGDrivenArm_Thelen failed");
-
-    const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
-    cout << "\ntestCMCEMGDrivenArm_"+muscleType+ " passed\n" << endl;
 }
-
-int main() {
-
-    SimTK::Array_<std::string> failures;
-
-    try{
-        testCMCEMGDrivenArm();
-    } catch(const std::exception& e) {
-        cout << e.what() <<endl; failures.push_back("testCMCEMGDrivenArm");
-    }
-
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "Done" << endl;
-
-    return 0;
-}
-

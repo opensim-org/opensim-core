@@ -27,37 +27,17 @@
 #include <OpenSim/Tools/ForwardTool.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
+#include <catch2/catch_all.hpp>
+
 using namespace OpenSim;
 using namespace std;
 
-void testRunningModel();
 
-int main() {
-
+TEST_CASE("testRunningModel") {
     Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
     //Object::renameType("Thelen2003Muscle", "Millard2012AccelerationMuscle");
     //Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
-    SimTK::Array_<std::string> failures;
 
-    try {testRunningModel();}
-    catch (const std::exception& e)
-        {  cout << e.what() <<endl; failures.push_back("testRunningModel"); }
-
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "Done" << endl;
-
-    return 0;
-}
-
-void testRunningModel()
-{
-    cout<<"\n******************************************************************" << endl;
-    cout << "*                     testRunningModel                     *" << endl;
-    cout << "******************************************************************\n" << endl;
     CMCTool cmc("runningModel_Setup_CMC_test.xml");
     cmc.run();
 

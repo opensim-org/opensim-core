@@ -20,81 +20,63 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-// INCLUDE
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Tools/CMCTool.h>
 #include <OpenSim/Tools/ForwardTool.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
+#include <catch2/catch_all.hpp>
+
 using namespace OpenSim;
 using namespace std;
 
-void testSingleMuscle();
+namespace {
 
-int main() {
+    void testSingleMuscle() {
 
-    SimTK::Array_<std::string> failures;
+        ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
+        CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
 
-    try {testSingleMuscle();}
-    catch (const std::exception& e)
-        {  cout << e.what() <<endl; failures.push_back("testSingleMuscle"); }
+        const string& muscleType =
+            cmc.getModel().getMuscles()[0].getConcreteClassName();
+        string base = "testSingleMuscle_" + muscleType;
 
-    // redo with the Millard2012EquilibriumMuscle
-    Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
+        // test MUST fail if forward simulation fails to run to completion.
+        OPENSIM_THROW_IF(!forward.run(), Exception, base + ": Failed running ForwardTool.");
+        // test MUST fail if CMC fails to track to completion.
+        OPENSIM_THROW_IF(!cmc.run(), Exception, base + ": Failed running CMCTool.");
 
-    try { testSingleMuscle();}
-    catch (const std::exception& e)
-        {   cout << e.what() <<endl;
-            failures.push_back("testSingleMuscle_Millard"); }
+        Storage fwd_controls("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_controls.sto");
+        Storage cmc_controls("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_controls.sto");
 
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
+        Storage fwd_force("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_ForceReporter_forces.sto");
+        Storage cmc_force("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_Actuation_force.sto");
+
+        Storage fwd_states("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto");
+        Storage cmc_states("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
+
+        std::vector<double> control_tols(1, 4.0e-3); // peak control is 0.2 so this is 2% of peak
+        std::vector<double> force_tols(1, 1.0e-1);   // 0.1 N
+        std::vector<double> state_tols(4, 1.0e-3);   // errors: q<1mm, u<1mm/s, a<0.001, fl<1mm
+
+        CHECK_STORAGE_AGAINST_STANDARD(cmc_controls, fwd_controls, control_tols,
+            __FILE__, __LINE__, base + " controls failed");
+
+        CHECK_STORAGE_AGAINST_STANDARD(cmc_force, fwd_force, force_tols,
+            __FILE__, __LINE__, base + " forces failed");
+
+        CHECK_STORAGE_AGAINST_STANDARD(fwd_states, cmc_states, state_tols,
+            __FILE__, __LINE__, base+" states failed");
     }
 
-    cout << "Done" << endl;
-
-    return 0;
 }
 
-void testSingleMuscle() {
-    cout<<"\n******************************************************************" << endl;
-    cout << "*                         testSingleMuscle                       *" << endl;
-    cout << "******************************************************************\n" << endl;
-    ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
-    CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
+TEST_CASE("testSingleMuscle_Thelen") {
+    testSingleMuscle();
+}
 
-    const string& muscleType =
-        cmc.getModel().getMuscles()[0].getConcreteClassName();
-    string base = "testSingleMuscle_" + muscleType;
-
-    // test MUST fail if forward simulation fails to run to completion.
-    OPENSIM_THROW_IF(!forward.run(), Exception, base + ": Failed running ForwardTool.");
-    // test MUST fail if CMC fails to track to completion.
-    OPENSIM_THROW_IF(!cmc.run(), Exception, base + ": Failed running CMCTool.");
-
-    Storage fwd_controls("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_controls.sto");
-    Storage cmc_controls("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_controls.sto");
-
-    Storage fwd_force("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_ForceReporter_forces.sto");
-    Storage cmc_force("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_Actuation_force.sto");
-
-    Storage fwd_states("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto");
-    Storage cmc_states("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
-
-    std::vector<double> control_tols(1, 4.0e-3); // peak control is 0.2 so this is 2% of peak
-    std::vector<double> force_tols(1, 1.0e-1);   // 0.1 N
-    std::vector<double> state_tols(4, 1.0e-3);   // errors: q<1mm, u<1mm/s, a<0.001, fl<1mm
-
-    CHECK_STORAGE_AGAINST_STANDARD(cmc_controls, fwd_controls, control_tols,
-        __FILE__, __LINE__, base + " controls failed");
-
-    CHECK_STORAGE_AGAINST_STANDARD(cmc_force, fwd_force, force_tols,
-        __FILE__, __LINE__, base + " forces failed");
-
-    CHECK_STORAGE_AGAINST_STANDARD(fwd_states, cmc_states, state_tols,
-        __FILE__, __LINE__, base+" states failed");
-
-    cout << "\n" << base << " passed\n" << endl;
+TEST_CASE("testSingleMuscle_Millard") {
+    Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
+    testSingleMuscle();
 }
