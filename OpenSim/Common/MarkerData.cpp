@@ -108,16 +108,6 @@ MarkerData::MarkerData(const string& aFileName) :
     _markerNames("")
 {
 
-#if 0
-   if (!aFileName)
-        return;
-
-   if (!lookForFile(aFileName, gWorkingDir.c_str(), actualFilename))
-   {
-      return smFileError;
-   }
-#endif
-
    /* Check if the suffix is TRC or TRB. Will read TRC by default */
     string suffix;
    int dot = (int)aFileName.find_last_of(".");
@@ -183,40 +173,10 @@ void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
       if (findFirstNonWhiteSpace(line) == -1)
          continue;
 
-        if (aSMD._frames.getSize() == aSMD._numFrames)
-        {
-#if 0
-            if (gUseGlobalMessages)
-            {
-                gErrorBuffer += "Extra data found at end of tracked marker file. ";
-                gErrorBuffer += "Header declared only " + intToString(trc->header.numFrames) + " frames.\n";
-            }
-            rc = smFileWarning;
-#endif
-            break;
-        }
+      if (aSMD._frames.getSize() == aSMD._numFrames) { break; }
 
-      if (!readIntegerFromString(line, &frameNum))
-      {
-#if 0
-         if (gUseGlobalMessages)
-            gErrorBuffer += "Could not read frame number in tracked marker file.\n";
-         rc = smFileError;
-         goto cleanup;
-#endif
-      }
-
-      if (!readDoubleFromString(line, &time))
-      {
-#if 0
-         if (gUseGlobalMessages)
-            gErrorBuffer += "Could not read time in tracked marker file.\n";
-         rc = smFileError;
-         goto cleanup;
-#endif
-      }
-
-        MarkerFrame *frame = new MarkerFrame(aSMD._numMarkers, frameNum, time, aSMD._units);
+      MarkerFrame* frame =
+              new MarkerFrame(aSMD._numMarkers, frameNum, time, aSMD._units);
 
       /* keep reading sets of coordinates until the end of the line is
        * reached. If more coordinates were read than there are markers,
@@ -226,50 +186,16 @@ void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
       bool allowNaNs = true;
       while (readCoordinatesFromString(line, &coords[0], allowNaNs))
       {
-         if (coordsRead >= aSMD._numMarkers)
-         {
-            break;
-
-#if 0  // Don't return an error because many TRC files have extra data at the ends of rows
-            if (gUseGlobalMessages)
-               gErrorBuffer += "Extra data found in frame number " + intToString(frameNum) +
-                               " in tracked marker file.\n";
-            rc = smFileError;
-            // delete the current markerCoordList because framesRead has not been incremented yet.
-            delete [] f->markerCoordList;
-            goto cleanup;
-#endif
-         }
-         if (coordsRead < aSMD._numMarkers)
-                frame->addMarker(coords);
-         coordsRead++;
+          if (coordsRead >= aSMD._numMarkers) { break; }
+          if (coordsRead < aSMD._numMarkers) { frame->addMarker(coords); }
+          coordsRead++;
       }
 
-      if (coordsRead < aSMD._numMarkers)
-      {
-#if 0
-         if (gUseGlobalMessages)
-            gErrorBuffer += " Missing data in frame number " + intToString(frameNum) +
-                            " in tracked marker file.\n";
-         rc = smFileError;
-         // delete the current markerCoordList because framesRead has not been incremented yet.
-         delete [] f->markerCoordList;
-         goto cleanup;
-#endif
-      }
-        aSMD._frames.append(frame);
+      aSMD._frames.append(frame);
    }
 
-   if (aSMD._frames.getSize() < aSMD._numFrames)
-   {
-#if 0
-      if (gUseGlobalMessages)
-         gErrorBuffer += "Missing data in tracked marker file. Only " + intToString(framesRead) + " of " +
-                         intToString(trc->header.numFrames) + " frames found.\n";
-      rc = smFileError;
-      goto cleanup;
-#endif
-        aSMD._numFrames = aSMD._frames.getSize();
+   if (aSMD._frames.getSize() < aSMD._numFrames) {
+       aSMD._numFrames = aSMD._frames.getSize();
    }
 
    /* If the user-defined frame numbers are not contiguous from the first frame to the
@@ -283,15 +209,6 @@ void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
       for (int i = 1; i < aSMD._numFrames; i++)
             aSMD._frames[i]->setFrameNumber(firstIndex + i);
    }
-
-#if 0
-   if (gUseGlobalMessages)
-   {
-      gMessage += "TRC file " + actualFileName + "\n\t" + intToString(trc->header.numFrames)
-                  + " frames\n\t" + intToString(trc->header.numMarkers) + " markers/frame\n";
-      gMessage += "Read " + intToString(framesRead) + " frames.\n";
-   }
-#endif
 
 //cleanup:
    in.close();
@@ -319,12 +236,9 @@ void MarkerData::readTRCFileHeader(ifstream &aStream, const string& aFileName, M
    readIntegerFromString(line, &pathFileType);
    if (buffer != "PathFileType" || (pathFileType != 3 && pathFileType != 4))
    {
-        throw Exception("MarkerData: ERR- File "+aFileName+" does not appear to be a valid TRC file",__FILE__,__LINE__);
-#if 0
-      if (gUseGlobalMessages)
-         gErrorBuffer += "Unknown file type " + intToString(pathFileType) + " in TRC file" + actualFileName;
-      return smFileError;
-#endif
+       throw Exception("MarkerData: ERR- File " + aFileName +
+                               " does not appear to be a valid TRC file",
+               __FILE__, __LINE__);
    }
 
    /* read line 2 - header info column names */
@@ -340,33 +254,14 @@ void MarkerData::readTRCFileHeader(ifstream &aStream, const string& aFileName, M
    ok = ok && readIntegerFromString(line, &aSMD._numMarkers);
    ok = ok && readStringFromString(line, buffer);
 
-   if (pathFileType == 3)
-   {
-      if (!ok)
-      {
-#if 0
-         if (gUseGlobalMessages)
-            gErrorBuffer += "Could not read line 3 in TRC file " + actualFileName + ".\n";
-         return smFormatError;
-#endif
-      }
-      aSMD._originalDataRate = aSMD._dataRate;
-      aSMD._originalStartFrame = 1;
-      aSMD._originalNumFrames = aSMD._numFrames;
-   }
-   else if (pathFileType == 4)
-   {
-      ok = ok && readDoubleFromString(line, &aSMD._originalDataRate);
-      ok = ok && readIntegerFromString(line, &aSMD._originalStartFrame);
-      ok = ok && readIntegerFromString(line, &aSMD._originalNumFrames);
-      if (!ok)
-      {
-#if 0
-         if (gUseGlobalMessages)
-            gErrorBuffer += "Could not read line3 in TRC file " + actualFileName + ".\n";
-         return smFormatError;
-#endif
-      }
+   if (pathFileType == 3) {
+       aSMD._originalDataRate = aSMD._dataRate;
+       aSMD._originalStartFrame = 1;
+       aSMD._originalNumFrames = aSMD._numFrames;
+   } else if (pathFileType == 4) {
+       ok = ok && readDoubleFromString(line, &aSMD._originalDataRate);
+       ok = ok && readIntegerFromString(line, &aSMD._originalStartFrame);
+       ok = ok && readIntegerFromString(line, &aSMD._originalNumFrames);
    }
 
    aSMD._units = Units(buffer);
@@ -382,18 +277,9 @@ void MarkerData::readTRCFileHeader(ifstream &aStream, const string& aFileName, M
    markersRead = 0;
    while (!line.empty())
    {
-      if (!readTabDelimitedStringFromString(line, buffer))
-         break;
-      if (markersRead >= aSMD._numMarkers)
-      {
-#if 0
-         if (gUseGlobalMessages)
-            gMessage += "More marker names in TRC file than in model. Ignoring extra marker names.\n";
-         break;
-#endif
-      }
-        aSMD._markerNames.append(buffer);
-      markersRead++;
+       if (!readTabDelimitedStringFromString(line, buffer)) { break; }
+       aSMD._markerNames.append(buffer);
+       markersRead++;
    }
 
     /* If we don't read the header, we'll throw meaningful exception and abort rather than crash the machine!! */
@@ -444,76 +330,7 @@ void MarkerData::readTRCFileHeader(ifstream &aStream, const string& aFileName, M
  */
 void MarkerData::readTRBFile(const string& aFileName, MarkerData& aSMD)
 {
-#if 0
-   int i, j, index, headerSize, numMarkersThisFrame;
-   unsigned short header[6];
-   long data[100];
-   FILE* file;
-
-   trc->filename = new char [actualFileName.size() + 1];
-   strcpy(trc->filename, actualFileName.c_str());
-
-   readTRBFileHeader(actualFileName, &trc->header, headerSize);
-
-   file = fopen(actualFileName.c_str(), "rb");
-
-   trc->frameList = new smTRCFrame [trc->header.numFrames];
-
-   fseek(file, headerSize, SEEK_SET);
-
-   for (i = 0; i < trc->header.numFrames; i++)
-   {
-      trc->frameList[i].frameNum = i;
-      trc->frameList[i].time = (double) i / trc->header.dataRate;
-      trc->frameList[i].units = trc->header.units;
-
-      trc->frameList[i].numMarkers = trc->header.numMarkers;
-      trc->frameList[i].markerCoordList = new smPoint3 [trc->frameList[i].numMarkers];
-
-      // initialize all the markers to UNDEFINED
-      for (j = 0; j < trc->frameList[i].numMarkers; j++)
-      {
-         trc->frameList[i].markerCoordList[j][0] = UNDEFINED_DOUBLE;
-         trc->frameList[i].markerCoordList[j][1] = UNDEFINED_DOUBLE;
-         trc->frameList[i].markerCoordList[j][2] = UNDEFINED_DOUBLE;
-      }
-
-      // now read the header to see how many markers are present
-      for (j = 0; j < 6; j++)
-         header[j] = _read_binary_unsigned_short(file);
-
-      numMarkersThisFrame = (header[4] - 3) / 6;
-
-      for (j = 0; j < numMarkersThisFrame; j++)
-      {
-         fread(data, 6*4, 1, file);
-
-         // the index of this marker is stored in the first data element
-         index = data[0] - 1;
-
-         // if the index is good, copy the marker coordinates
-         if (index >= 0 && index < trc->frameList[i].numMarkers)
-         {
-            trc->frameList[i].markerCoordList[index][0] = *(float *)(&data[1]);
-            trc->frameList[i].markerCoordList[index][1] = *(float *)(&data[2]);
-            trc->frameList[i].markerCoordList[index][2] = *(float *)(&data[3]);
-         }
-      }
-   }
-
-   goto finish;
-
-//invalid:
-   if (gUseGlobalMessages)
-      gErrorBuffer += "Cannot read " + actualFileName + ". File format is invalid.";
-   return smFormatError;
-
-   smFreeTRCStruct(trc);
-
-finish:
-   fclose(file);
-   return smNoError;
-#endif
+    log_warn("readTRBFile not implemented!");
 }
 
 //_____________________________________________________________________________
