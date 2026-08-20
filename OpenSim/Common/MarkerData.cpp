@@ -24,16 +24,19 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <fstream>
-#include <math.h>
-#include <float.h>
 #include "MarkerData.h"
+
 #include "SimmIO.h"
-#include "SimmMacros.h"
 #include "Storage.h"
-#include "OpenSim/Common/STOFileAdapter.h"
+
+#include <algorithm>
+#include <cfloat>
+#include <cmath>
+#include <fstream>
+#include <iostream>
+#include <memory>
 #include <regex>
+#include <tuple>
 
 //=============================================================================
 // STATICS
@@ -173,11 +176,11 @@ void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
       if (findFirstNonWhiteSpace(line) == -1)
          continue;
 
-      if (aSMD._frames.getSize() == aSMD._numFrames) { break; }
+      if (aSMD._frames.size() == aSMD._numFrames) { break; }
       if (!readIntegerFromString(line, &frameNum)) { continue; }
       if (!readDoubleFromString(line, &time)) { continue; }
-      MarkerFrame* frame =
-              new MarkerFrame(aSMD._numMarkers, frameNum, time, aSMD._units);
+      auto& frame = aSMD._frames.emplace_back(
+              MarkerFrame(aSMD._numMarkers, frameNum, time, aSMD._units));
 
       /* keep reading sets of coordinates until the end of the line is
        * reached. If more coordinates were read than there are markers,
@@ -188,27 +191,25 @@ void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
       while (readCoordinatesFromString(line, &coords[0], allowNaNs))
       {
           if (coordsRead >= aSMD._numMarkers) { break; }
-          if (coordsRead < aSMD._numMarkers) { frame->addMarker(coords); }
+          if (coordsRead < aSMD._numMarkers) { frame.addMarker(coords); }
           coordsRead++;
       }
-
-      aSMD._frames.append(frame);
    }
 
-   if (aSMD._frames.getSize() < aSMD._numFrames) {
-       aSMD._numFrames = aSMD._frames.getSize();
+   if (aSMD._frames.size() < aSMD._numFrames) {
+       aSMD._numFrames = aSMD._frames.size();
    }
 
    /* If the user-defined frame numbers are not contiguous from the first frame to the
     * last, reset them to a contiguous array. This is necessary because the user-defined
     * numbers are used to index the array of frames.
     */
-    if (aSMD._frames[aSMD._numFrames-1]->getFrameNumber() - aSMD._frames[0]->getFrameNumber() !=
-         aSMD._numFrames - 1)
-   {
-        int firstIndex = aSMD._frames[0]->getFrameNumber();
-      for (int i = 1; i < aSMD._numFrames; i++)
-            aSMD._frames[i]->setFrameNumber(firstIndex + i);
+   if (aSMD._frames[aSMD._numFrames - 1].getFrameNumber() -
+                   aSMD._frames[0].getFrameNumber() !=
+           aSMD._numFrames - 1) {
+       int firstIndex = aSMD._frames[0].getFrameNumber();
+       for (int i = 1; i < aSMD._numFrames; i++)
+           aSMD._frames[i].setFrameNumber(firstIndex + i);
    }
 
    in.close();
@@ -388,14 +389,15 @@ void MarkerData::readStoFile(const string& aFileName)
         StateVector* nextRow = store.getStateVector(i);
         time = nextRow->getTime();
         int frameNum = i+1;
-        MarkerFrame *frame = new MarkerFrame(_numMarkers, frameNum, time, _units);
+        auto& frame = _frames.emplace_back(
+                MarkerFrame(_numMarkers, frameNum, time, _units));
         const Array<double>& rowData = nextRow->getData();
         // Cycle through map and add Marker coordinates to the frame. Same order as header.
         for (iter = markerIndices.begin(); iter != markerIndices.end(); iter++) {
             int startIndex = iter->first; // startIndex includes time but data doesn't!
-            frame->addMarker(SimTK::Vec3(rowData[startIndex-1], rowData[startIndex], rowData[startIndex+1]));
+            frame.addMarker(SimTK::Vec3(rowData[startIndex - 1],
+                    rowData[startIndex], rowData[startIndex + 1]));
         }
-        _frames.append(frame);
    }
 }
 /**
@@ -451,8 +453,7 @@ void MarkerData::findFrameRange(double aStartTime, double aEndTime, int& rStartF
 
     for (i = _numFrames - 1; i >= 0 ; i--)
     {
-        if (_frames[i]->getFrameTime() <= aStartTime)
-        {
+        if (_frames[i].getFrameTime() <= aStartTime) {
             rStartFrame = i;
             break;
         }
@@ -460,8 +461,7 @@ void MarkerData::findFrameRange(double aStartTime, double aEndTime, int& rStartF
 
     for (i = rStartFrame; i < _numFrames; i++)
     {
-        if (_frames[i]->getFrameTime() >= aEndTime - SimTK::Zero)
-        {
+        if (_frames[i].getFrameTime() >= aEndTime - SimTK::Zero) {
             rEndFrame = i;
             break;
         }
@@ -479,8 +479,7 @@ double MarkerData::getStartFrameTime() const
     if (_numFrames<=0)
         return SimTK::NaN;
 
-    return(_frames[0]->getFrameTime());
-
+    return (_frames[0].getFrameTime());
 }
 /**
  * Utilities to support the GUI
@@ -492,7 +491,7 @@ double MarkerData::getLastFrameTime() const
     if (_numFrames<=0)
         return SimTK::NaN;
 
-    return(_frames[_numFrames-1]->getFrameTime());
+    return (_frames[_numFrames - 1].getFrameTime());
 }
 
 //_____________________________________________________________________________
@@ -512,127 +511,71 @@ double MarkerData::getLastFrameTime() const
  */
 void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEndTime)
 {
-    if (_numFrames < 2)
+    if (_numFrames < 2) {
+        log_warn("The MarkerData contained less than 2 frames. Unable to "
+                 "compute an average!");
         return;
+    }
 
     int startIndex = 0, endIndex = 1;
-    double *minX = NULL, *minY = NULL, *minZ = NULL, *maxX = NULL, *maxY = NULL, *maxZ = NULL;
-
     findFrameRange(aStartTime, aEndTime, startIndex, endIndex);
-    MarkerFrame *averagedFrame = new MarkerFrame(*_frames[startIndex]);
-
-    /* If aThreshold is greater than zero, then calculate
-     * the movement of each marker so you can check if it
-     * is greater than aThreshold.
-     */
-    if (aThreshold > 0.0)
-    {
-        minX = new double [_numMarkers];
-        minY = new double [_numMarkers];
-        minZ = new double [_numMarkers];
-        maxX = new double [_numMarkers];
-        maxY = new double [_numMarkers];
-        maxZ = new double [_numMarkers];
-        for (int i = 0; i < _numMarkers; i++)
-        {
-            minX[i] = minY[i] = minZ[i] =  SimTK::Infinity;
-            maxX[i] = maxY[i] = maxZ[i] = -SimTK::Infinity;
-        }
-    }
-
-    /* Initialize all the averaged marker locations to 0,0,0. Then
-     * loop through the frames to be averaged, adding each marker location
-     * to averagedFrame. Keep track of the min/max XYZ for each marker
-     * so you can compare it to aThreshold when you're done.
-     */
-    for (int i = 0; i < _numMarkers; i++)
-    {
-        int numFrames = 0;
-        Vec3& avePt = averagedFrame->updMarker(i);
-        avePt = Vec3(0);
-
-        for (int j = startIndex; j <= endIndex; j++)
-        {
-            Vec3& pt = _frames[j]->updMarker(i);
-            if (!pt.isNaN())
-            {
-                Vec3& coords = pt; //.get();
-                avePt += coords;
-                numFrames++;
-                if (aThreshold > 0.0)
-                {
-                    if (coords[0] < minX[i])
-                        minX[i] = coords[0];
-                    if (coords[0] > maxX[i])
-                        maxX[i] = coords[0];
-                    if (coords[1] < minY[i])
-                        minY[i] = coords[1];
-                    if (coords[1] > maxY[i])
-                        maxY[i] = coords[1];
-                    if (coords[2] < minZ[i])
-                        minZ[i] = coords[2];
-                    if (coords[2] > maxZ[i])
-                        maxZ[i] = coords[2];
-                }
-            }
-        }
-
-        /* Now divide by the number of frames to get the average. */
-        if (numFrames > 0)
-            avePt /= (double)numFrames;
-        else
-            avePt = Vec3(SimTK::NaN) ;//(SimTK::NaN, SimTK::NaN, SimTK::NaN);
-    }
-
     /* Store the indices from the file of the first frame and
      * last frame that were averaged, so you can report them later.
      */
-    int startUserIndex = _frames[startIndex]->getFrameNumber();
-    int endUserIndex = _frames[endIndex]->getFrameNumber();
+    int startUserIndex = _frames[startIndex].getFrameNumber();
+    int endUserIndex = _frames[endIndex].getFrameNumber();
 
-    /* Now delete all the existing frames and insert the averaged one. */
-    _frames.clearAndDestroy();
-    _frames.append(averagedFrame);
-    _numFrames = 1;
-    _firstFrameNumber = _frames[0]->getFrameNumber();
+    auto frameSlice = std::span{_frames.begin() + startIndex, _frames.begin() + endIndex + 1};
 
-    if (aThreshold > 0.0)
-    {
-        for (int i = 0; i < _numMarkers; i++)
-        {
-            Vec3& pt = _frames[0]->updMarker(i);
+    // Get a reference to the first frame in the array, NOT the first frame in
+    // the slice at the end all values will be dropped and this will be the only
+    // frame left
+    auto& averagedFrame = _frames[0];
+    // Calculate the average and min/max movement of each marker
+    for (int i = 0; i < _numMarkers; ++i) {
+        // Number of non-NaN frames
+        const auto [sum, n, lo, hi] = std::accumulate(frameSlice.begin(),
+                frameSlice.end(),
+                std::make_tuple(Vec3(0), 0, Vec3(SimTK::Infinity),
+                        Vec3(SimTK::Infinity)),
+                [i](std::tuple<Vec3, size_t, Vec3, Vec3> acc, auto& value) {
+                    const auto& p = value.getMarker(i);
+                    auto& [sum, n, lo, hi] = acc;
+                    if (!p.isNaN()) {
+                        n += 1;
+                        sum += p;
+                        lo = std::min(lo, p);
+                        hi = std::max(hi, p);
+                    }
+                    return acc;
+                });
 
-            if (pt.isNaN())
-            {
-                log_warn("Marker {} is missing in frames {} to {}. Coordinate "
-                         "will be set to NAN.", _markerNames[i], startUserIndex,
-                        endUserIndex);
-            }
-            else if (maxX[i] - minX[i] > aThreshold ||
-                      maxY[i] - minY[i] > aThreshold ||
-                      maxZ[i] - minZ[i] > aThreshold)
-            {
-                double maxDim = maxX[i] - minX[i];
-                maxDim = MAX(maxDim, (maxY[i] - minY[i]));
-                maxDim = MAX(maxDim, (maxZ[i] - minZ[i]));
-                log_warn("Movement of marker {} in {} is {} (threshold = {})",
-                        _markerNames[i], _fileName, maxDim, aThreshold);
-            }
+        if (n != 0) {
+            // Divide by the number of frames to get the average.
+            averagedFrame.updMarker(i) = sum / n;
+        } else {
+
+            averagedFrame.updMarker(i) = Vec3(SimTK::NaN);
+            log_warn("Marker {} is missing in frames {} to {}. Coordinate "
+                     "will be set to NAN.",
+                    _markerNames[i], startUserIndex, endUserIndex);
+        }
+
+        // Alert if the min/max movement of the marker is greater than aThreshold.
+        const Vec3 rng = hi - lo;
+        const double maxDim = std::max({rng[0], rng[1], rng[2]});
+        if (maxDim > aThreshold) {
+            log_warn("Movement of marker {} in {} is {} (threshold = {})",
+                    _markerNames[i], _fileName, maxDim, aThreshold);
         }
     }
 
+    // Now delete all existing frames in place, except the averaged frame.
+    _frames.erase(_frames.begin() + 1, _frames.end());
+    _numFrames = 1;
+
     log_info("Averaged frames from time {} to {} in {} (frames {} to {})",
             aStartTime, aEndTime, _fileName, startUserIndex, endUserIndex);
-
-    if (aThreshold > 0.0)
-    {
-        delete [] minX;
-        delete [] minY;
-        delete [] minZ;
-        delete [] maxX;
-        delete [] maxY;
-        delete [] maxZ;
-    }
 }
 
 //_____________________________________________________________________________
@@ -668,11 +611,11 @@ void MarkerData::makeRdStorage(Storage& rStorage)
     {
         for (int j = 0, index = 0; j < _numMarkers; j++)
         {
-            SimTK::Vec3& marker = _frames[i]->updMarker(j);
+            SimTK::Vec3& marker = _frames[i].updMarker(j);
             for (int k = 0; k < 3; k++)
                 row[index++] = marker[k];
         }
-        rStorage.append(_frames[i]->getFrameTime(), numColumns, row);
+        rStorage.append(_frames[i].getFrameTime(), numColumns, row);
     }
 
     delete [] row;
@@ -693,8 +636,7 @@ void MarkerData::convertToUnits(const Units& aUnits)
     if (!SimTK::isNaN(scaleFactor))
     {
         /* Scale all marker locations by the conversion factor. */
-        for (int i = 0; i < _frames.getSize(); i++)
-            _frames[i]->scale(scaleFactor);
+        for (int i = 0; i < _frames.size(); i++) _frames[i].scale(scaleFactor);
 
         /* Change the units for this object to the new ones. */
         _units = aUnits;
@@ -718,7 +660,7 @@ const MarkerFrame& MarkerData::getFrame(int aIndex) const
     if (aIndex < 0 || aIndex >= _numFrames)
         throw Exception("MarkerData::getFrame() invalid frame index.");
 
-    return *_frames[aIndex];
+    return _frames[aIndex];
 }
 
 //_____________________________________________________________________________
