@@ -36,7 +36,7 @@ jobs:
 
     - name: Install SWIG
       run: |
-        choco install swig --version 4.1.1 --yes --limit-output --allow-downgrade
+        choco install swig --version 4.2.1 --yes --limit-output --allow-downgrade
         swig -swiglib
 
     - name: Build dependencies
@@ -106,8 +106,9 @@ jobs:
 
     - name: Install Homebrew packages
       run: |
-        brew install pkgconfig autoconf libtool automake wget pcre llvm
+        brew install pkgconfig autoconf libtool automake wget pcre llvm bison
         brew reinstall gcc
+        echo "$(brew --prefix bison)/bin" >> "$GITHUB_PATH"
         pip3 install numpy==2.4.2
         pip3 install wheel
         pip3 install build
@@ -115,8 +116,8 @@ jobs:
     - name: Install SWIG
       run: |
         mkdir ~/swig-source && cd ~/swig-source
-        wget https://github.com/swig/swig/archive/refs/tags/v4.1.1.tar.gz
-        tar xzf v4.1.1.tar.gz && cd swig-4.1.1
+        wget https://github.com/swig/swig/archive/refs/tags/v4.2.1.tar.gz
+        tar xzf v4.2.1.tar.gz && cd swig-4.2.1
         sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
         make && make -j4 install
 
@@ -211,11 +212,17 @@ jobs:
         gzip \
         patchelf
 
+        wget https://ftp.gnu.org/gnu/bison/bison-3.8.2.tar.gz
+        tar -xzf bison-3.8.2.tar.gz
+        cd bison-3.8.2
+        ./configure --prefix=/usr/local
+        make -j"$(nproc)"
+        make install
     - name: Install SWIG
       run: |
         mkdir ~/swig-source && cd ~/swig-source
-        wget https://github.com/swig/swig/archive/refs/tags/v4.1.1.tar.gz
-        tar xzf v4.1.1.tar.gz && cd swig-4.1.1
+        wget https://github.com/swig/swig/archive/refs/tags/v4.2.1.tar.gz
+        tar xzf v4.2.1.tar.gz && cd swig-4.2.1
         sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
         make && make -j4 install
 
