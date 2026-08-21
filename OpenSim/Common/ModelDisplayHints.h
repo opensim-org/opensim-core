@@ -85,6 +85,12 @@ public:
 
     OpenSim_DECLARE_PROPERTY(show_path_points, bool,
         "Flag to indicate whether or not to show points along path are shown, default to true.");
+    
+    OpenSim_DECLARE_PROPERTY(discretize_path, bool,
+        "Flag to indicate if we're going to visualize a wrap segment as a fxied number of points, default to false.");
+
+    OpenSim_DECLARE_PROPERTY(num_samples_per_wrap_segment, int,
+        "Number of sample ppoints used to respresent a wrap segment, default to 4");
 
     OpenSim_DECLARE_PROPERTY(show_markers, bool,
         "Flag to indicate whether or not to show markers, default to true.");
@@ -123,6 +129,8 @@ private:
         constructProperty_show_contact_geometry(true);
         constructProperty_show_path_geometry(true);
         constructProperty_show_path_points(true);
+        constructProperty_discretize_path(false);
+        constructProperty_num_samples_per_wrap_segment(4);
         constructProperty_show_markers(true);
         constructProperty_show_stations(false);
         constructProperty_marker_color(SimTK::Vec3(1, .6, .8));

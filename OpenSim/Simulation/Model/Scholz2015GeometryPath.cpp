@@ -418,10 +418,37 @@ void Scholz2015GeometryPath::generateDecorations(
         SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const {
 
     if (fixed) { return; }
-    const bool showPathPoints = hints.get_show_path_points();
     const SimTK::Vec3 color = getColor(s);
     int index = 0;
     std::optional<SimTK::Vec3> previous;
+    if (hints.get_discretize_path()) {
+        int numInteriorPoints = hints.get_num_samples_per_wrap_segment();
+        // Total number of points will always be numPoints + numObstracles * numInteriorPoints
+        // If an Obstacle is not in contact, it will not be sampled instead points will be 
+        // coincident with previous points on the path.
+        // All points will be in ground frame and will be in the order specified by the path elements.
+        getCableSpan().calcResampledDecorativePathPoints(
+                s, numInteriorPoints, [&](SimTK::Vec3 x_G) {
+                    SimTK::Vec3 updatedX_G = x_G;
+                    // In case solver fails or the obstacle is not engaged , the
+                    // point will be NaN. In this case, we will use the previous
+                    // point to avoid NaN points in the path.
+                    if (isnan(x_G[0]) || isnan(x_G[1]) || isnan(x_G[2])) {
+                        //  by construction there's always a previous point, so
+                        //  we can safely use value_or
+                        updatedX_G = previous.value_or(SimTK::Vec3(0));
+                    }
+                    geoms.push_back(SimTK::DecorativeSphere(0.001)
+                                    .setTransform(updatedX_G)
+                                    .setScaleFactors(SimTK::Vec3{1.0})
+                                    .setColor(color)
+                                    .setBodyId(0)
+                                    .setIndexOnBody(index++));
+                    previous = updatedX_G;
+            });
+        return;
+    }
+    const bool showPathPoints = hints.get_show_path_points();
     getCableSpan().calcDecorativePathPoints(s, [&](SimTK::Vec3 x_G) {
         if (previous) {
             // Emit line between points
