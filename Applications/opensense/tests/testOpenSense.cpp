@@ -21,8 +21,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
-// INCLUDES
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
 #include <OpenSim/Simulation/OpenSense/IMUPlacer.h>
@@ -30,12 +28,13 @@
 #include <OpenSim/Tools/IMUInverseKinematicsTool.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
+#include <catch2/catch_all.hpp>
+
 using namespace OpenSim;
 using namespace std;
 
 
-int main()
-{
+TEST_CASE("testOpenSense") {
 
     // Calibrate model and compare result to standard
     IMUPlacer imuPlacer("imuPlacer.xml");
@@ -114,6 +113,4 @@ int main()
     SimTK::Real angularDifference = acos(~pelvisXInGround * pelvisIMUZInGround);
     // Angle less than 30 would be reasonable goal to maintain
     assert(angularDifference < SimTK::Pi/6);
-    std::cout << "Done. All testOpensense cases passed." << endl;
-    return 0;
 }
