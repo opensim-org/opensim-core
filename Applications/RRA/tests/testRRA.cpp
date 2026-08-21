@@ -20,57 +20,32 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-// INCLUDE
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Tools/RRATool.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
+#include <catch2/catch_all.hpp>
+
 using namespace OpenSim;
 using namespace std;
 
-void checkAdjustedModelCOM(string modelFile, string body,
-                const SimTK::Vec3 &standardCOM,
-                const Array<double> &tolerances);
+TEST_CASE("testRRA") {
+    RRATool rra("subject01_Setup_RRA.xml");
+    rra.run();
 
-int main() {
-    try {
-        RRATool rra("subject01_Setup_RRA.xml");
-        if (rra.run()){
-            checkAdjustedModelCOM( "subject01_RRA_adjusted.osim", "torso",
-                      SimTK::Vec3(0.00598028440188985017, 0.34551, 0.1),
-                      Array<double>(1e-4, 3) );
-            Storage result("ResultsRRA/subject01_walk1_RRA_Kinematics_q.sto"),
-                    standard("subject01_walk1_RRA_Kinematics_q_standard.sto");
-            CHECK_STORAGE_AGAINST_STANDARD(result, standard,
-                std::vector<double>(24, 0.5),
-                __FILE__, __LINE__, "testRRA: kinematics comparison failed");
-        }
-        else{
-            throw(Exception("testRRA FAILED to run to completion."));
-        }
-    }
-    catch (const Exception& e) {
-        e.print(cerr);
-        return 1;
-    }
-    cout << "Done" << endl;
-    return 0;
-}
+    const std::string body = "torso";
+    const SimTK::Vec3 standardCOM(0.00598028440188985017, 0.34551, 0.1);
+    const Array<double> tolerances(1e-4, 3);
 
-void checkAdjustedModelCOM(string resultsFile, string body,
-    const SimTK::Vec3 &standardCOM, const Array<double> &tolerances)
-{
     // compare the adjusted center of mass to OpenSim 1.9.1 values
-    Model adjusted_model(resultsFile);
+    Model adjusted_model("subject01_RRA_adjusted.osim");
     const BodySet& bodies = adjusted_model.getBodySet();
     const Body& torso = bodies.get(bodies.getIndex(body));
     SimTK::Vec3 com = torso.getMassCenter();
-    cout << "body:           " << body << endl;
-    cout << "center of mass: (" << com[0] << ", " << com[1] << ", " << com[2] << ")\n";
-    cout << "standard COM:   (" << standardCOM[0] << ", " << standardCOM[1] << ", " << standardCOM[2] << ")\n";
-    cout << "tolerances:     (" << tolerances[0] << ", " << tolerances[1] << ", " << tolerances[2] << ")\n" << endl;
+    CAPTURE(body, com, standardCOM, tolerances);
+
     for (int i = 0; i < 3; ++i)
         ASSERT_EQUAL(standardCOM[i], com[i], tolerances[i]);
 
@@ -81,4 +56,10 @@ void checkAdjustedModelCOM(string resultsFile, string body,
     auto exfList = adjusted_model.getComponentList<ExternalForce>();
     OPENSIM_THROW_IF(exfList.begin() != exfList.end(), Exception,
         "RRA adjusted model still contains ExternalForce(s).");
+
+    Storage result("ResultsRRA/subject01_walk1_RRA_Kinematics_q.sto"),
+            standard("subject01_walk1_RRA_Kinematics_q_standard.sto");
+    CHECK_STORAGE_AGAINST_STANDARD(result, standard,
+        std::vector<double>(24, 0.5),
+        __FILE__, __LINE__, "testRRA: kinematics comparison failed");
 }
