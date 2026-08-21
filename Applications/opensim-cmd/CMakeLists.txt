@@ -9,5 +9,5 @@ OpenSimAddApplication(NAME opensim-cmd
 target_link_libraries(opensim-cmd osimdocopt osimMoco)
 
 if(BUILD_TESTING)
-    subdirs(test)
+    subdirs(tests)
 endif(BUILD_TESTING)
