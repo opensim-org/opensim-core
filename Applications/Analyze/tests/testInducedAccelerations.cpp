@@ -30,44 +30,48 @@
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Analyses/InducedAccelerationsSolver.h>
 
+#include <catch2/catch_all.hpp>
+
 using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
 
-// Prototypes
-void testDoublePendulumWithSolver();
-void testDoublePendulum();
-Vector calcDoublePendulumUdot(const Model &model, State &s, double Torq1, double Torq2, bool gravity, bool velocity);
+namespace {
+    Vector calcDoublePendulumUdot(const Model &model, State &s, double Torq1,
+            double Torq2, bool gravity, bool velocity) {
+        if(gravity)
+            model.getGravityForce().enable(s);
+        else
+            model.getGravityForce().disable(s);
 
-int main()
-{
-    try {
-        // First case is a simple torque driven double pendulum model
-        // Tool results compared directly Simbody model computed results
-        testDoublePendulumWithSolver();
 
-        // check that analysis version still works
-        testDoublePendulum();
+        if(!velocity)
+            s.updU() = 0.0;
 
-        AnalyzeTool analyze("subject02_Setup_IAA_02_232.xml");
-        analyze.run();
-        Storage result1("ResultsInducedAccelerations/subject02_running_arms_InducedAccelerations_center_of_mass.sto");
-        Storage standard1("std_subject02_running_arms_InducedAccelerations_CENTER_OF_MASS.sto");
-        CHECK_STORAGE_AGAINST_STANDARD(result1, standard1,
-            std::vector<double>(result1.getSmallestNumberOfStates(), 0.15),
-            __FILE__, __LINE__, "Induced Accelerations of Running failed");
-        cout << "Induced Accelerations of Running passed\n" << endl;
+        MultibodySystem &sys = model.updMultibodySystem();
+        Vector &mobilityForces = sys.updMobilityForces(s, Stage::Dynamics);
+        sys.realize(s, Stage::Dynamics);
+
+        mobilityForces[0] = Torq1;
+        mobilityForces[1] = Torq2;
+
+        sys.realize(s, Stage::Acceleration);
+
+        return s.getUDot();
     }
-    catch (const OpenSim::Exception& e) {
-        e.print(cerr);
-        return 1;
-    }
-    cout << "Done" << endl;
-    return 0;
 }
 
-void testDoublePendulumWithSolver()
-{
+TEST_CASE("Induced Accelerations of Running") {
+    AnalyzeTool analyze("subject02_Setup_IAA_02_232.xml");
+    analyze.run();
+    Storage result1("ResultsInducedAccelerations/subject02_running_arms_InducedAccelerations_center_of_mass.sto");
+    Storage standard1("std_subject02_running_arms_InducedAccelerations_CENTER_OF_MASS.sto");
+    CHECK_STORAGE_AGAINST_STANDARD(result1, standard1,
+        std::vector<double>(result1.getSmallestNumberOfStates(), 0.15),
+        __FILE__, __LINE__, "Induced Accelerations of Running failed");
+}
+
+TEST_CASE("testDoublePendulumWithSolver") {
     std::clock_t startTime = std::clock();
 
     double torq1 = 0.75;
@@ -161,12 +165,9 @@ void testDoublePendulumWithSolver()
         ASSERT_EQUAL(udot[0], udot_torq2[0], 1e-5, __FILE__, __LINE__, "Induced Accelerations of Torq2 for double pendulum q1 FAILED");
         ASSERT_EQUAL(udot[1], udot_torq2[1], 1e-5, __FILE__, __LINE__, "Induced Accelerations of Torq2 for double pendulum q2 FAILED");
     }
-    cout << "Induced Accelerations Solver on double pendulum passed\n" << endl;
-    cout << "Solver computed " << nt << " frames in " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
 }
 
-void testDoublePendulum()
-{
+TEST_CASE("testDoublePendulum") {
     std::clock_t startTime = std::clock();
     AnalyzeTool analyze("double_pendulum_Setup_IAA.xml");
     analyze.run();
@@ -224,30 +225,4 @@ void testDoublePendulum()
         ASSERT_EQUAL(udot[0], u1dot_torq2[i], 1e-5, __FILE__, __LINE__, "Induced Accelerations of Torq2 for double pendulum q1 FAILED");
         ASSERT_EQUAL(udot[1], u2dot_torq2[i], 1e-5, __FILE__, __LINE__, "Induced Accelerations of Torq2 for double pendulum q2 FAILED");
     }
-    cout << "Induced Accelerations of double pendulum passed\n" << endl;
-    cout << "Analysis computed " << nt << " frames in " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
-}
-
-
-Vector calcDoublePendulumUdot(const Model &model, State &s, double Torq1, double Torq2, bool gravity, bool velocity)
-{
-    if(gravity)
-        model.getGravityForce().enable(s);
-    else
-        model.getGravityForce().disable(s);
-
-
-    if(!velocity)
-        s.updU() = 0.0;
-
-    MultibodySystem &sys = model.updMultibodySystem();
-    Vector &mobilityForces = sys.updMobilityForces(s, Stage::Dynamics);
-    sys.realize(s, Stage::Dynamics);
-
-    mobilityForces[0] = Torq1;
-    mobilityForces[1] = Torq2;
-
-    sys.realize(s, Stage::Acceleration);
-
-    return s.getUDot();
 }
