@@ -256,10 +256,20 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 //
 %template (SetOientationWeights) OpenSim::Set<OrientationWeight, OpenSim::Object>;
 %template(SharedOrientationsReference) std::shared_ptr<OpenSim::OrientationsReference>;
-%shared_ptr(OpenSim::BufferedOrientationsReference);
+// NOTE: %shared_ptr must come before %include to actually take effect (SWIG
+// only applies the smart-pointer typemaps to types it has not yet wrapped).
+// Since none of BufferedOrientationsReference/BufferedMarkersReference's C++
+// base classes (up to and including Object) are themselves registered with
+// %shared_ptr, declaring %shared_ptr before %include here would make these
+// classes use SWIG's "smart pointer aware" Java proxy pattern, which assumes
+// its immediate Java superclass defines swigSetCMemOwn(); since none of the
+// unmarked ancestors do, that breaks compilation of the generated Java
+// bindings. Keep %include before %shared_ptr (making %shared_ptr a no-op)
+// until the base classes are made consistently smart-pointer aware.
 %include <OpenSim/Simulation/BufferedOrientationsReference.h>
-%shared_ptr(OpenSim::BufferedMarkersReference);
+%shared_ptr(OpenSim::BufferedOrientationsReference);
 %include <OpenSim/Simulation/BufferedMarkersReference.h>
+%shared_ptr(OpenSim::BufferedMarkersReference);
 
 %include <OpenSim/Simulation/AssemblySolver.h>
 %include <OpenSim/Simulation/InverseKinematicsSolver.h>
