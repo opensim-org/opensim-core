@@ -1077,10 +1077,9 @@ public:
     {   return operator[](i); }
 
 private:
-    template<typename ElementsRowByRowTuple, int... Idx>
 #ifndef SWIG
+    template<typename ElementsRowByRowTuple, int... Idx>
     requires (sizeof...(Idx) == M)
-#endif
     constexpr void assignElementsFromTuple(
         ElementsRowByRowTuple&& els,
         std::integer_sequence<int, Idx...>)
@@ -1089,9 +1088,7 @@ private:
     }
 
     template<typename R, int... Idx>
-#ifndef SWIG
     requires (sizeof...(Idx) == M)
-#endif
     constexpr void assignElementsFromRange(
         R&& range,
         std::integer_sequence<int, Idx...>)
@@ -1106,9 +1103,7 @@ private:
     }
 
     template<typename... Els>
-#ifndef SWIG
     requires (sizeof...(Els) == M)
-#endif
     constexpr void assignElements(Els&&... els)
     {
         assignElementsFromTuple(
@@ -1116,6 +1111,7 @@ private:
             std::make_integer_sequence<int, M>{}
         );
     }
+#endif
 
     // TODO: should be an array of scalars rather than elements to control
     // packing more carefully.
