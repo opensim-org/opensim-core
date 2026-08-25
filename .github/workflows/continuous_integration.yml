@@ -40,7 +40,7 @@ jobs:
     - name: Install numpy
       #Need numpy to use SWIG numpy typemaps.
       run: |
-        python3 -m pip install numpy==2.0
+        python3 -m pip install numpy==2.4.2
         python3 -m pip install wheel
         python3 -m pip install build
         pip install --upgrade pip setuptools wheel
@@ -48,7 +48,7 @@ jobs:
 
     - name: Install SWIG
       run: |
-        choco install swig --version 4.1.1 --yes --limit-output --allow-downgrade
+        choco install swig --version 4.4.1 --yes --limit-output --allow-downgrade
         swig -swiglib
 
     - name: Cache dependencies
@@ -124,9 +124,9 @@ jobs:
     - name: Install Homebrew packages
       # Save the gfortran version to a file so we can use it in the cache key.
       run: |
-        brew install pkgconfig autoconf libtool automake wget pcre doxygen llvm
+        brew install pkgconfig autoconf libtool automake wget pcre doxygen llvm bison
         brew reinstall gcc
-        pip3 install numpy==2.0
+        pip3 install numpy==2.4.2
         pip3 install wheel
         pip3 install build
         gfortran -v
@@ -136,9 +136,9 @@ jobs:
     - name: Install SWIG
       run: |
         mkdir ~/swig-source && cd ~/swig-source
-        wget https://github.com/swig/swig/archive/refs/tags/v4.1.1.tar.gz
-        tar xzf v4.1.1.tar.gz && cd swig-4.1.1
-        sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
+        wget https://github.com/swig/swig/archive/refs/tags/v4.4.1.tar.gz
+        tar xzf v4.4.1.tar.gz && cd swig-4.4.1
+        sh autogen.sh && ./configure BISON="$(brew --prefix bison)/bin/bison" --prefix=$HOME/swig --disable-ccache
         make && make -j4 install
 
     - name: Cache dependencies
@@ -239,7 +239,7 @@ jobs:
     - name: Install Numpy & Python Build Dependencies
       run: |
         pip install pip --upgrade
-        pip install numpy==2.0 build wheel auditwheel
+        pip install numpy==2.4.2 build wheel auditwheel
 
     - name: Install packages
       run: |
@@ -264,14 +264,6 @@ jobs:
           pcre2-devel \
           java-11-openjdk-devel
 
-    - name: Install SWIG
-      run: |
-        mkdir ~/swig-source && cd ~/swig-source
-        wget https://github.com/swig/swig/archive/refs/tags/v4.1.1.tar.gz
-        tar xzf v4.1.1.tar.gz && cd swig-4.1.1
-        sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
-        make && make -j4 install
-
     - name: Cache dependencies
       id: cache-dependencies
       uses: actions/cache@v3
@@ -289,8 +281,7 @@ jobs:
     - name: Configure opensim-core
       id: configure
       run: |
-        cmake -S $GITHUB_WORKSPACE --preset ci-make-linux-release -LAH \
-            -DSWIG_EXECUTABLE=$HOME/swig/bin/swig
+        cmake -S $GITHUB_WORKSPACE --preset ci-make-linux-release -LAH
 
         VERSION=`cmake -N -L $GITHUB_WORKSPACE/build/ci-make-linux-release | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
         echo "version=$VERSION" >> $GITHUB_OUTPUT
@@ -362,7 +353,7 @@ jobs:
     name: Build GUI
     runs-on: ubuntu-latest
     # enable "build-gui" if part of title or PR body
-    if: contains(github.event.pull_request.title, '[build-gui]') || contains(github.event.pull_request.body, '[build-gui]') 
+    if: contains(github.event.pull_request.title, '[build-gui]') || contains(github.event.pull_request.body, '[build-gui]')
     steps:
     - name: Dispatch opensim-gui workflow and get the run ID
       uses: codex-/return-dispatch@v4
