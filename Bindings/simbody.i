@@ -8,8 +8,38 @@
 
 %include <SWIGSimTK/Vec.h>
 
-// Vec3
 namespace SimTK {
+// Ignore invalid constructor combinations (e.g. Vec2 can only be constructed
+// from 2 elements, not 3; a Vec6 can only be constructed from 6 elements, not
+// 2; etc.)
+%ignore Vec<2>::Vec(const E&, const E&, const E&);
+%ignore Vec<2>::Vec(const E&, const E&, const E&, const E&);
+%ignore Vec<2>::Vec(const E&, const E&, const E&, const E&, const E&);
+%ignore Vec<2>::Vec(const E&, const E&, const E&, const E&, const E&, const E&);
+%ignore Vec<2>::Vec(const E&, const E&, const E&, const E&, const E&, const E&, const E&);
+%ignore Vec<2>::Vec(const E&, const E&, const E&, const E&, const E&, const E&, const E&, const E&);
+%ignore Vec<2>::Vec(const E&, const E&, const E&, const E&, const E&, const E&, const E&, const E&, const E&);
+%ignore Vec<3>::Vec(const E&, const E&);
+%ignore Vec<3>::Vec(const E&, const E&, const E&, const E&);
+%ignore Vec<3>::Vec(const E&, const E&, const E&, const E&, const E&);
+%ignore Vec<3>::Vec(const E&, const E&, const E&, const E&, const E&, const E&);
+%ignore Vec<3>::Vec(const E&, const E&, const E&, const E&, const E&, const E&, const E&);
+%ignore Vec<3>::Vec(const E&, const E&, const E&, const E&, const E&, const E&, const E&, const E&);
+%ignore Vec<3>::Vec(const E&, const E&, const E&, const E&, const E&, const E&, const E&, const E&, const E&);
+%ignore Vec<4>::Vec(const E&, const E&);
+%ignore Vec<4>::Vec(const E&, const E&, const E&);
+%ignore Vec<4>::Vec(const E&, const E&, const E&, const E&, const E&);
+%ignore Vec<4>::Vec(const E&, const E&, const E&, const E&, const E&, const E&);
+%ignore Vec<4>::Vec(const E&, const E&, const E&, const E&, const E&, const E&, const E&);
+%ignore Vec<4>::Vec(const E&, const E&, const E&, const E&, const E&, const E&, const E&, const E&);
+%ignore Vec<4>::Vec(const E&, const E&, const E&, const E&, const E&, const E&, const E&, const E&, const E&);
+%ignore Vec<6>::Vec(const E&, const E&);
+%ignore Vec<6>::Vec(const E&, const E&, const E&);
+%ignore Vec<6>::Vec(const E&, const E&, const E&, const E&);
+%ignore Vec<6>::Vec(const E&, const E&, const E&, const E&, const E&);
+%ignore Vec<6>::Vec(const E&, const E&, const E&, const E&, const E&, const E&, const E&);
+%ignore Vec<6>::Vec(const E&, const E&, const E&, const E&, const E&, const E&, const E&, const E&);
+%ignore Vec<6>::Vec(const E&, const E&, const E&, const E&, const E&, const E&, const E&, const E&, const E&);
 %template(Vec2) Vec<2>;
 %template(Vec3) Vec<3>;
 %template(Vec4) Vec<4>;
@@ -218,9 +248,18 @@ INSTANTIATE_MATRIXTYPES(Vec6)
 
 %include <SWIGSimTK/SpatialAlgebra.h>
 namespace SimTK {
+// Ignore invalid constructor combinations
+%ignore Vec<2, Vec3>::Vec(const E&, const E&, const E&);
+%ignore Vec<2, Vec3>::Vec(const E&, const E&, const E&, const E&);
+%ignore Vec<2, Vec3>::Vec(const E&, const E&, const E&, const E&, const E&);
+%ignore Vec<2, Vec3>::Vec(const E&, const E&, const E&, const E&, const E&, const E&);
+%ignore Vec<2, Vec3>::Vec(const E&, const E&, const E&, const E&, const E&, const E&, const E&);
+%ignore Vec<2, Vec3>::Vec(const E&, const E&, const E&, const E&, const E&, const E&, const E&, const E&);
+%ignore Vec<2, Vec3>::Vec(const E&, const E&, const E&, const E&, const E&, const E&, const E&, const E&, const E&);
 %template(SpatialVec) Vec<2,   Vec3>;
 %template(VectorOfSpatialVec) Vector_<SpatialVec>;
 %template(MatrixOfSpatialVec) Matrix_<SpatialVec>;
+
 }
 
 %include <SWIGSimTK/Rotation.h>

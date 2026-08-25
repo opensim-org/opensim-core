@@ -9,7 +9,7 @@
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org/home/simbody.  *
  *                                                                            *
- * Portions Copyright (c) 2005-2017 Stanford University and the Authors.      *
+ * Portions copyright (c) 2005-12 Stanford University and the Authors.        *
  * Authors: Michael Sherman                                                   *
  * Contributors: Peter Eastman                                                *
  *                                                                            *
@@ -29,6 +29,8 @@
  */
 
 #include "SimTKcommon/internal/common.h"
+
+#include <tuple>
 
 namespace SimTK {
 
@@ -118,8 +120,10 @@ copy(Vec<N,E1,S1>& r1, const Vec<N,E2,S2>& r2) {
 }
 /** @endcond **/
 #endif
-/** This is a fixed length column vector designed for no-overhead inline 
+/** This is a fixed-length column vector designed for no-overhead inline 
 computation.
+
+@ingroup MatVecUtilities
 
 @tparam     M       The number of rows in the vector.
 @tparam     ELT     The element type. Must be a composite numerical type (CNT).
@@ -127,6 +131,57 @@ computation.
 @tparam     STRIDE  The spacing from one element to the next in memory, as an 
                     integer number of elements of type ELT. The default is 
                     STRIDE=1.
+
+<b>Usage</b>
+
+The %Vec and @ref SimTK::Vector_ "Vector" classes are commonly used to represent 
+tuples of Real values, and have methods like %norm() to calculate the vector 
+2-norm. Use %Vec for a small vector whose length is known at compile time; 
+otherwise, use @ref SimTK::Vector_ "Vector". To collect elements of the same 
+type that do not constitute a tuple, it is more appropriate to use the Array_ 
+container. Some common %Vec use cases are provided below.
+
+<b>Construction</b>
+
+The 3-tuple <tt>~[0,0,0]</tt> can be created in the following ways:
+\code
+Vec<3,Real>(0,0,0);
+Vec3(0,0,0);
+Vec3(0);
+\endcode
+Note that the default element type is Real, and that Vec3 is a typedef for
+%Vec<3>; analogous typedefs exist for vectors of up to 9 elements.
+
+<b>Manipulation</b>
+
+Standard arithmetic operators can be used, as well as methods like %sum() and
+%normalize(). Here are some usage examples, each of which returns
+<tt>~[1,2,3]</tt>:
+\code
+Vec9(0,0,0,0,0,1,2,3,0).getSubVec<3>(5);
+Vec4(1,2,4,3).drop1(2);
+Vec2(2,3).insert1(0,1);
+Vec2(1,2).append1(3);
+\endcode
+
+<b>Conversion</b>
+
+It may be necessary to convert between a %Vec and a Vector (to interface with
+%FactorQTZ, for instance). In the example below, we print a Vec3 created from a
+3-element Vector:
+\code
+Vector myVector(3);
+for (int i=0; i<myVector.size(); ++i) myVector[i]=i+1;
+std::cout << Vec3(&myVector[0]) << std::endl;
+\endcode
+Converting from a Vec3 to a Vector is also straightforward:
+\code
+Vec3 myVec3(1,2,3);
+std::cout << Vector(myVec3) << std::endl;
+\endcode
+
+@see Vector_ for handling of large or variable-sized vectors.
+@see Array_, Mat, Matrix_
 **/
 #ifndef SWIG
 template <int M, class ELT, int STRIDE>
@@ -187,11 +242,12 @@ public:
 
     /** These compile-time constants are required of every Composite
     Numerical Type (CNT). **/
+    #ifndef SWIG
     enum {
         NRows               = M,
         NCols               = 1,
         NPackedElements     = M,
-        NActualElements     = (M-1)*STRIDE + 1, // no trailing gap
+        NActualElements     = (M-1)*STRIDE + 1,  // no trailing gap
         NActualScalars      = CNT<E>::NActualScalars * NActualElements,
         RowSpacing          = STRIDE,
         ColSpacing          = NActualElements,
@@ -208,6 +264,7 @@ public:
         IsPrecision         = 0,
         SignInterpretation  = CNT<E>::SignInterpretation
     };
+    #endif
 
     // These are reinterpretations of the current data, so have the
     // same packing (stride).
@@ -373,7 +430,7 @@ public:
     /** Default construction initializes %Vec's elements to NaN when debugging 
     but leaves them uninitialized garbage otherwise, so declarations have zero
     cost in Release builds. **/
-    Vec(){ 
+    constexpr Vec(){
     #ifndef NDEBUG
         setToNaN();
     #endif
@@ -386,46 +443,49 @@ public:
     /** Copy constructor copies the logically-included elements from the
     source %Vec; gaps due to stride are not accessed in either source or
     destination. **/
-    Vec(const Vec& src) {
-        Impl::copy(*this, src);
+    constexpr Vec(const Vec& src) {
+        assignElementsFromVec(src);
     }
 #ifndef SWIG
     /** Copy assignment operator copies the logically-included elements from 
     the source %Vec; gaps due to stride are not accessed in either source or
     destination. OK if source and destination are the same vector; results
     are unpredictable if they otherwise overlap with elements in common. **/
-    Vec& operator=(const Vec& src) {    
-        Impl::copy(*this, src);
+    constexpr Vec& operator=(const Vec& src) {
+        assignElementsFromVec(src);
         return *this;
     }
 
     /** This is an implicit conversion from a %Vec of the same length
     and element type but with a different stride. **/
-    template <int SS> Vec(const Vec<M,E,SS>& src) {
-        Impl::copy(*this, src);
+    template <int SS>
+    constexpr Vec(const Vec<M,E,SS>& src) {
+        assignElementsFromVec(src);
     }
 
     /** This is an implicit conversion from a %Vec of the same length
     and \e negated element type (possibly with a different stride). **/
-    template <int SS> Vec(const Vec<M,ENeg,SS>& src) {
-        Impl::copy(*this, src);
+    template <int SS>
+    constexpr Vec(const Vec<M,ENeg,SS>& src) {
+        assignElementsFromVec(src);
     }
 
     /** Construct a Vec from a Vec of the same length, with any stride. Works 
     as long as the element types are assignment compatible. **/
-    template <class EE, int SS> explicit Vec(const Vec<M,EE,SS>& src) {
-        Impl::copy(*this, src);
+    template <class EE, int SS>
+    explicit constexpr Vec(const Vec<M,EE,SS>& src) {
+        assignElementsFromVec(src);
     }
 #endif
     /** Construction from a single value of this %Vec's element type assigns
     that value to each element. **/
-    explicit Vec(const ELT& e) {for (int i=0;i<M;++i) d[i*STRIDE]=e;}
+    explicit constexpr Vec(const E& e) {for (int i=0;i<M;++i) d[i*STRIDE]=e;}
 #ifndef SWIG
     /** Construction from a single value of this %Vec's negated element type 
     assigns that value to each element, requiring floating point negation
     to be performed once to compute the type-E representation of the 
     type negator<E> value provided. **/
-    explicit Vec(const ENeg& ne) {
+    explicit constexpr Vec(const ENeg& ne) {
         const E e = ne; // requires floating point negation
         for (int i=0;i<M;++i) d[i*STRIDE]=e;
     }
@@ -434,31 +494,93 @@ public:
     convert that to element type E and then feed that to the above 
     single-element constructor. 
     @see Vec::Vec(const E&). **/
-    explicit Vec(int i) {new (this) Vec(ELT(Precision(i)));}
+    explicit Vec(int i) {new (this) Vec(E(Precision(i)));}
 
-    // A bevy of constructors for Vecs up to length 6.
-    /** Construct a Vec<2,E> from two elements of type E, etc. **/
-    Vec(const E& e0,const E& e1)
-      { assert(M==2);(*this)[0]=e0;(*this)[1]=e1; }
-    Vec(const E& e0,const E& e1,const E& e2)
-      { assert(M==3);(*this)[0]=e0;(*this)[1]=e1;(*this)[2]=e2; }
-    Vec(const E& e0,const E& e1,const E& e2,const E& e3)
-      { assert(M==4);(*this)[0]=e0;(*this)[1]=e1;(*this)[2]=e2;(*this)[3]=e3; }
-    Vec(const E& e0,const E& e1,const E& e2,const E& e3,const E& e4)
-      { assert(M==5);(*this)[0]=e0;(*this)[1]=e1;(*this)[2]=e2;
-        (*this)[3]=e3;(*this)[4]=e4; }
-    Vec(const E& e0,const E& e1,const E& e2,const E& e3,const E& e4,const E& e5)
-      { assert(M==6);(*this)[0]=e0;(*this)[1]=e1;(*this)[2]=e2;
-        (*this)[3]=e3;(*this)[4]=e4;(*this)[5]=e5; }
-    Vec(const E& e0,const E& e1,const E& e2,const E& e3,const E& e4,const E& e5, const E& e6)
-      { assert(M==7);(*this)[0]=e0;(*this)[1]=e1;(*this)[2]=e2;
-        (*this)[3]=e3;(*this)[4]=e4;(*this)[5]=e5;(*this)[6]=e6; }
-    Vec(const E& e0,const E& e1,const E& e2,const E& e3,const E& e4,const E& e5, const E& e6, const E& e7)
-      { assert(M==8);(*this)[0]=e0;(*this)[1]=e1;(*this)[2]=e2;
-        (*this)[3]=e3;(*this)[4]=e4;(*this)[5]=e5;(*this)[6]=e6;(*this)[7]=e7; }
-    Vec(const E& e0,const E& e1,const E& e2,const E& e3,const E& e4,const E& e5, const E& e6, const E& e7, const E& e8)
-      { assert(M==9);(*this)[0]=e0;(*this)[1]=e1;(*this)[2]=e2;
-        (*this)[3]=e3;(*this)[4]=e4;(*this)[5]=e5;(*this)[6]=e6;(*this)[7]=e7;(*this)[8]=e8; }
+    // A bevy of constructors for Vecs up to length 9.
+
+    /** Construct a `Vec<M,E>` from `M` elements of type `E`, etc. **/
+    constexpr Vec(const E& e0, const E& e1)
+#ifndef SWIG
+    requires (M == 2)
+#endif
+    { assignElements(e0, e1);}
+
+    constexpr Vec(const E& e0, const E& e1, const E& e2)
+#ifndef SWIG
+    requires (M == 3)
+#endif
+    { assignElements(e0, e1, e2); }
+
+    constexpr Vec(const E& e0, const E& e1, const E& e2, const E& e3)
+#ifndef SWIG
+    requires (M == 4)
+#endif
+    { assignElements(e0, e1, e2, e3); }
+
+    constexpr Vec(
+        const E& e0,
+        const E& e1,
+        const E& e2,
+        const E& e3,
+        const E& e4)
+#ifndef SWIG
+    requires (M == 5)
+#endif
+    { assignElements(e0, e1, e2, e3, e4); }
+
+    constexpr Vec(
+        const E& e0,
+        const E& e1,
+        const E& e2,
+        const E& e3,
+        const E& e4,
+        const E& e5)
+#ifndef SWIG
+    requires (M == 6)
+#endif
+    { assignElements(e0, e1, e2, e3, e4, e5); }
+
+    constexpr Vec(
+        const E& e0,
+        const E& e1,
+        const E& e2,
+        const E& e3,
+        const E& e4,
+        const E& e5,
+        const E& e6)
+#ifndef SWIG
+    requires (M == 7)
+#endif
+    { assignElements(e0, e1, e2, e3, e4, e5, e6); }
+
+    constexpr Vec(
+        const E& e0,
+        const E& e1,
+        const E& e2,
+        const E& e3,
+        const E& e4,
+        const E& e5,
+        const E& e6,
+        const E& e7)
+#ifndef SWIG
+    requires (M == 8)
+#endif
+    { assignElements(e0, e1, e2, e3, e4, e5, e6, e7); }
+
+    constexpr Vec(
+        const E& e0,
+        const E& e1,
+        const E& e2,
+        const E& e3,
+        const E& e4,
+        const E& e5,
+        const E& e6,
+        const E& e7,
+        const E& e8)
+#ifndef SWIG
+    requires (M == 9)
+#endif
+    { assignElements(e0, e1, e2, e3, e4, e5, e6, e7, e8); }
 
 #ifndef SWIG
     /** Construction from a pointer to elements of any type EE assumes we're 
@@ -527,14 +649,14 @@ public:
         return result;
     }
 
-    /** Elementwise multiply (Matlab .* operator). **/
+    /** Elementwise multiply (Matlab " .* " operator). **/
     template <class EE, int SS> Vec<M,typename CNT<E>::template Result<EE>::Mul>
     elementwiseMultiply(const Vec<M,EE,SS>& r) const {
         Vec<M,typename CNT<E>::template Result<EE>::Mul> result;
         Impl::elementwiseMultiply(*this, r, result);
         return result;
     }
-    /** Elementwise divide (Matlab ./ operator). **/
+    /** Elementwise divide (Matlab " ./ " operator). **/
     template <class EE, int SS> Vec<M,typename CNT<E>::template Result<EE>::Dvd>
     elementwiseDivide(const Vec<M,EE,SS>& r) const {
         Vec<M,typename CNT<E>::template Result<EE>::Dvd> result;
@@ -545,17 +667,17 @@ public:
     /** Select an element of this %Vec and return a const reference to it.
     This is range-checked in Debug builds but has zero overhead in Release
     builds. **/
-    const E& operator[](int i) const 
+    constexpr const E& operator[](int i) const
     {   assert(0 <= i && i < M); return d[i*STRIDE]; }
     /** Same as const operator[] above. **/
-    const E& operator()(int i) const {return (*this)[i];}
+    constexpr const E& operator()(int i) const {return (*this)[i];}
 
     /** Select an element of this %Vec and return a writable reference 
     to it. This is range-checked in Debug builds but has zero overhead in 
     Release builds. **/
-    E& operator[](int i) {assert(0 <= i && i < M); return d[i*STRIDE];}
+    constexpr E& operator[](int i) {assert(0 <= i && i < M); return d[i*STRIDE];}
     /** Same as non-const operator[] above. **/
-    E& operator()(int i) {return (*this)[i];}
+    constexpr E& operator()(int i) {return (*this)[i];}
 
     ScalarNormSq normSqr() const { return scalarNormSqr(); }
     typename CNT<ScalarNormSq>::TSqrt 
@@ -574,7 +696,7 @@ public:
     conjugates if there are any. **/
     TNormalize normalize() const {
         if (CNT<E>::IsScalar) {
-            return castAwayNegatorIfAny() / (SignInterpretation*norm());
+            return castAwayNegatorIfAny() / (int(SignInterpretation)*norm());
         } else {
             TNormalize elementwiseNormalized;
             for (int i=0; i<M; ++i) 
@@ -657,10 +779,12 @@ public:
     /** Recast to remove negators from this %Vec's type if present; this is
     handy for simplifying operations where we know the sign can be ignored
     such as squaring. **/
-    const TWithoutNegator& castAwayNegatorIfAny() const {return *reinterpret_cast<const TWithoutNegator*>(this);}
+    const TWithoutNegator& castAwayNegatorIfAny() const 
+    {   return *reinterpret_cast<const TWithoutNegator*>(this); }
     /** Recast to remove negators from this %Vec's type if present and return
     a writable reference. **/
-    TWithoutNegator&       updCastAwayNegatorIfAny()    {return *reinterpret_cast<TWithoutNegator*>(this);}
+    TWithoutNegator&       updCastAwayNegatorIfAny()    
+    {   return *reinterpret_cast<TWithoutNegator*>(this); }
 
     // These are elementwise binary operators, (this op ee) by default but 
     // (ee op this) if 'FromLeft' appears in the name. The result is a packed 
@@ -746,6 +870,18 @@ public:
       { for(int i=0;i<M;++i) d[i*STRIDE] /= ee; return *this; }
     template <class EE> Vec& scalarDivideEqFromLeft(const EE& ee)
       { for(int i=0;i<M;++i) d[i*STRIDE] = ee / d[i*STRIDE]; return *this; }
+
+#ifndef SWIG
+    // Specialize for int to avoid warnings and ambiguities.
+    Vec& scalarEq(int ee)       {return scalarEq(Precision(ee));}
+    Vec& scalarPlusEq(int ee)   {return scalarPlusEq(Precision(ee));}
+    Vec& scalarMinusEq(int ee)  {return scalarMinusEq(Precision(ee));}
+    Vec& scalarTimesEq(int ee)  {return scalarTimesEq(Precision(ee));}
+    Vec& scalarDivideEq(int ee) {return scalarDivideEq(Precision(ee));}
+    Vec& scalarMinusEqFromLeft(int ee)  {return scalarMinusEqFromLeft(Precision(ee));}
+    Vec& scalarTimesEqFromLeft(int ee)  {return scalarTimesEqFromLeft(Precision(ee));}
+    Vec& scalarDivideEqFromLeft(int ee) {return scalarDivideEqFromLeft(Precision(ee));}
+#endif
 
     /** Set every scalar in this %Vec to NaN; this is the default initial
     value in Debug builds, but not in Release. **/
@@ -887,7 +1023,7 @@ public:
         return true;
     }
 
-    /** For approximate comparisions, the default tolerance to use for a vector is
+    /** For approximate comparisons, the default tolerance to use for a vector is
     the same as its elements' default tolerance. **/
     static double getDefaultTolerance() {return CNT<ELT>::getDefaultTolerance();}
 
@@ -923,6 +1059,7 @@ public:
                 return false;
         return true;
     }
+
     // Functions to be used for Scripting in MATLAB and languages that do not support operator overloading
     /** Print Vec into a string and return it.  Please refer to operator<< for details. **/
     std::string toString() const {
@@ -938,7 +1075,48 @@ public:
     /** Variant of operator[] that's scripting friendly to get const reference to ith entry **/
     const E& get(int i) const 
     {   return operator[](i); }
+
 private:
+    template<typename ElementsRowByRowTuple, int... Idx>
+#ifndef SWIG
+    requires (sizeof...(Idx) == M)
+#endif
+    constexpr void assignElementsFromTuple(
+        ElementsRowByRowTuple&& els,
+        std::integer_sequence<int, Idx...>)
+    {
+        (((*this)[Idx] = std::get<Idx>(els)) , ...);
+    }
+
+    template<typename R, int... Idx>
+#ifndef SWIG
+    requires (sizeof...(Idx) == M)
+#endif
+    constexpr void assignElementsFromRange(
+        R&& range,
+        std::integer_sequence<int, Idx...>)
+    {
+        (((*this)[Idx] = range[Idx]) , ...);
+    }
+
+    template <class EE, int SS>
+    constexpr void assignElementsFromVec(const Vec<M, EE, SS>& v)
+    {
+        assignElementsFromRange(v, std::make_integer_sequence<int, M>{});
+    }
+
+    template<typename... Els>
+#ifndef SWIG
+    requires (sizeof...(Els) == M)
+#endif
+    constexpr void assignElements(Els&&... els)
+    {
+        assignElementsFromTuple(
+            std::make_tuple(std::forward<Els>(els)...),
+            std::make_integer_sequence<int, M>{}
+        );
+    }
+
     // TODO: should be an array of scalars rather than elements to control
     // packing more carefully.
     ELT d[NActualElements];    // data
@@ -1059,14 +1237,6 @@ template <int M, class E, int S> inline
 typename Vec<M,E,S>::template Result<double>::Mul
 operator*(const double& l, const Vec<M,E,S>& r) {return r*l;}
 
-template <int M, class E, int S> inline
-typename Vec<M,E,S>::template Result<long double>::Mul
-operator*(const Vec<M,E,S>& l, const long double& r)
-  { return Vec<M,E,S>::template Result<long double>::MulOp::perform(l,r); }
-template <int M, class E, int S> inline
-typename Vec<M,E,S>::template Result<long double>::Mul
-operator*(const long double& l, const Vec<M,E,S>& r) {return r*l;}
-
 // v = v*int, int*v -- just convert int to v's precision float
 template <int M, class E, int S> inline
 typename Vec<M,E,S>::template Result<typename CNT<E>::Precision>::Mul
@@ -1125,15 +1295,6 @@ template <int M, class E, int S> inline
 typename CNT<double>::template Result<Vec<M,E,S> >::Dvd
 operator/(const double& l, const Vec<M,E,S>& r)
   { return CNT<double>::template Result<Vec<M,E,S> >::DvdOp::perform(l,r); }
-
-template <int M, class E, int S> inline
-typename Vec<M,E,S>::template Result<long double>::Dvd
-operator/(const Vec<M,E,S>& l, const long double& r)
-  { return Vec<M,E,S>::template Result<long double>::DvdOp::perform(l,r); }
-template <int M, class E, int S> inline
-typename CNT<long double>::template Result<Vec<M,E,S> >::Dvd
-operator/(const long double& l, const Vec<M,E,S>& r)
-  { return CNT<long double>::template Result<Vec<M,E,S> >::DvdOp::perform(l,r); }
 
 // v = v/int, int/v -- just convert int to v's precision float
 template <int M, class E, int S> inline
@@ -1196,14 +1357,6 @@ template <int M, class E, int S> inline
 typename Vec<M,E,S>::template Result<double>::Add
 operator+(const double& l, const Vec<M,E,S>& r) {return r+l;}
 
-template <int M, class E, int S> inline
-typename Vec<M,E,S>::template Result<long double>::Add
-operator+(const Vec<M,E,S>& l, const long double& r)
-  { return Vec<M,E,S>::template Result<long double>::AddOp::perform(l,r); }
-template <int M, class E, int S> inline
-typename Vec<M,E,S>::template Result<long double>::Add
-operator+(const long double& l, const Vec<M,E,S>& r) {return r+l;}
-
 // v = v+int, int+v -- just convert int to v's precision float
 template <int M, class E, int S> inline
 typename Vec<M,E,S>::template Result<typename CNT<E>::Precision>::Add
@@ -1259,15 +1412,6 @@ template <int M, class E, int S> inline
 typename CNT<double>::template Result<Vec<M,E,S> >::Sub
 operator-(const double& l, const Vec<M,E,S>& r)
   { return CNT<double>::template Result<Vec<M,E,S> >::SubOp::perform(l,r); }
-
-template <int M, class E, int S> inline
-typename Vec<M,E,S>::template Result<long double>::Sub
-operator-(const Vec<M,E,S>& l, const long double& r)
-  { return Vec<M,E,S>::template Result<long double>::SubOp::perform(l,r); }
-template <int M, class E, int S> inline
-typename CNT<long double>::template Result<Vec<M,E,S> >::Sub
-operator-(const long double& l, const Vec<M,E,S>& r)
-  { return CNT<long double>::template Result<Vec<M,E,S> >::SubOp::perform(l,r); }
 
 // v = v-int, int-v // just convert int to v's precision float
 template <int M, class E, int S> inline
@@ -1370,7 +1514,6 @@ typedef Vec<2> Vec2;
 typedef Vec<3> Vec3;
 typedef Vec<4> Vec4;
 typedef Vec<6> Vec6;
-
 } //namespace SimTK
 
 
