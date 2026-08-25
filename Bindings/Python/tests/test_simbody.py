@@ -45,6 +45,33 @@ class TestSimbody(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             osim.Vec3.createFromMat(np.array([5, 1, 6, 3]))
 
+        # Incorrect number of args for `Vec2`.
+        osim.Vec2(1.0, 2.0)  # This is fine
+        with self.assertRaises(TypeError):
+            osim.Vec2(1.0, 2.0, 3.0)
+        with self.assertRaises(TypeError):
+            osim.Vec2(1.0, 2.0, 3.0, 4.0)
+
+        # Incorrect number of args for `Vec3`.
+        with self.assertRaises(TypeError):
+            osim.Vec3(1.0, 2.0)
+        osim.Vec3(1.0, 2.0, 3.0)  # This is fine
+        with self.assertRaises(TypeError):
+            osim.Vec3(1.0, 2.0, 3.0, 4.0)
+        with self.assertRaises(TypeError):
+            osim.Vec3(1.0, 2.0, 3.0, 4.0, 5.0)
+
+        # Incorrect number of args for `Vec4`.
+        with self.assertRaises(TypeError):
+            osim.Vec4(1.0, 2.0)
+        with self.assertRaises(TypeError):
+            osim.Vec4(1.0, 2.0, 3.0)
+        osim.Vec4(1.0, 2.0, 3.0, 4.0)  # This is fine
+        with self.assertRaises(TypeError):
+            osim.Vec4(1.0, 2.0, 3.0, 4.0, 5.0)
+        with self.assertRaises(TypeError):
+            osim.Vec4(1.0, 2.0, 3.0, 4.0, 5.0, 6.0)
+
     def test_vec3_operators(self):
         v1 = osim.Vec3(1, 2, 3)
         # Tests __getitem__().

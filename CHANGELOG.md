@@ -37,6 +37,8 @@ the model's topology (e.g., `GeometryPath`) or via a user-defined list of coordi
 - `PolynomialPathFitter` now detects which coordinates should belong to a path based on the model topology by finding the joints that lie between the path's origin and insertion, and computes moment arms only for these coordinates.
 The property `moment_arm_threshold` has been removed, and the methods `get/setMomentArmThreshold()` have been deprecated. (#4352)
 - Added the property `use_warm_start` and accessors `set/getWarmStart()` in `Scholz2015GeometryPath` to enable toggling on and off warm starts, where the wrapping solver from the previous time step is an initial guess for the path at the next time step. Now, `Scholz2015GeometryPath` by default has warm starts disabled meaning that paths are always computed from wrap obstacle contact hints (previously, warm starts were always enabled). (#4342)
+- The `Vec` element-by-element constructor function now only accepts the correct
+  number of elements (e.g. 2 elements for a `Vec2`, 3 for `Vec3`; #4416).
 
 
 v4.6
