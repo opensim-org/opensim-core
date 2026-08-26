@@ -542,8 +542,11 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
             if (!p.isNaN()) {
                 n += 1;
                 sum += p;
-                lo = std::min(lo, p);
-                hi = std::max(hi, p);
+                // Element-wise min/max over the Vec3
+                for (int k = 0; k < 3; ++k) {
+                    lo[k] = std::min(lo[k], p[k]);
+                    hi[k] = std::max(hi[k], p[k]);
+                }
             }
         }
 
