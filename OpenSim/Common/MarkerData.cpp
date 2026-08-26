@@ -522,7 +522,7 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
     int startIndex = 0, endIndex = 1;
     findFrameRange(aStartTime, aEndTime, startIndex, endIndex);
     // Get a reference to the first frame in the array, NOT the first frame in
-    // the slice at the end all values will be dropped and this will be the only
+    // the slice. At the end all values will be dropped and this will be the only
     // frame left
     auto* averagedFrame = _frames[0];
     /* Store the indices from the file of the first frame and
