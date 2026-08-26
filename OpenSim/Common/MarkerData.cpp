@@ -24,15 +24,16 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <fstream>
-#include <math.h>
-#include <float.h>
 #include "MarkerData.h"
+
 #include "SimmIO.h"
-#include "SimmMacros.h"
 #include "Storage.h"
-#include "OpenSim/Common/STOFileAdapter.h"
+
+#include <algorithm>
+#include <cfloat>
+#include <cmath>
+#include <fstream>
+#include <iostream>
 #include <regex>
 
 //=============================================================================
@@ -512,127 +513,68 @@ double MarkerData::getLastFrameTime() const
  */
 void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEndTime)
 {
-    if (_numFrames < 2)
+    if (_numFrames < 2) {
+        log_warn("The MarkerData contained less than 2 frames. Unable to "
+                 "compute an average!");
         return;
+    }
 
     int startIndex = 0, endIndex = 1;
-    double *minX = NULL, *minY = NULL, *minZ = NULL, *maxX = NULL, *maxY = NULL, *maxZ = NULL;
-
     findFrameRange(aStartTime, aEndTime, startIndex, endIndex);
-    MarkerFrame *averagedFrame = new MarkerFrame(*_frames[startIndex]);
-
-    /* If aThreshold is greater than zero, then calculate
-     * the movement of each marker so you can check if it
-     * is greater than aThreshold.
-     */
-    if (aThreshold > 0.0)
-    {
-        minX = new double [_numMarkers];
-        minY = new double [_numMarkers];
-        minZ = new double [_numMarkers];
-        maxX = new double [_numMarkers];
-        maxY = new double [_numMarkers];
-        maxZ = new double [_numMarkers];
-        for (int i = 0; i < _numMarkers; i++)
-        {
-            minX[i] = minY[i] = minZ[i] =  SimTK::Infinity;
-            maxX[i] = maxY[i] = maxZ[i] = -SimTK::Infinity;
-        }
-    }
-
-    /* Initialize all the averaged marker locations to 0,0,0. Then
-     * loop through the frames to be averaged, adding each marker location
-     * to averagedFrame. Keep track of the min/max XYZ for each marker
-     * so you can compare it to aThreshold when you're done.
-     */
-    for (int i = 0; i < _numMarkers; i++)
-    {
-        int numFrames = 0;
-        Vec3& avePt = averagedFrame->updMarker(i);
-        avePt = Vec3(0);
-
-        for (int j = startIndex; j <= endIndex; j++)
-        {
-            Vec3& pt = _frames[j]->updMarker(i);
-            if (!pt.isNaN())
-            {
-                Vec3& coords = pt; //.get();
-                avePt += coords;
-                numFrames++;
-                if (aThreshold > 0.0)
-                {
-                    if (coords[0] < minX[i])
-                        minX[i] = coords[0];
-                    if (coords[0] > maxX[i])
-                        maxX[i] = coords[0];
-                    if (coords[1] < minY[i])
-                        minY[i] = coords[1];
-                    if (coords[1] > maxY[i])
-                        maxY[i] = coords[1];
-                    if (coords[2] < minZ[i])
-                        minZ[i] = coords[2];
-                    if (coords[2] > maxZ[i])
-                        maxZ[i] = coords[2];
-                }
-            }
-        }
-
-        /* Now divide by the number of frames to get the average. */
-        if (numFrames > 0)
-            avePt /= (double)numFrames;
-        else
-            avePt = Vec3(SimTK::NaN) ;//(SimTK::NaN, SimTK::NaN, SimTK::NaN);
-    }
-
+    // Get a reference to the first frame in the array, NOT the first frame in
+    // the slice at the end all values will be dropped and this will be the only
+    // frame left
+    auto* averagedFrame = _frames[0];
     /* Store the indices from the file of the first frame and
      * last frame that were averaged, so you can report them later.
      */
     int startUserIndex = _frames[startIndex]->getFrameNumber();
     int endUserIndex = _frames[endIndex]->getFrameNumber();
-
-    /* Now delete all the existing frames and insert the averaged one. */
-    _frames.clearAndDestroy();
-    _frames.append(averagedFrame);
-    _numFrames = 1;
-    _firstFrameNumber = _frames[0]->getFrameNumber();
-
-    if (aThreshold > 0.0)
-    {
-        for (int i = 0; i < _numMarkers; i++)
-        {
-            Vec3& pt = _frames[0]->updMarker(i);
-
-            if (pt.isNaN())
-            {
-                log_warn("Marker {} is missing in frames {} to {}. Coordinate "
-                         "will be set to NAN.", _markerNames[i], startUserIndex,
-                        endUserIndex);
+    // Calculate the average and min/max movement of each marker
+    for (int i = 0; i < _numMarkers; ++i) {
+        auto sum = Vec3(0);
+        // Number of non-NaN frames
+        auto n = 0;
+        auto lo = Vec3(SimTK::Infinity);
+        auto hi = Vec3(-SimTK::Infinity);
+        for (int j = startIndex; j <= endIndex; ++j) {
+            const auto& p = _frames[j]->getMarker(i);
+            if (!p.isNaN()) {
+                n += 1;
+                sum += p;
+                lo = std::min(lo, p);
+                hi = std::max(hi, p);
             }
-            else if (maxX[i] - minX[i] > aThreshold ||
-                      maxY[i] - minY[i] > aThreshold ||
-                      maxZ[i] - minZ[i] > aThreshold)
-            {
-                double maxDim = maxX[i] - minX[i];
-                maxDim = MAX(maxDim, (maxY[i] - minY[i]));
-                maxDim = MAX(maxDim, (maxZ[i] - minZ[i]));
-                log_warn("Movement of marker {} in {} is {} (threshold = {})",
-                        _markerNames[i], _fileName, maxDim, aThreshold);
-            }
+        }
+
+        if (n != 0) {
+            // Divide by the number of frames to get the average.
+            averagedFrame->updMarker(i) = sum / static_cast<double>(n);
+        } else {
+
+            averagedFrame->updMarker(i) = Vec3(SimTK::NaN);
+            log_warn("Marker {} is missing in frames {} to {}. Coordinate "
+                     "will be set to NAN.",
+                    _markerNames[i], startUserIndex, endUserIndex);
+        }
+
+        // Alert if the min/max movement of the marker is above the aThreshold.
+        const Vec3 rng = hi - lo;
+        const double maxDim = std::max({rng[0], rng[1], rng[2]});
+        if (maxDim > aThreshold) {
+            log_warn("Movement of marker {} in {} is {} (threshold = {})",
+                    _markerNames[i], _fileName, maxDim, aThreshold);
         }
     }
 
+    // Now delete all existing frames in place, except the averaged frame.
+    for (int i = _numFrames - 1; i >= 0; --i) {
+        if (_frames[i] != averagedFrame) { _frames.remove(i); }
+    }
+    _numFrames = 1;
+
     log_info("Averaged frames from time {} to {} in {} (frames {} to {})",
             aStartTime, aEndTime, _fileName, startUserIndex, endUserIndex);
-
-    if (aThreshold > 0.0)
-    {
-        delete [] minX;
-        delete [] minY;
-        delete [] minZ;
-        delete [] maxX;
-        delete [] maxY;
-        delete [] maxZ;
-    }
 }
 
 //_____________________________________________________________________________
