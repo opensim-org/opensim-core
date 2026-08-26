@@ -4,15 +4,15 @@ Test that sockets, inputs, and outputs are functional in python.
 import os, unittest
 import opensim as osim
 
-test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
-                        'tests')
+resources_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
+                             'tests', 'resources')
 
 # Silence warning messages if mesh (.vtp) files cannot be found.
 osim.Model.setDebugLevel(0)
 
 class TestAccessSubcomponents(unittest.TestCase):
     def test_individual_components(self):
-        model = osim.Model(os.path.join(test_dir, "arm26.osim"))
+        model = osim.Model(os.path.join(resources_dir, "arm26.osim"))
         muscle = model.getComponent('forceset/BICshort')
         assert muscle.getName() == 'BICshort'
         # No downcasting necessary!
@@ -21,7 +21,7 @@ class TestAccessSubcomponents(unittest.TestCase):
         muscle.set_max_isometric_force(100)
 
     def test_component_list(self):
-        model = osim.Model(os.path.join(test_dir, "arm26.osim"))
+        model = osim.Model(os.path.join(resources_dir, "arm26.osim"))
 
         num_components = 0
         for comp in model.getComponentsList():
@@ -81,7 +81,7 @@ class TestAccessSubcomponents(unittest.TestCase):
             assert isinstance(muscle, osim.Millard2012EquilibriumMuscle)
 
     def test_component_filter(self):
-        model = osim.Model(os.path.join(test_dir, "arm26.osim"))
+        model = osim.Model(os.path.join(resources_dir, "arm26.osim"))
         comps = model.getMuscleList()
         comps.setFilter(osim.ComponentFilterAbsolutePathNameContainsString('BIC'))
         count = 0

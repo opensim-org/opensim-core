@@ -9,8 +9,8 @@ import unittest
 
 import opensim as osim
 
-test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
-                        'tests')
+resources_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
+                             'tests', 'resources')
 
 # Silence warning messages if mesh (.vtp) files cannot be found.
 osim.Model.setDebugLevel(0)
@@ -22,7 +22,7 @@ class TestConsistentWithJython(unittest.TestCase):
     def test_makeUlnaHeavy(self):
     
         # Get handle to the Arm26 model
-        oldModel = osim.Model(os.path.join(test_dir, "arm26.osim"))
+        oldModel = osim.Model(os.path.join(resources_dir, "arm26.osim"))
         # Create a fresh copy
         myModel = oldModel.clone()
     
@@ -46,7 +46,7 @@ class TestConsistentWithJython(unittest.TestCase):
         absPathName = oldModel.getInputFileName()
     
         # Change the name of the modified model
-        newName = os.path.join(test_dir, 'Arm26_makeUlnaHeavy.osim')
+        newName = os.path.join(resources_dir, 'Arm26_makeUlnaHeavy.osim')
         myModel.printToXML(newName)
     
         deserMyModel = osim.Model(newName)
@@ -59,7 +59,7 @@ class TestConsistentWithJython(unittest.TestCase):
     
     def test_alterTendonSlackLength(self):
     
-        oldModel = osim.Model(os.path.join(test_dir, "arm26.osim"))
+        oldModel = osim.Model(os.path.join(resources_dir, "arm26.osim"))
     
         # Create a fresh copy
         myModel = oldModel.clone()
@@ -85,7 +85,7 @@ class TestConsistentWithJython(unittest.TestCase):
         absPathName = oldModel.getInputFileName()
     
         #Change pathname to output file name
-        newName = os.path.join(test_dir, 'Arm26_alterTendonSlackLength.osim')
+        newName = os.path.join(resources_dir, 'Arm26_alterTendonSlackLength.osim')
         myModel.printToXML(newName)
     
         deserMyModel = osim.Model(newName)
@@ -101,7 +101,7 @@ class TestConsistentWithJython(unittest.TestCase):
     
     def test_strengthenModel(self):
     
-        oldModel = osim.Model(os.path.join(test_dir, "arm26.osim"))
+        oldModel = osim.Model(os.path.join(resources_dir, "arm26.osim"))
     
         # Create a fresh copy
         myModel = oldModel.clone()
@@ -123,7 +123,7 @@ class TestConsistentWithJython(unittest.TestCase):
                     * scaleFactor)
     
         # Save resulting model
-        newName = os.path.join(test_dir, 'Arm26_strengthenModel.osim')
+        newName = os.path.join(resources_dir, 'Arm26_strengthenModel.osim')
         myModel.printToXML(newName)
     
         deserMyModel = osim.Model(newName)
@@ -137,7 +137,7 @@ class TestConsistentWithJython(unittest.TestCase):
     
     def test_StorageToPieceWiseLinearFunction(self):
     
-        sto = osim.Storage(os.path.join(test_dir, 'storage.sto'))
+        sto = osim.Storage(os.path.join(resources_dir, 'storage.sto'))
         column_name = 'column1'
         scale_factor = 2.5
     
@@ -160,7 +160,7 @@ class TestConsistentWithJython(unittest.TestCase):
         for idx in range(time.getSize()):
             fcn.addPoint(time.get(idx), ordinate.get(idx))
     
-        fcnName = os.path.join(test_dir, 'piecewiseLinearFunction.xml')
+        fcnName = os.path.join(resources_dir, 'piecewiseLinearFunction.xml')
         fcn.printToXML(fcnName)
     
         assert fcn.getX(0) == 0
@@ -176,7 +176,7 @@ class TestConsistentWithJython(unittest.TestCase):
     
     def test_addMetabolicProbes(self):
     
-        model = osim.Model(os.path.join(test_dir,
+        model = osim.Model(os.path.join(resources_dir,
             "gait10dof18musc_subject01.osim"))
     
         # Twitch ratios for gait1018.
@@ -238,7 +238,7 @@ class TestConsistentWithJython(unittest.TestCase):
             wholeBodyProbe.addMuscle(thisMuscle.getName(),
                                      slowTwitchRatio)
     
-        name = os.path.join(test_dir, 'gait10dof18musc_probed.osim')
+        name = os.path.join(resources_dir, 'gait10dof18musc_probed.osim')
         model.printToXML(name)
     
         os.remove(name)

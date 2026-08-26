@@ -4,26 +4,26 @@ Test DataAdapter interface.
 import os, unittest
 import opensim as osim
 
-test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
-                        'tests')
+resources_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
+                             'tests', 'resources')
 
 class TestDataAdapter(unittest.TestCase):
     def test_TRCFileAdapter(self):
-        table = osim.TimeSeriesTableVec3(os.path.join(test_dir, 
+        table = osim.TimeSeriesTableVec3(os.path.join(resources_dir,
                              'futureOrientationInverseKinematics.trc'))
         assert table.getNumRows()    == 1202
         assert table.getNumColumns() == 2
 
-        table = osim.TimeSeriesTableVec3(os.path.join(test_dir, 'dataWithNaNsOfDifferentCases.trc'))
+        table = osim.TimeSeriesTableVec3(os.path.join(resources_dir, 'dataWithNaNsOfDifferentCases.trc'))
         assert table.getNumRows()    == 5
         assert table.getNumColumns() == 14
 
     def test_STOFileAdapter(self):
-        table = osim.TimeSeriesTable(os.path.join(test_dir, 'subject02_grf_HiFreq.mot'))
+        table = osim.TimeSeriesTable(os.path.join(resources_dir, 'subject02_grf_HiFreq.mot'))
         assert table.getNumRows()    == 439
         assert table.getNumColumns() == 18
 
-        table = osim.TimeSeriesTable(os.path.join(test_dir, 
+        table = osim.TimeSeriesTable(os.path.join(resources_dir,
                                           'std_subject01_walk1_ik.mot'))
         assert table.getNumRows()    == 73
         assert table.getNumColumns() == 23
@@ -34,7 +34,7 @@ class TestDataAdapter(unittest.TestCase):
         except AttributeError:
             # C3D support not available. OpenSim was not compiled with ezc3d.
             return
-        tables = adapter.read(os.path.join(test_dir, 'walking2.c3d'))
+        tables = adapter.read(os.path.join(resources_dir, 'walking2.c3d'))
         forces = adapter.getForcesTable(tables)
         markers = adapter.getMarkersTable(tables)
         
@@ -43,7 +43,7 @@ class TestDataAdapter(unittest.TestCase):
         assert forces.getNumRows()     == 9992
         assert forces.getNumColumns()  == 6
         adapter.setLocationForForceExpression(1)
-        tables2 = adapter.read(os.path.join(test_dir, 'walking5.c3d'))
+        tables2 = adapter.read(os.path.join(resources_dir, 'walking5.c3d'))
 
         # Marker data read from C3D.
         markers = adapter.getMarkersTable(tables2)
