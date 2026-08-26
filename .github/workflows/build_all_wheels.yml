@@ -36,7 +36,7 @@ jobs:
 
     - name: Install SWIG
       run: |
-        choco install swig --version 4.2.1 --yes --limit-output --allow-downgrade
+        choco install swig --version 4.4.1 --yes --limit-output --allow-downgrade
         swig -swiglib
 
     - name: Build dependencies
@@ -115,8 +115,8 @@ jobs:
     - name: Install SWIG
       run: |
         mkdir ~/swig-source && cd ~/swig-source
-        wget https://github.com/swig/swig/archive/refs/tags/v4.2.1.tar.gz
-        tar xzf v4.2.1.tar.gz && cd swig-4.2.1
+        wget https://github.com/swig/swig/archive/refs/tags/v4.4.1.tar.gz
+        tar xzf v4.4.1.tar.gz && cd swig-4.4.1
         sh autogen.sh && BISON="$(brew --prefix bison)/bin/bison" ./configure --prefix=$HOME/swig --disable-ccache
         make && make -j4 install
 
@@ -211,21 +211,6 @@ jobs:
         gzip \
         patchelf
 
-        wget https://ftp.gnu.org/gnu/bison/bison-3.8.2.tar.gz
-        tar -xzf bison-3.8.2.tar.gz
-        cd bison-3.8.2
-        ./configure --prefix=/usr/local
-        make -j"$(nproc)"
-        make install
-
-    - name: Install SWIG
-      run: |
-        mkdir ~/swig-source && cd ~/swig-source
-        wget https://github.com/swig/swig/archive/refs/tags/v4.2.1.tar.gz
-        tar xzf v4.2.1.tar.gz && cd swig-4.2.1
-        sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
-        make && make -j4 install
-
     - name: Mark workspace as safe for git (manylinux container)
       run: |
         git config --global --add safe.directory "$GITHUB_WORKSPACE"
@@ -241,8 +226,6 @@ jobs:
       id: configure
       run: |
         cmake -S $GITHUB_WORKSPACE --preset wheels-make-linux-release -LAH \
-            -DSWIG_DIR=$HOME/swig/share/swig \
-            -DSWIG_EXECUTABLE=$HOME/swig/bin/swig \
             -DPython3_EXECUTABLE=$PY
 
         VERSION=`cmake -N -L $GITHUB_WORKSPACE/build/wheels-make-linux-release | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
