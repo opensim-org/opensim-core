@@ -8,5 +8,5 @@ OpenSimAddLibrary(
     LINKLIBS osimCommon osimSimulation osimActuators osimAnalyses
     INCLUDES ${INCLUDES}
     SOURCES ${SOURCES}
-    TESTDIRS "Test"
+    TESTDIRS "tests"
     )
