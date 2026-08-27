@@ -123,8 +123,9 @@ void DynamicsTool::setupProperties()
             "List of forces by individual or grouping name "
             "(e.g. All, actuators, muscles, ...)"
             " to be excluded when computing model dynamics. "
-            "Please note that 'All' does not exclude external loads added "
-            "via 'external_loads_file'.");
+            "'All' does not exclude external loads added "
+            "via 'external_loads_file' (i.e., they will be "
+            "applied to the model when computing dynamics).");
     _excludedForcesProp.setName("forces_to_exclude");
     _propertySet.append(&_excludedForcesProp);
 
