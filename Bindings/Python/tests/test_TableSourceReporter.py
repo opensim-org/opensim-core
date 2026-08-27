@@ -3,8 +3,6 @@ import unittest
 
 import opensim as osim
 
-test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
-                        'tests')
 
 # Tests TableSource and Reporter (including TableReporter) classes.
 class TestTableSourceReporter(unittest.TestCase):

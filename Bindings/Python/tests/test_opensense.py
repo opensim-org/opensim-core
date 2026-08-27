@@ -6,20 +6,19 @@ import opensim as osim
 from opensim import Vec3
 import numpy as np
 from multiprocessing import Process, Queue
-
-test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
-                        'tests')
+resources_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
+                             'tests', 'resources')
 
 class TestOpenSense(unittest.TestCase):
     def test_createObjects(self):
         # Make sure we can instantiate objects for interfacing to 
         # InverseKinematicsSolver
-        modelfile = os.path.join(test_dir,'calibrated_model_imu.osim')
+        modelfile = os.path.join(resources_dir,'calibrated_model_imu.osim')
         model = osim.Model(modelfile)
         coordinates = model.getCoordinateSet();
         imuPlacer = osim.IMUPlacer();
         print("Created IMUPlacer object..")
-        quatTable = osim.TimeSeriesTableQuaternion(os.path.join(test_dir, 
+        quatTable = osim.TimeSeriesTableQuaternion(os.path.join(resources_dir,
                              'orientation_quats.sto'))
         print("Created TimeSeriesTableQuaternion object..")
         orientationsData = osim.OpenSenseUtilities.convertQuaternionsToRotations(quatTable)
@@ -50,7 +49,7 @@ class TestOpenSense(unittest.TestCase):
 
     def test_BufferedOrientationReferencePut(self):
         # Make sure that we can append new data to the BufferedOrientationReference object
-        quatTable = osim.TimeSeriesTableQuaternion(os.path.join(test_dir,'orientation_quats.sto'))
+        quatTable = osim.TimeSeriesTableQuaternion(os.path.join(resources_dir,'orientation_quats.sto'))
         print("Created TimeSeriesTableQuaternion object..")
         orientationsData = osim.OpenSenseUtilities.convertQuaternionsToRotations(quatTable)
         print("Convert Quaternions to orientationsData")

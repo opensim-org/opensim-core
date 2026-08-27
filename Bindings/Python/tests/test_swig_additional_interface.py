@@ -15,8 +15,8 @@ import opensim as osim
 # TODO operator overloading operator+().
 # TODO size() -> __len__()
 
-test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
-                        'tests')
+resources_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
+                             'tests', 'resources')
 
 # Silence warning messages if mesh (.vtp) files cannot be found.
 osim.Model.setDebugLevel(0)
@@ -98,7 +98,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
         f3 = osim.SpringGeneralizedForce()
         a.addForce(f3)
     
-        model = osim.Model(os.path.join(test_dir, "arm26.osim"))
+        model = osim.Model(os.path.join(resources_dir, "arm26.osim"))
         g = osim.CoordinateActuator('r_shoulder_elev')
         model.addForce(g)
     

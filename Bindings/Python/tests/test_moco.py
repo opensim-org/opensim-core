@@ -9,8 +9,6 @@ from math import isnan
 
 import opensim as osim
 
-test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
-                        'tests')
 
 def createSlidingMassModel():
     model = osim.Model()

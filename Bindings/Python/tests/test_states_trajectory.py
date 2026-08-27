@@ -3,8 +3,8 @@ import unittest
 
 import opensim as osim
 
-test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
-                        'tests')
+resources_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
+                             'tests', 'resources')
 
 # Silence warning messages if mesh (.vtp) files cannot be found.
 osim.Model.setDebugLevel(0)
@@ -18,7 +18,7 @@ class TestStatesTrajectory(unittest.TestCase):
         if os.path.exists(self.states_sto_fname):
             os.remove(self.states_sto_fname)
 
-        model = osim.Model(os.path.join(test_dir,
+        model = osim.Model(os.path.join(resources_dir,
             "gait10dof18musc_subject01.osim"))
         model.initSystem()
 
@@ -47,7 +47,7 @@ class TestStatesTrajectory(unittest.TestCase):
         assert count == count_iter
 
     def test_modify_states(self):
-        model = osim.Model(os.path.join(test_dir,
+        model = osim.Model(os.path.join(resources_dir,
             "gait10dof18musc_subject01.osim"))
 
         states = osim.StatesTrajectory.createFromStatesStorage(
@@ -76,7 +76,7 @@ class TestStatesTrajectory(unittest.TestCase):
     def test_states_storage_optional_arguments(self):
         # Try all combinations of optional arguments, just to ensure the
         # wrapping works.
-        model = osim.Model(os.path.join(test_dir,
+        model = osim.Model(os.path.join(resources_dir,
             "gait10dof18musc_subject01.osim"))
         sto = osim.Storage(self.states_sto_fname)
         states = osim.StatesTrajectory.createFromStatesStorage(
@@ -91,7 +91,7 @@ class TestStatesTrajectory(unittest.TestCase):
                 model, sto, True, True)
 
     def test_populate_trajectory(self):
-        model = osim.Model(os.path.join(test_dir,
+        model = osim.Model(os.path.join(resources_dir,
             "gait10dof18musc_subject01.osim"))
         state = model.initSystem()
         states = osim.StatesTrajectory()
@@ -103,7 +103,7 @@ class TestStatesTrajectory(unittest.TestCase):
         self.assertEqual(states[1].getTime(), 1.0)
 
     def test_out_of_range(self):
-        model = osim.Model(os.path.join(test_dir,
+        model = osim.Model(os.path.join(resources_dir,
             "gait10dof18musc_subject01.osim"))
         state = model.initSystem()
         states = osim.StatesTrajectory()
@@ -115,7 +115,7 @@ class TestStatesTrajectory(unittest.TestCase):
         self.assertRaises(RuntimeError, lambda: states[2].getTime())
 
     def test_integrity_checks(self):
-        model = osim.Model(os.path.join(test_dir,
+        model = osim.Model(os.path.join(resources_dir,
             "gait10dof18musc_subject01.osim"))
         state = model.initSystem()
         states = osim.StatesTrajectory()
@@ -144,7 +144,7 @@ class TestStatesTrajectory(unittest.TestCase):
 
     def test_reporter(self):
 
-        model = osim.Model(os.path.join(test_dir,
+        model = osim.Model(os.path.join(resources_dir,
             "gait10dof18musc_subject01.osim"))
 
         rep = osim.StatesTrajectoryReporter()

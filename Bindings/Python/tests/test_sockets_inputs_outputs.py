@@ -4,8 +4,8 @@ Test that sockets, inputs, and outputs are functional in python.
 import os, unittest
 import opensim as osim
 
-test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
-                        'tests')
+resources_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
+                             'tests', 'resources')
 
 # Silence warning messages if mesh (.vtp) files cannot be found.
 osim.Model.setDebugLevel(0)
@@ -27,7 +27,7 @@ osim.Model.setDebugLevel(0)
 
 class TestSockets(unittest.TestCase):
     def test_accessing_sockets(self):
-        model = osim.Model(os.path.join(test_dir, "arm26.osim"))
+        model = osim.Model(os.path.join(resources_dir, "arm26.osim"))
         ground = model.getGround()
         shoulder = model.getJointSet().get("r_shoulder")
 
@@ -51,7 +51,7 @@ class TestSockets(unittest.TestCase):
         assert type(shoulder.getConnectee("child_frame")) == osim.PhysicalOffsetFrame
 
     def test_iterate_sockets(self):
-        model = osim.Model(os.path.join(test_dir, "arm26.osim"))
+        model = osim.Model(os.path.join(resources_dir, "arm26.osim"))
         shoulder = model.getJointSet().get("r_shoulder")
 
         # Connect up the model.
@@ -112,7 +112,7 @@ class TestSockets(unittest.TestCase):
 
 class TestInputsOutputs(unittest.TestCase):
     def test_output_values(self):
-        model = osim.Model(os.path.join(test_dir, "arm26.osim"))
+        model = osim.Model(os.path.join(resources_dir, "arm26.osim"))
         s = model.initSystem()
 
         out = model.getOutput("com_position")
@@ -147,7 +147,7 @@ class TestInputsOutputs(unittest.TestCase):
         # When they exist, test connecting inputs and outputs.
 
     def test_iterate_outputs(self):
-        model = osim.Model(os.path.join(test_dir, "arm26.osim"))
+        model = osim.Model(os.path.join(resources_dir, "arm26.osim"))
         s = model.initSystem()
 
         musc = model.getMuscles().get(0)

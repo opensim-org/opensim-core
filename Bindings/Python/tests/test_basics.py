@@ -8,8 +8,8 @@ import unittest
 
 import opensim as osim
 
-test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
-                        'tests')
+resources_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
+                             'tests', 'resources')
 
 # Silence warning messages if mesh (.vtp) files cannot be found.
 osim.Model.setDebugLevel(0)
@@ -69,7 +69,7 @@ class TestBasics(unittest.TestCase):
         # This tests a bug fix: previously, it was impossible to use the
         # Manager to integrate from MATLAB/Python, since it was not possible
         # to provide an Integrator to the Manager.
-        model = osim.Model(os.path.join(test_dir, "arm26.osim"))
+        model = osim.Model(os.path.join(resources_dir, "arm26.osim"))
         state = model.initSystem()
 
         manager = osim.Manager(model)
@@ -98,10 +98,10 @@ class TestBasics(unittest.TestCase):
         controller = osim.ToyReflexController()
         
     def test_GCVSplineSet(self):
-        splineset = osim.GCVSplineSet(os.path.join(test_dir,
+        splineset = osim.GCVSplineSet(os.path.join(resources_dir,
             'std_subject01_walk1_ik.mot'))
         splineset = osim.GCVSplineSet(
-                osim.TimeSeriesTable(os.path.join(test_dir,
+                osim.TimeSeriesTable(os.path.join(resources_dir,
                     'std_subject01_walk1_ik.mot')), [], 5, 0)
 
     def test_deserialize_tool_with_empty_model_file(self):
@@ -109,12 +109,12 @@ class TestBasics(unittest.TestCase):
         # ForwardTool) setup file with an empty model_file. In particular, we
         # want to check the case where force_set_files is not empty.
         with self.assertRaises(RuntimeError):
-            rra = osim.ForwardTool(os.path.join(test_dir,
+            rra = osim.ForwardTool(os.path.join(resources_dir,
                 'gait2392_setup_forward_empty_model.xml'))
 
         # No exception if we pass loadModel=False
         rra = osim.ForwardTool(
-                os.path.join(test_dir,
+                os.path.join(resources_dir,
                     'gait2392_setup_forward_empty_model.xml'),
                 True, # updateFromXMLNode
                 False, # loadModel

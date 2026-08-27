@@ -9,8 +9,8 @@ import numpy as np
 
 import opensim as osim
 
-test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
-                        'tests')
+resources_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
+                             'tests', 'resources')
 
 # Silence warning messages if mesh (.vtp) files cannot be found.
 osim.Model.setDebugLevel(0)
@@ -219,7 +219,7 @@ class TestSimbody(unittest.TestCase):
         assert v2.__str__() == "~[3 3 3 3 3 3 3]"
 
     def test_SimbodyMatterSubsystem(self):
-        model = osim.Model(os.path.join(test_dir,
+        model = osim.Model(os.path.join(resources_dir,
             "gait10dof18musc_subject01.osim"))
         s = model.initSystem()
         smss = model.getMatterSubsystem()
