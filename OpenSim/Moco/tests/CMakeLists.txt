@@ -50,37 +50,39 @@ MocoAddTest(NAME testMocoImplicit)
 MocoAddTest(NAME testMocoConstraints)
 
 MocoAddTest(NAME testMocoContact RESOURCES
-        subject_20dof18musc_running.osim
-        running_solution_full_stride.sto)
+        resources/subject_20dof18musc_running.osim
+        resources/running_solution_full_stride.sto)
 
 MocoAddTest(NAME testMocoControllers)
 
 MocoAddTest(NAME testMocoActuators)
 
 MocoAddTest(NAME testMocoInverse RESOURCES
-        subject_walk_armless_18musc.osim
-        subject_walk_armless_coordinates.mot
-        subject_walk_armless_grfs.mot
-        subject_walk_armless_external_loads.xml
-        std_testMocoInverse_subject_18musc_solution.sto
+        resources/subject_walk_armless_18musc.osim
+        resources/subject_walk_armless_coordinates.mot
+        resources/subject_walk_armless_grfs.mot
+        resources/subject_walk_armless_external_loads.xml
+        resources/std_testMocoInverse_subject_18musc_solution.sto
         )
 
 MocoAddTest(NAME testMocoTrack RESOURCES
-        walk_gait1018_subject01.osim
-        walk_gait1018_state_reference.mot
-        walk_gait1018_subject01_grf.xml
-        walk_gait1018_subject01_grf.mot
-        std_testMocoTrackGait10dof18musc_solution.sto
+        resources/walk_gait1018_subject01.osim
+        resources/walk_gait1018_state_reference.mot
+        resources/walk_gait1018_subject01_grf.xml
+        resources/walk_gait1018_subject01_grf.mot
+        resources/std_testMocoTrackGait10dof18musc_solution.sto
         )
 
 MocoAddTest(NAME testMocoAnalytic)
 
 MocoAddTest(NAME testMocoMetabolics REQUIRES_CASADI FALSE RESOURCES
-        testMocoMetabolics_hanging_muscle.osim
+        resources/testMocoMetabolics_hanging_muscle.osim
         )
 
-file(COPY subject_walk_armless_18musc.osim subject_walk_armless_coordinates.mot
+file(COPY resources/subject_walk_armless_18musc.osim
+          resources/subject_walk_armless_coordinates.mot
      DESTINATION "${CMAKE_BINARY_DIR}/OpenSim/Tests/Wrapping")
 
-file(COPY walk_gait1018_subject01.osim walk_gait1018_state_reference.mot
+file(COPY resources/walk_gait1018_subject01.osim
+          resources/walk_gait1018_state_reference.mot
         DESTINATION "${CMAKE_BINARY_DIR}/OpenSim/Tests/Wrapping")
