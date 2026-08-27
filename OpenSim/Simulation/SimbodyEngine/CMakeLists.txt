@@ -1,3 +1,3 @@
 if(BUILD_TESTING)
-subdirs(Test)
+    subdirs(tests)
 endif(BUILD_TESTING)
