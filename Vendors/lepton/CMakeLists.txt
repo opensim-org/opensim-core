@@ -6,7 +6,7 @@ OpenSimAddLibrary(VENDORLIB LOWERINCLUDEDIRNAME
     LINKLIBS ""
     INCLUDES "include/Lepton.h"
     SOURCES ${SOURCE_FILES}
-    TESTDIRS test
+    TESTDIRS tests
     INCLUDEDIRS include include/lepton
     INCLUDEINSTALLREL include/lepton
     )
