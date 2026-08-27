@@ -28,6 +28,7 @@
 
 #include "Frame.h"
 #include "Model.h"
+#include "OpenSim/Common/PropertyStr.h"
 
 #include <filesystem>
 #include <fstream>

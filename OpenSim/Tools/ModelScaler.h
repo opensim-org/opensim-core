@@ -23,10 +23,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
-#include <OpenSim/Common/ScaleSet.h>
 #include "MeasurementSet.h"
+
+#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/ScaleSet.h>
 
 namespace SimTK {
 class State;
