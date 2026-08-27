@@ -256,11 +256,34 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 //
 %template (SetOientationWeights) OpenSim::Set<OrientationWeight, OpenSim::Object>;
 %template(SharedOrientationsReference) std::shared_ptr<OpenSim::OrientationsReference>;
+// NOTE: %shared_ptr must be declared before %include to take effect (SWIG
+// only applies smart-pointer typemaps to types it has not yet wrapped).
+// Non-Java targets need that ordering: BufferedInverseKinematicsSolver's
+// constructor takes std::shared_ptr<BufferedMarkersReference> by value, and
+// without %shared_ptr active first, SWIG can't convert a plain
+// BufferedMarkersReference argument into that parameter, so Python fails
+// with "Wrong number or type of arguments".
+// Java is the exception: since none of these classes' C++ base classes (up
+// to Object) are themselves %shared_ptr-registered, the "before" ordering
+// makes SWIG generate a super.swigSetCMemOwn(own) call that doesn't exist
+// anywhere in the (non-smart-pointer) Java hierarchy, breaking compilation.
+// So only Java uses the %include-before-%shared_ptr (no-op) ordering, until
+// the base classes are made smart-pointer aware end to end.
+#ifdef SWIGJAVA
 %include <OpenSim/Simulation/BufferedOrientationsReference.h>
 %shared_ptr(OpenSim::BufferedOrientationsReference);
+%include <OpenSim/Simulation/BufferedMarkersReference.h>
+%shared_ptr(OpenSim::BufferedMarkersReference);
+#else
+%shared_ptr(OpenSim::BufferedOrientationsReference);
+%include <OpenSim/Simulation/BufferedOrientationsReference.h>
+%shared_ptr(OpenSim::BufferedMarkersReference);
+%include <OpenSim/Simulation/BufferedMarkersReference.h>
+#endif
 
 %include <OpenSim/Simulation/AssemblySolver.h>
 %include <OpenSim/Simulation/InverseKinematicsSolver.h>
+%include <OpenSim/Simulation/BufferedInverseKinematicsSolver.h>
 %include <OpenSim/Simulation/OpenSense/IMUPlacer.h>
 %include <OpenSim/Simulation/OpenSense/IMU.h>
 
