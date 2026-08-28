@@ -1,14 +1,14 @@
 find_package(Catch2 REQUIRED
         HINTS "${OPENSIM_DEPENDENCIES_DIR}/catch2")
 
-file(GLOB TEST_PROGS "*est*.cpp")
-file(GLOB TEST_FILES *.osim *.xml *.sto *.mot *.trc)
-file(GLOB TRC_TEST_FILES
-    "${CMAKE_SOURCE_DIR}/Applications/*/test/*.trc"
-    "${CMAKE_SOURCE_DIR}/Applications/*/tests/resources/*.trc")
-file(GLOB MOT_TEST_FILES
-    "${CMAKE_SOURCE_DIR}/Applications/*/test/*.mot"
-    "${CMAKE_SOURCE_DIR}/Applications/*/tests/resources/*.mot")
+file(GLOB TEST_PROGS "*test*.cpp")
+file(GLOB TEST_FILES resources/*.osim
+                     resources/*.xml
+                     resources/*.sto
+                     resources/*.mot
+                     resources/*.trc)
+file(GLOB TRC_TEST_FILES "${CMAKE_SOURCE_DIR}/Applications/*/tests/resources/*.trc")
+file(GLOB MOT_TEST_FILES "${CMAKE_SOURCE_DIR}/Applications/*/tests/resources/*.mot")
 file(GLOB C3D_TEST_FILES "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/*.c3d")
 file(GLOB XSENS_TEST_FILES "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/IMUData/Xsens/*.txt")
 file(GLOB APDM_TEST_FILES "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/IMUData/APDM/*.csv")

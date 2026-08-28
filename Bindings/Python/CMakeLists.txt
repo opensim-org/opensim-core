@@ -268,7 +268,7 @@ foreach(test_file
         "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"
         "${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim"
         "${CMAKE_SOURCE_DIR}/OpenSim/Sandbox/futureOrientationInverseKinematics.trc"
-        "${CMAKE_SOURCE_DIR}/OpenSim/Common/Test/dataWithNaNsOfDifferentCases.trc"
+        "${CMAKE_SOURCE_DIR}/OpenSim/Common/tests/resources/dataWithNaNsOfDifferentCases.trc"
         "${CMAKE_SOURCE_DIR}/Applications/Analyze/tests/resources/subject02_grf_HiFreq.mot"
         "${CMAKE_SOURCE_DIR}/Applications/IK/tests/resources/std_subject01_walk1_ik.mot"
         "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/walking2.c3d"

@@ -21,14 +21,16 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "ComponentsForTesting.h"
-
+#include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Common/MultivariatePolynomialFunction.h>
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Common/SignalGenerator.h>
 #include <OpenSim/Common/Sine.h>
 #include <OpenSim/Common/ExpressionBasedFunction.h>
+#include <simbody/internal/SimbodyMatterSubsystem.h>
+#include <simbody/internal/GeneralForceSubsystem.h>
+#include <simbody/internal/Force.h>
 
 #include <catch2/catch_all.hpp>
 
@@ -38,6 +40,81 @@ using namespace OpenSim;
 using namespace SimTK;
 using Catch::Approx;
 using Catch::Matchers::ContainsSubstring;
+
+
+namespace {
+
+    class RootComponent : public OpenSim::Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(RootComponent, OpenSim::Component);
+    public:
+        RootComponent() : Component() { }
+
+        RootComponent(const std::string& fileName, bool updFromXMLNode = false)
+            : Component(fileName, updFromXMLNode) {
+            // Propagate XML file values to properties 
+            updateFromXMLDocument();
+            // add components listed as properties as sub components.
+            finalizeFromProperties();
+        }
+
+        void add(OpenSim::Component* comp) {
+            addComponent(comp);
+        }
+
+        // Top level connection method for this all encompassing component.
+        void connect() {
+            Super::finalizeConnections(*this);
+        }
+        void buildUpSystem(SimTK::MultibodySystem& system) { 
+            connect();
+            addToSystem(system);
+        }
+
+        const SimTK::SimbodyMatterSubsystem& getMatterSubsystem() const
+        { return *matter; }
+        SimTK::SimbodyMatterSubsystem& updMatterSubsystem() const
+        { return *matter; }
+
+        const SimTK::GeneralForceSubsystem& getForceSubsystem() const
+        { return *forces; }
+        SimTK::GeneralForceSubsystem& updForceSubsystem() const
+        { return *forces; }
+
+    protected:
+        // Component interface implementation
+        void extendAddToSystem(SimTK::MultibodySystem& system) const override {
+            if (system.hasMatterSubsystem()){
+                matter = system.updMatterSubsystem();
+            }
+            else{
+
+                SimTK::SimbodyMatterSubsystem* old_matter = matter.release();
+                delete old_matter;
+                matter = new SimTK::SimbodyMatterSubsystem(system);
+
+                SimTK::GeneralForceSubsystem* old_forces = forces.release();
+                delete old_forces;
+                forces = new SimTK::GeneralForceSubsystem(system);
+
+                SimTK::Force::UniformGravity gravity(*forces, *matter,
+                        SimTK::Vec3(0, -9.816, 0));
+                fix = gravity.getForceIndex();
+
+                system.updMatterSubsystem().setShowDefaultGeometry(true);
+            }
+        }
+
+    private:
+        // Keep track of pointers to the underlying computational subsystems.
+        mutable SimTK::ReferencePtr<SimTK::SimbodyMatterSubsystem> matter;
+        mutable SimTK::ReferencePtr<SimTK::GeneralForceSubsystem> forces;
+
+        // keep track of the force added by the component
+        mutable SimTK::ForceIndex fix;
+
+    }; // end of RootComponent
+
+}
 
 
 TEST_CASE("SignalGenerator") {

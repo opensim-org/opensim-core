@@ -20,7 +20,7 @@ OpenSimAddLibrary(
              PRIVATE ${ezc3d_LIBRARY}
     INCLUDES ${INCLUDES}
     SOURCES ${SOURCES}
-    TESTDIRS "Test"
+    TESTDIRS "tests"
     # This disables the operators from SimTK that newer compilers have problems with
     # see https://github.com/simbody/simbody/pull/815 for details
     EXTERNAL_DEPENDENCY_SYMBOL SWIG_PYTHON
