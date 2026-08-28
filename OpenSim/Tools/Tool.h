@@ -22,13 +22,9 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Common/PropertyObj.h>
-
+#include "OpenSim/Common/Object.h"
+#include "OpenSim/Common/Property.h"
+#include "osimToolsDLL.h"
 
 namespace OpenSim { 
 
