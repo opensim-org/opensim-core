@@ -350,7 +350,7 @@ OSIMCOMMON_API int choose(int n, int k);
  * Check if a property is a string that is not empty and not the default value.
  */
 template <typename T>
-OSIMCOMMON_API bool isValidFileName(const Property<T>& value) {
+bool isValidFileName(const Property<T>& value) {
     if constexpr (std::is_same_v<T, std::string>) {
         return !value.getValue().empty() && !value.getValueIsDefault();
     } else {
