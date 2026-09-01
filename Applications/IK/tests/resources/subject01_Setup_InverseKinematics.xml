@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSimDocument Version="20302">
-  <InverseKinemtaticsTool name="subject01">
+  <InverseKinematicsTool name="subject01">
 	  <!--Name of the .osim file used to construct a model.-->
 	  <model_file> subject01_simbody.osim </model_file>
     <!-- A positive scalar that is used to weight the importance of satisfying constraints."
@@ -42,6 +42,6 @@
     <report_errors> false </report_errors>
     <!--Flag indicating whether or not to report model marker locations in ground.-->
     <report_marker_locations> true </report_marker_locations>
-  </InverseKinemtaticsTool>
+  </InverseKinematicsTool>
 </OpenSimDocument>
 
