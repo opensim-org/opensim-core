@@ -24,11 +24,11 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include "MeasurementSet.h"
+#include "osimToolsDLL.h"
 
-#include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Property.h>
+#include <OpenSim/Tools/MeasurementSet.h>
 
 namespace SimTK {
 class State;
@@ -38,6 +38,9 @@ namespace OpenSim {
 
 class MarkerData;
 class Model;
+class Measurement;
+class ScaleSet;
+class Scale;
 
 //=============================================================================
 //=============================================================================
@@ -55,47 +58,37 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ModelScaler, Object);
 //=============================================================================
 // DATA
 //=============================================================================
-private:
-
-protected:
-    // whether or not to apply scaling
-    PropertyBool _applyProp;
-    bool &_apply;
-
-    // order of the two scaling components: measurements and manual scaling
-    PropertyStrArray _scalingOrderProp;
-    Array<std::string>& _scalingOrder;
-
-    // set of measurements to make on generic model and subject's static pose
-    PropertyObj _measurementSetProp;
-    MeasurementSet &_measurementSet;
-
-    // set of XYZ scale factors to use for manual scaling
-    PropertyObj _scaleSetProp;
-    ScaleSet &_scaleSet;
-
-    // name of marker file that contains the static pose
-    PropertyStr _markerFileNameProp;
-    std::string &_markerFileName;
-
-    // range of frames to average in static pose file, specified by time
-    PropertyDblArray _timeRangeProp;
-    Array<double> &_timeRange;
-
-    // whether or not to preserve mass distribution in generic model file when scaling
-    PropertyBool _preserveMassDistProp;
-    bool &_preserveMassDist;
-
-    // name of XML model file to write when done scaling
-    PropertyStr _outputModelFileNameProp;
-    std::string &_outputModelFileName;
-
-    // name of scale file to write when done scaling
-    PropertyStr _outputScaleFileNameProp;
-    std::string &_outputScaleFileName;
-
-    // Whether or not to write to the designated output files (GUI will set this to false)
-    bool _printResultFiles;
+public:
+OpenSim_DECLARE_PROPERTY(
+        apply, bool, "Whether or not to use the model scaler during scale");
+OpenSim_DECLARE_LIST_PROPERTY(scaling_order, std::string,
+        "Specifies the scaling method and order. "
+        "Valid options are 'measurements', 'manualScale', singly or both in "
+        "any sequence.");
+OpenSim_DECLARE_PROPERTY(MeasurementSet, MeasurementSet,
+        "Specifies the measurements by which body segments are to be scaled.");
+OpenSim_DECLARE_PROPERTY(
+        ScaleSet, ScaleSet, "Scale factors to be used for manual scaling.");
+OpenSim_DECLARE_PROPERTY(marker_file, std::string,
+        "TRC file (.trc) containing the marker positions used for "
+        "measurement-based scaling. "
+        "This is usually a static trial, but doesn't need to be.  The "
+        "marker-pair distances are computed for each "
+        "time step in the TRC file and averaged across the time range.");
+OpenSim_DECLARE_LIST_PROPERTY_SIZE(time_range, double, 2,
+        "Time range over which to average marker-pair distances in the marker "
+        "file (.trc) for ");
+OpenSim_DECLARE_PROPERTY(preserve_mass_distribution, bool,
+        "Flag (true or false) indicating whether or not to preserve relative "
+        "mass between segments.");
+OpenSim_DECLARE_PROPERTY(output_model_file, std::string,
+        "Name of OpenSim model file (.osim) to write when done scaling.");
+OpenSim_DECLARE_PROPERTY(output_scale_file, std::string,
+        "Name of file to write containing the scale factors that were applied "
+        "to the unscaled model (optional).");
+OpenSim_DECLARE_PROPERTY(print_result_files, bool,
+        "Whether or not to write to the designated output files (GUI will set "
+        "this to false)");
 
 //=============================================================================
 // METHODS
@@ -105,15 +98,8 @@ protected:
     //--------------------------------------------------------------------------
 public:
     ModelScaler();
-    ModelScaler(const ModelScaler &aModelScaler);
-    virtual ~ModelScaler();
 
-#ifndef SWIG
-    ModelScaler& operator=(const ModelScaler &aModelScaler);
-#endif
-   void copyData(const ModelScaler &aModelScaler);
-
-    bool processModel(Model* aModel, const std::string& aPathToSubject="",
+    bool processModel(Model* aModel, const std::string& aPathToSubject = "",
             double aFinalMass = -1.0) const;
     /* Register types to be used when reading a ModelScaler object from xml file. */
     static void registerTypes();
@@ -121,79 +107,67 @@ public:
     /**
      * add a measurement
      */
-    void addMeasurement(Measurement* aMeasurement)
-    {
-        _measurementSet.adoptAndAppend(aMeasurement);
-    }
+    void addMeasurement(Measurement* aMeasurement);
     /**
      * add a scale factor to current scaleSet
      */
-    void addScale(Scale *aScale)
-    {
-        _scaleSet.adoptAndAppend(aScale);
-    }
+    void addScale(Scale* aScale);
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
 
-    bool getApply() const { return _apply; }
-    void setApply(bool aApply) { 
-        _apply = aApply; 
-        _applyProp.setValueIsDefault(false); 
-    }
+    bool getApply() const { return get_apply(); }
+    void setApply(bool aApply) { set_apply(aApply); }
 
-    MeasurementSet& getMeasurementSet() { return _measurementSet; }
-    void setMeasurementSet(MeasurementSet& measurementSet) {
-        _measurementSet = measurementSet;
-    }
+    MeasurementSet& getMeasurementSet() { return upd_MeasurementSet(); };
+    void setMeasurementSet(MeasurementSet& measurementSet);
 
-    ScaleSet& getScaleSet() { return _scaleSet; }
-    void setScaleSetFile(const std::string& aScaleSetFilename) {
-        _scaleSet = ScaleSet(aScaleSetFilename);
-    }
+    ScaleSet& getScaleSet() { return upd_ScaleSet(); };
+    void setScaleSetFile(const std::string& aScaleSetFilename);
 
-    const Array<double> &getTimeRange() const { return _timeRange; }
-    void setTimeRange(Array<double> timeRange) {
-        _timeRange = timeRange;
-        _timeRangeProp.setValueIsDefault(false);
+    Array<double> getTimeRange() const {
+        return Array<double>{get_time_range(0), get_time_range(1)};
     }
+    void setTimeRange(Array<double> timeRange) { set_time_range(timeRange); }
 
-    bool getPreserveMassDist() const { return _preserveMassDist; }
+    bool getPreserveMassDist() const {
+        return get_preserve_mass_distribution();
+    }
     void setPreserveMassDist(bool preserveMassDist) {
-        _preserveMassDist = preserveMassDist;
-        _preserveMassDistProp.setValueIsDefault(false);
+        set_preserve_mass_distribution(preserveMassDist);
     }
 
-    Array<std::string>& getScalingOrder() { return _scalingOrder; }
+    Array<std::string> getScalingOrder() const;
     void setScalingOrder(Array<std::string>& scalingOrder) {
-        _scalingOrder = scalingOrder;
-        _scalingOrderProp.setValueIsDefault(false);
+        set_scaling_order(scalingOrder);
     }
 
-    const std::string& getMarkerFileName() const { return _markerFileName; }
+    const std::string& getMarkerFileName() const { return get_marker_file(); }
     void setMarkerFileName(const std::string& aMarkerFileName) {
-        _markerFileName = aMarkerFileName;
-        _markerFileNameProp.setValueIsDefault(false);
+        set_marker_file(aMarkerFileName);
     }
 
-    const std::string& getOutputModelFileName() const { return _outputModelFileName; }
+    const std::string& getOutputModelFileName() const {
+        return get_output_model_file();
+    }
     void setOutputModelFileName(const std::string& aOutputModelFileName) {
-        _outputModelFileName = aOutputModelFileName;
-        _outputModelFileNameProp.setValueIsDefault(false);
+        set_output_model_file(aOutputModelFileName);
     }
 
-    const std::string& getOutputScaleFileName() const { return _outputScaleFileName; }
+    const std::string& getOutputScaleFileName() const {
+        return get_output_scale_file();
+    }
     void setOutputScaleFileName(const std::string& aOutputScaleFileName) {
-        _outputScaleFileName = aOutputScaleFileName;
-        _outputScaleFileNameProp.setValueIsDefault(false);
+        set_output_scale_file(aOutputScaleFileName);
     }
 
-    void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
+    void setPrintResultFiles(bool aToWrite) {
+        set_print_result_files(aToWrite);
+    }
 
     double computeMeasurementScaleFactor(const SimTK::State& s, const Model& aModel, const MarkerData& aMarkerData, const Measurement& aMeasurement) const;
 private:
-    void setNull();
-    void setupProperties();
+    void constructProperties();
     double takeModelMeasurement(const SimTK::State& s, const Model& aModel, const std::string& aName1, const std::string& aName2, const std::string& aMeasurementName) const;
     double takeExperimentalMarkerMeasurement(const MarkerData& aMarkerData, const std::string& aName1, const std::string& aName2, const std::string& aMeasurementName) const;
 
@@ -205,5 +179,3 @@ private:
 } // end of namespace OpenSim
 
 #endif // __ModelScaler_h__
-
-
