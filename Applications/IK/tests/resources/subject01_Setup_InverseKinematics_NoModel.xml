@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<InverseKinemtaticsTool name="subject01">
+<InverseKinematicsTool name="subject01">
 	<!--Name of the .osim file used to construct a model.-->
 	<model_file> </model_file>
 	<!--Task set used to specify IK weights.-->
@@ -33,5 +33,5 @@
 		  A weighting of 'Infinity' or if it is unassigned results in the constraints being strictly enforced-->
   <constraint_weight> 100.0 </constraint_weight>
   <accuracy>1e-5</accuracy>
-</InverseKinemtaticsTool>
+</InverseKinematicsTool>
 
