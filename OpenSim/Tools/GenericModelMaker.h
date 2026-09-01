@@ -23,11 +23,11 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
 #include "osimToolsDLL.h"
+
 #include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/Property.h>
 
 #ifdef SWIG
     #ifdef OSIMTOOLS_API
@@ -55,14 +55,13 @@ OpenSim_DECLARE_CONCRETE_OBJECT(GenericModelMaker, Object);
 //=============================================================================
 // DATA
 //=============================================================================
-private:
-
-protected:
-    PropertyStr _fileNameProp;
-    std::string &_fileName;
-
-    PropertyStr _markerSetFileNameProp;
-    std::string &_markerSetFileName;
+public:
+OpenSim_DECLARE_PROPERTY(
+        model_file, std::string, "Model file (.osim) for the unscaled model.");
+OpenSim_DECLARE_PROPERTY(marker_set_file, std::string,
+        "Set of model markers used to scale the model. "
+        "Scaling is done based on distances between model markers compared to "
+        "the same distances between the corresponding experimental markers.");
 
 //=============================================================================
 // METHODS
@@ -72,15 +71,8 @@ protected:
     //--------------------------------------------------------------------------
 public:
     GenericModelMaker();
-    GenericModelMaker(const GenericModelMaker &aGenericModelMaker);
-    virtual ~GenericModelMaker();
 
-#ifndef SWIG
-    GenericModelMaker& operator=(const GenericModelMaker &aGenericModelMaker);
-#endif
-    void copyData(const GenericModelMaker &aGenericModelMaker);
-
-    Model* processModel(const std::string& aPathToSubject="") const;
+    Model* processModel(const std::string& aPathToSubject = "") const;
 
     /* Register types to be used when reading a GenericModelMaker object from xml file. */
     static void registerTypes();
@@ -88,32 +80,26 @@ public:
     /**
      * Get file name for generic model
      */
-    const std::string& getModelFileName() const
-    {
-        return _fileName;
-    }
+    const std::string& getModelFileName() const { return get_model_file(); }
 
     // Set model file name
     void setModelFileName(const std::string& aFileName)
     {
-        _fileName = aFileName;
-        _fileNameProp.setValueIsDefault(false);
+        set_model_file(aFileName);
     }
 
     const std::string& getMarkerSetFileName() const
     {
-        return _markerSetFileName;
+        return get_marker_set_file();
     }
 
     void setMarkerSetFileName(const std::string& aFileName)
     {
-        _markerSetFileName = aFileName;
-        _markerSetFileNameProp.setValueIsDefault(false);
+        set_marker_set_file(aFileName);
     }
 
 private:
-    void setNull();
-    void setupProperties();
+    void constructProperties();
 //=============================================================================
 };  // END of class GenericModelMaker
 //=============================================================================
