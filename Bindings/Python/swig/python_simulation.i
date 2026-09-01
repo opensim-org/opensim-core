@@ -120,13 +120,13 @@ MODEL_ADOPT_HELPER(Controller);
         """
         it = self.begin()
         while it != self.end():
-            yield it.next()
+            yield it.__next__()
 
     def getBetween(self, *args, **kwargs):
         iter_range = self._getBetween(*args, **kwargs)
         it = iter_range.begin()
         while it != iter_range.end():
-            yield it.next()
+            yield it.__next__()
 %}
 };
 
