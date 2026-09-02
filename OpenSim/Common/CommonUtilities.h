@@ -23,8 +23,13 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "osimCommonDLL.h"
 #include "Assertion.h"
+#include "osimCommonDLL.h"
+
+#include <OpenSim/Common/Property.h>
+
+#include <SimTKcommon/internal/BigMatrix.h>
+
 #include <algorithm>
 #include <cmath>
 #include <condition_variable>
@@ -36,8 +41,6 @@
 #include <stack>
 #include <utility>
 #include <vector>
-
-#include <SimTKcommon/internal/BigMatrix.h>
 
 namespace OpenSim {
 
@@ -343,6 +346,18 @@ OSIMCOMMON_API double factorizeMatrixNonNegative(const SimTK::Matrix& A,
  * of `n` total elements.
  */
 OSIMCOMMON_API int choose(int n, int k);
+
+namespace detail {
+/**
+ * Returns true if value is a valid name for a file.
+ */
+template <typename T> bool isValidFileName(const Property<T>& value) {
+    return false;
+}
+inline bool isValidFileName(const Property<std::string>& value) {
+    return !value.getValue().empty() && !value.getValueIsDefault();
+}
+} // namespace detail
 
 } // namespace OpenSim
 
