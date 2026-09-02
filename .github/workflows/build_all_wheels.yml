@@ -169,10 +169,7 @@ jobs:
   build_linux_wheels:
     runs-on: ubuntu-latest
     container:
-      # Note: a particular tag of manylinux is necessary because
-      # newer versions use a newer version of SWIG: drop the tag
-      # once SWIG is updated (#4436, #4435).
-      image: quay.io/pypa/manylinux_2_28_x86_64:2026.08.15-1
+      image: quay.io/pypa/manylinux_2_28_x86_64
 
     strategy:
       matrix:
