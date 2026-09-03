@@ -29,8 +29,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
 
-#include <optional>
-
 using namespace OpenSim;
 
 //=============================================================================
@@ -256,6 +254,32 @@ findIndependentCoordinates(const SimTK::State& s) const {
 //=============================================================================
 // FORCE PRODUCER INTERFACE
 //=============================================================================
+void Scholz2015GeometryPath::implForEachDecorativePathPoint(
+    const SimTK::State& state,
+    const ModelDisplayHints& hints,
+    const std::function<void(const DecorativePathPoint&)>& callback) const
+{
+    const auto sink = [&callback](SimTK::Vec3 p) {
+        using std::isnan;
+
+        // If the solver fails then it may produce NaNs, which we filter out
+        // here. This should probably be fixed in simbody.
+        //if (not (isnan(p[0]) or isnan(p[1]) or isnan(p[2]))) {
+            callback(DecorativePathPoint{p});
+        //}
+    };
+
+    if (hints.get_discretize_path()) {
+        getCableSpan().calcResampledDecorativePathPoints(
+            state,
+            hints.get_num_samples_per_wrap_segment(),
+            sink
+        );
+    } else {
+        getCableSpan().calcDecorativePathPoints(state, sink);
+    }
+}
+
 void Scholz2015GeometryPath::produceForces(const SimTK::State& state,
         double tension, ForceConsumer& forceConsumer) const {
 
@@ -411,41 +435,6 @@ void Scholz2015GeometryPath::extendAddToSystem(
     _index = cable.getIndex();
 }
 
-void Scholz2015GeometryPath::generateDecorations(
-        bool fixed,
-        const ModelDisplayHints& hints,
-        const SimTK::State& s,
-        SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const {
-
-    if (fixed) { return; }
-    const bool showPathPoints = hints.get_show_path_points();
-    const SimTK::Vec3 color = getColor(s);
-    int index = 0;
-    std::optional<SimTK::Vec3> previous;
-    getCableSpan().calcDecorativePathPoints(s, [&](SimTK::Vec3 x_G) {
-        if (previous) {
-            // Emit line between points
-            geoms.push_back(SimTK::DecorativeLine(*previous, x_G)
-                .setLineThickness(4)
-                .setScaleFactors(SimTK::Vec3{1.0})
-                .setColor(color)
-                .setBodyId(0)
-                .setIndexOnBody(index++)
-            );
-        }
-        if (showPathPoints) {
-            geoms.push_back(SimTK::DecorativeSphere(0.005)
-                .setTransform(x_G)
-                .setScaleFactors(SimTK::Vec3{1.0})
-                .setColor(color)
-                .setBodyId(0)
-                .setIndexOnBody(index++)
-            );
-        }
-
-        previous = x_G;
-    });
-}
 
 void Scholz2015GeometryPath::extendPreScale(const SimTK::State& s,
         const ScaleSet& scaleSet) {

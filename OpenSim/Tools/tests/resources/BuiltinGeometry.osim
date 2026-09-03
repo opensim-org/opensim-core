@@ -286,6 +286,10 @@
 						<Appearance>
 							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+							<opacity>0.8</opacity>
+							<SurfaceProperties>
+							    <representation>-1</representation>
+							</SurfaceProperties>
 						</Appearance>
 					</GeometryPath>
 					<!--Maximum isometric force that the fibers can generate-->
@@ -326,6 +330,10 @@
 						<Appearance>
 							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+							<opacity>0.5</opacity>
+							<SurfaceProperties>
+							    <representation>2</representation>
+							</SurfaceProperties>
 						</Appearance>
 					</GeometryPath>
 					<!--Maximum isometric force that the fibers can generate-->
