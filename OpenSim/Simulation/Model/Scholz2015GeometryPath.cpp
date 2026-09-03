@@ -264,9 +264,9 @@ void Scholz2015GeometryPath::implForEachDecorativePathPoint(
 
         // If the solver fails then it may produce NaNs, which we filter out
         // here. This should probably be fixed in simbody.
-        if (not (isnan(p[0]) or isnan(p[1]) or isnan(p[2]))) {
+        //if (not (isnan(p[0]) or isnan(p[1]) or isnan(p[2]))) {
             callback(DecorativePathPoint{p});
-        }
+        //}
     };
 
     if (hints.get_discretize_path()) {
