@@ -4,6 +4,9 @@ For consistency with the rest of the API, we use camel-case for variable names.
 This breaks Python PEP 8 convention, but allows us to be consistent within our
 own project.
 */
+%begin %{
+#define Py_LIMITED_API 0x030A0000
+%}
 
 /** The following line produces legacy documentation in python wrapper, replaced with -doxygen in swig 4.0+ */
 //%feature("autodoc", "3");

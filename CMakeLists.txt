@@ -435,13 +435,16 @@ endif()
 if(${BUILD_PYTHON_WRAPPING})
     set(required_python_version 3)
     set(Python3_ROOT_DIR ""  CACHE PATH "Top level directory containing Python3. For conda environments, this can also be set to the top level directory for a specific environment.")
-    find_package(Python3 3.6 REQUIRED COMPONENTS Interpreter Development.Module NumPy)
+    find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter Development.Module NumPy)
     message("Python3_FOUND:${Python3_FOUND}")
     message("Python3_VERSION:${Python3_VERSION}")
     message("Python3_Development_FOUND:${Python3_Development_FOUND}")
     message("Python3_LIBRARIES:${Python3_LIBRARIES}")
     message("Python3_Numpy_Include:${Python3_NumPy_INCLUDE_DIRS}")
     message("Python3_Numpy_VERSION:${Python3_NumPy_VERSION}")
+
+    get_filename_component(PY_LIB_DIR "${Python3_LIBRARIES}" DIRECTORY)
+    set(PYTHON3_STABLE_LIB "${PY_LIB_DIR}/python3.lib")
 
     # We update the python install dir to include the python version,
     # now that we know it. We replace the token "VERSION" with the actual python
