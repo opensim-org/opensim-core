@@ -41,6 +41,14 @@ The property `moment_arm_threshold` has been removed, and the methods `get/setMo
   number of elements (e.g. 2 elements for a `Vec2`, 3 for `Vec3`; #4416).
 - The `OpenSim/Common/Detail/` directory is now copied during installation. Fixes build failures related to compilation units
   not finding the enclosed header files. (#4434)
+- `AbstractGeometryPath` now has a private `forEachDecorativePathPoint` virtual function and
+  corresponding `generateDecorations` (overridable) implementation, which simplifies concrete
+  path implementations (e.g. `GeometryPath`, `Scholz2015GeometryPath`) so that they only need
+  to produce points, rather than decorations (#4286).
+- `ModelDisplayHints` now has `discretize_path` and `num_samples_per_wrap_segment` properties, which
+  constrains the decoration-generation behavior of some path implementations (for now, `Scholz2015GeometryPath`)
+  to generating a constant number of decorations. This can be useful for renderers that benefit from
+  a fixed scene graph (#4286).
 
 
 v4.6
