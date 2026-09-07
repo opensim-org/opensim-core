@@ -492,6 +492,11 @@ public:
     // @}
 
 private:
+    void implForEachDecorativePathPoint(
+        const SimTK::State&,
+        const ModelDisplayHints&,
+        const std::function<void(const DecorativePathPoint&)>&) const override;
+
     // PROPERTIES
     OpenSim_DECLARE_LIST_PROPERTY(path_elements, Scholz2015GeometryPathElement,
         "The list of elements (path points or obstacles) defining the path.");
@@ -504,9 +509,6 @@ private:
     // MODEL COMPONENT INTERFACE
     void extendConnectToModel(Model& model) override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
-            const SimTK::State& s,
-            SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const override;
     void extendPreScale(const SimTK::State&, const ScaleSet&) override;
     void extendPostScale(const SimTK::State&, const ScaleSet&) override;
 
