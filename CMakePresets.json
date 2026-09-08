@@ -150,7 +150,7 @@
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDebugDLL"
             }
-        },        
+        },
         {
             "hidden": true,
             "name": "ci",
