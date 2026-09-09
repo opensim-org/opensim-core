@@ -63,6 +63,16 @@ if (OPENSIM_WITH_CASADI)
     install_name_tool_add_rpath(coinmumps.3)
     install_name_tool_change(ipopt.3 coinmumps.3 "@IPOPT_LIBDIR@")
 
+    # libipopt and libcoinmumps link against the Fortran runtime themselves, so
+    # they need the same treatment as the CasADi plugin below. Without this,
+    # their references to libgfortran/libquadmath keep pointing at the absolute
+    # path those libraries had on the build machine, and loading the Ipopt
+    # plugin fails on any machine that does not have them there (#4445).
+    install_name_tool_change_gfortran(ipopt.3)
+    install_name_tool_change_quadmath(ipopt.3)
+    install_name_tool_change_gfortran(coinmumps.3)
+    install_name_tool_change_quadmath(coinmumps.3)
+
     install_name_tool_change(casadi_nlpsol_ipopt.3.7 ipopt.3 "@IPOPT_LIBDIR@")
     install_name_tool_change(casadi_nlpsol_ipopt.3.7 coinmumps.3 "@IPOPT_LIBDIR@")
     install_name_tool_change(casadi_nlpsol_ipopt.3.7 metis "@IPOPT_LIBDIR@")
