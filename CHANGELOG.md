@@ -49,6 +49,8 @@ The property `moment_arm_threshold` has been removed, and the methods `get/setMo
   constrains the decoration-generation behavior of some path implementations (for now, `Scholz2015GeometryPath`)
   to generating a constant number of decorations. This can be useful for renderers that benefit from
   a fixed scene graph (#4286).
+- The `ModelScaler` tool was refactored from the legacy property system (`PropertyDblArray`,
+  `PropertyStr`) to the newer `Property<T>` system (#4438).
 
 
 v4.6
