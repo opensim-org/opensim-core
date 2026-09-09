@@ -51,6 +51,10 @@ The property `moment_arm_threshold` has been removed, and the methods `get/setMo
   a fixed scene graph (#4286).
 - The `ModelScaler` tool was refactored from the legacy property system (`PropertyDblArray`,
   `PropertyStr`) to the newer `Property<T>` system (#4438).
+- Fixed the Ipopt plugin failing to load in the macOS Python wheels. `libipopt` and `libcoinmumps`
+  referenced `libgfortran`/`libquadmath` by the absolute path those libraries had on the build
+  machine, so `MocoStudy.solve()` failed with "Plugin 'ipopt' is not found" on any macOS machine
+  without GCC installed at that prefix (#4447).
 
 
 v4.6
