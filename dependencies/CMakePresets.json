@@ -138,6 +138,20 @@
             }
         },
         {
+            "name": "dev-minimal-msvc-debug",
+            "description": "Minimal development configuration that only build the dependencies necessary for a minimal build (no Moco, no ezc3d)",
+            "inherits": ["dev-default"],
+            "cacheVariables": {
+                "OPENSIM_WITH_CASADI": "OFF",
+                "SUPERBUILD_ezc3d": "OFF",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDebugDLL"
+            },
+            "environment": {
+                "CXXFLAGS": "/w"
+            }
+        },
+        {
             "name": "ci-make-macos-release",
             "displayName": "MacOS CI default",
             "description": "Default CI configuration for MacOS",
@@ -251,6 +265,10 @@
             "configurePreset": "dev-minimal"
         },
         {
+            "name": "dev-minimal-msvc-debug",
+            "configurePreset": "dev-minimal-msvc-debug"
+        },
+        {
             "name": "ci-msvc-windows-release",
             "configurePreset": "ci-msvc-windows-release",
             "inherits": "windows",
@@ -324,6 +342,13 @@
             "steps": [
                 { "type": "configure", "name": "dev-minimal" },
                 { "type": "build",     "name": "dev-minimal" }
+            ]
+        },
+        {
+            "name": "dev-minimal-msvc-debug",
+            "steps": [
+                { "type": "configure", "name": "dev-minimal-msvc-debug" },
+                { "type": "build",     "name": "dev-minimal-msvc-debug" }
             ]
         }
     ]
