@@ -61,6 +61,10 @@ if (OPENSIM_WITH_CASADI)
 
     install_name_tool_add_rpath(ipopt.3)
     install_name_tool_add_rpath(coinmumps.3)
+    # Ipopt's and MUMPS's install names are absolute build-machine paths; use
+    # @rpath like the other bundled libraries.
+    install_name_tool_id(ipopt.3)
+    install_name_tool_id(coinmumps.3)
     install_name_tool_change(ipopt.3 coinmumps.3 "@IPOPT_LIBDIR@")
 
     # libipopt and libcoinmumps link against the Fortran runtime themselves, so
