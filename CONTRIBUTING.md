@@ -178,13 +178,11 @@ can be used to specify platform-specific tests.
 Running Moco tests
 ------------------
 In general, Moco's tests depend on the CasADi library, whose use is determined 
-by the `OPENSIM_WITH_CASADI` and CMake variable. The CTests are designed to 
+by the `OPENSIM_WITH_CASADI` CMake variable. The CTests are designed to 
 succeed regardless of the value of the CMake variable: if `OPENSIM_WITH_CASADI` 
-is off, Moco's C++ tests are run with arguments `"~*MocoCasADiSolver*" "~[casadi]"`, 
-which excludes Catch2 templatized tests using MocoCasADiSolver and other tests that 
-are tagged as relying on CasADi. If the test executables are run without CTest (e.g., 
-debugging a project in Visual Studio), the tests will fail if `OPENSIM_WITH_CASADI` is 
-false; for the tests to pass, provide the argument `"~*MocoCasADiSolver*" "~[casadi]"`.
+is off, the Moco tests that rely on CasADi are marked `DISABLED` and are skipped 
+by CTest. If those test executables are run without CTest (e.g., debugging a 
+project in Visual Studio), they will fail when `OPENSIM_WITH_CASADI` is false.
 
 Building GUI
 -------------
