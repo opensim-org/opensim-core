@@ -65,12 +65,11 @@ OpenSim_DECLARE_PROPERTY(age, double,
         "Age of the subject in years.  For informational "
         "purposes only (not used by scaling).");
 OpenSim_DECLARE_PROPERTY(notes, std::string, "Notes for the subject.");
-OpenSim_DECLARE_PROPERTY(generic_model_maker, GenericModelMaker,
-        "Specifies the name of the unscaled "
-        "model (.osim) and the marker set.");
-OpenSim_DECLARE_PROPERTY(model_scaler, ModelScaler,
-        "Specifies parameters for scaling the model.");
-OpenSim_DECLARE_PROPERTY(marker_placer, MarkerPlacer,
+OpenSim_DECLARE_UNNAMED_PROPERTY(GenericModelMaker,
+        "Specifies the name of the unscaled model (.osim) and the marker set.");
+OpenSim_DECLARE_UNNAMED_PROPERTY(
+        ModelScaler, "Specifies parameters for scaling the model.");
+OpenSim_DECLARE_UNNAMED_PROPERTY(MarkerPlacer,
         "Specifies parameters for placing markers on "
         "the model once a model is scaled. ");
 
@@ -93,12 +92,12 @@ public:
     Model* createModel() const;
     /* Query the subject for different parameters */
     const GenericModelMaker& getGenericModelMaker() const {
-        return get_generic_model_maker();
+        return get_GenericModelMaker();
     }
 
-    const ModelScaler& getModelScaler() const { return get_model_scaler(); }
+    const ModelScaler& getModelScaler() const { return get_ModelScaler(); }
 
-    const MarkerPlacer& getMarkerPlacer() const { return get_marker_placer(); }
+    const MarkerPlacer& getMarkerPlacer() const { return get_MarkerPlacer(); }
 
     /** Run the scale tool. This first runs the ModelScaler, then runs the
      * MarkerPlacer. This is the method called by the command line `scale`
@@ -107,13 +106,13 @@ public:
     bool run() const;
 
     bool isDefaultGenericModelMaker() const {
-        return getProperty_generic_model_maker().getValueIsDefault();
+        return getProperty_GenericModelMaker().getValueIsDefault();
     }
     bool isDefaultModelScaler() const {
-        return getProperty_model_scaler().getValueIsDefault();
+        return getProperty_ModelScaler().getValueIsDefault();
     }
     bool isDefaultMarkerPlacer() const {
-        return getProperty_marker_placer().getValueIsDefault();
+        return getProperty_MarkerPlacer().getValueIsDefault();
     }
 
     /* Register types to be used when reading a ScaleTool object from xml file. */
@@ -141,8 +140,8 @@ public:
     }
     //std::string getParentDirectory(const std::string& fileName);
     void setPrintResultFiles(bool aToWrite) {
-        upd_model_scaler().setPrintResultFiles(aToWrite);
-        upd_marker_placer().setPrintResultFiles(aToWrite);
+        upd_ModelScaler().setPrintResultFiles(aToWrite);
+        upd_MarkerPlacer().setPrintResultFiles(aToWrite);
     }
 
 protected:

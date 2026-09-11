@@ -70,9 +70,9 @@ void ScaleTool::constructProperties() {
     constructProperty_age(-1.0);
     constructProperty_notes("");
 
-    constructProperty_generic_model_maker(GenericModelMaker());
-    constructProperty_model_scaler(ModelScaler());
-    constructProperty_marker_placer(MarkerPlacer());
+    constructProperty_GenericModelMaker(GenericModelMaker());
+    constructProperty_ModelScaler(ModelScaler());
+    constructProperty_MarkerPlacer(MarkerPlacer());
 }
 
 //_____________________________________________________________________________
@@ -103,7 +103,7 @@ Model* ScaleTool::createModel() const {
     if (isDefaultGenericModelMaker()) {
         log_warn("ScaleTool::createModel: Unscaled model not specified ({} "
                  "section missing from setup file).",
-                getProperty_generic_model_maker().getName());
+                getProperty_GenericModelMaker().getName());
         return nullptr;
     }
     Model* model = getGenericModelMaker().processModel(_pathToSubject);
