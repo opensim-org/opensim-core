@@ -42,85 +42,29 @@ using namespace std;
 /**
  * Default constructor.
  */
-MarkerPair::MarkerPair() :
-    _markerNames(_markerNamesProp.getValueStrArray())
-{
-    setNull();
-}
-
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-MarkerPair::~MarkerPair()
-{
-}
-
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aMarkerPair MarkerPair to be copied.
- */
-MarkerPair::MarkerPair(const MarkerPair &aMarkerPair) :
-   Object(aMarkerPair),
-    _markerNames(_markerNamesProp.getValueStrArray())
-{
-    setNull();
-    copyData(aMarkerPair);
-}
+MarkerPair::MarkerPair() { constructProperties(); }
 //_____________________________________________________________________________
 /**
  */
-MarkerPair::MarkerPair(const std::string &aName1, const std::string &aName2) :
-    _markerNames(_markerNamesProp.getValueStrArray())
-{
-    setNull();
-    _markerNames.append(aName1);
-    _markerNames.append(aName2);
+MarkerPair::MarkerPair(const std::string& aName1, const std::string& aName2) {
+    setMarkerName(0, aName1);
+    setMarkerName(1, aName2);
 }
-
-
-void MarkerPair::copyData(const MarkerPair &aMarkerPair)
-{
-    _markerNames = aMarkerPair._markerNames;
-}
-
 
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Set the data members of this MarkerPair to their null values.
- */
-void MarkerPair::setNull()
-{
-    setupProperties();
-}
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
  */
-void MarkerPair::setupProperties()
-{
-    _markerNamesProp.setComment("Names of two markers, the distance between which is used to compute a body scale factor.");
-    _markerNamesProp.setName("markers");
-    _propertySet.append(&_markerNamesProp);
-}
-
-MarkerPair& MarkerPair::operator=(const MarkerPair &aMarkerPair)
-{
-    // BASE CLASS
-    Object::operator=(aMarkerPair);
-
-    copyData(aMarkerPair);
-
-    return(*this);
+void MarkerPair::constructProperties() {
+    constructProperty_markers(Array<std::string>{"", ""});
 }
 
 void MarkerPair::getMarkerNames(string& aName1, string& aName2) const
 {
-    aName1 = _markerNames[0];
-    aName2 = _markerNames[1];
+    aName1 = get_markers(0);
+    aName2 = get_markers(1);
 }
