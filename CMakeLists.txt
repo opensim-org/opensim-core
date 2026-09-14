@@ -444,7 +444,12 @@ if(${BUILD_PYTHON_WRAPPING})
     message("Python3_Numpy_VERSION:${Python3_NumPy_VERSION}")
 
     get_filename_component(PY_LIB_DIR "${Python3_LIBRARIES}" DIRECTORY)
-    set(PYTHON3_STABLE_LIB "${PY_LIB_DIR}/python3.lib")
+    message("PY_LIB_DIR: ${PY_LIB_DIR}")
+    if (WIN32)
+        set(PYTHON3_STABLE_LIB "${PY_LIB_DIR}/python3.lib")
+    else()
+        set(PYTHON3_STABLE_LIB "${PY_LIB_DIR}/libpython3.so")
+    endif()
 
     # We update the python install dir to include the python version,
     # now that we know it. We replace the token "VERSION" with the actual python
