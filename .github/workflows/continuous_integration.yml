@@ -298,7 +298,7 @@ jobs:
     - name: Configure opensim-core
       id: configure
       run: |
-        cmake -S $GITHUB_WORKSPACE --preset ci-make-linux-release -LAH
+        cmake -S $GITHUB_WORKSPACE --preset ci-make-linux-release -DPython3_ROOT_DIR=/opt/python/cp311-cp311 -LAH
 
         VERSION=`cmake -N -L $GITHUB_WORKSPACE/build/ci-make-linux-release | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
         echo "version=$VERSION" >> $GITHUB_OUTPUT
