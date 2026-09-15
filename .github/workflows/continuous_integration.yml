@@ -100,6 +100,23 @@ jobs:
         Copy-Item -Path "${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}" -Destination "opensim-core-${{ steps.configure.outputs.version }}" -Recurse
         7z a "opensim-core-${{ steps.configure.outputs.version }}.zip" "opensim-core-${{ steps.configure.outputs.version }}"
 
+    - name: Build wheel
+      run: |
+        cd ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}/sdk/Python
+        python3 setup.py bdist_wheel
+
+    - name: Capture wheel path
+      id: wheel
+      run: |
+        cd ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}/sdk/Python/dist
+        echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
+
+    - name: Upload Windows wheel
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ steps.wheel.outputs.path }}
+        path: ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}/sdk/Python/dist/${{ steps.wheel.outputs.path }}
+
     - name: Upload opensim-core
       uses: actions/upload-artifact@v4
       with:
