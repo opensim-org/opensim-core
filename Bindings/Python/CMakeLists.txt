@@ -181,7 +181,7 @@ macro(OpenSimAddPythonModule)
     )
     if(WIN32)
         set_target_properties(${_libname} PROPERTIES SUFFIX ".abi3.pyd")
-    elseif(APPLE)
+    else()
         # Defaults to .dylib; change to .so.
         set_target_properties(${_libname} PROPERTIES SUFFIX ".abi3.so")
     endif()
