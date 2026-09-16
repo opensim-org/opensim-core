@@ -447,7 +447,7 @@ if(${BUILD_PYTHON_WRAPPING})
     message("PY_LIB_DIR: ${PY_LIB_DIR}")
     if (WIN32)
         set(PYTHON3_STABLE_LIB "${PY_LIB_DIR}/python3.lib")
-    else()
+    elseif(APPLE)
         set(PYTHON3_STABLE_LIB "${PY_LIB_DIR}/libpython3.so")
     endif()
 
