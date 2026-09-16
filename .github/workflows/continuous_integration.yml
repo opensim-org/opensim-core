@@ -109,7 +109,8 @@ jobs:
       id: wheel
       run: |
         cd ${{ steps.configure.outputs.CMAKE_INSTALL_PREFIX }}/sdk/Python/dist
-        echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
+        $wheel = (Get-ChildItem -Filter "opensim*.whl" -File | Select-Object -First 1).Name
+        "path=$wheel" >> $env:GITHUB_OUTPUT
 
     - name: Upload Windows wheel
       uses: actions/upload-artifact@v4
