@@ -165,7 +165,7 @@ macro(OpenSimAddPythonModule)
     if("${PYTHON_LDSHARED}" MATCHES "dynamic_lookup")
         set_target_properties(${_libname} PROPERTIES LINK_FLAGS
             "-undefined dynamic_lookup")
-    elseif(APPLE)
+    elseif(APPLE OR WIN32)
         target_link_libraries(${_libname} PRIVATE ${PYTHON3_STABLE_LIB})
     endif()
 
