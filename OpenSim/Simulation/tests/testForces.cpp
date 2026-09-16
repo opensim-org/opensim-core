@@ -44,13 +44,16 @@
 //     Add tests here as Forces are added to OpenSim
 //
 //==============================================================================
-#include "SimTKcommon/internal/Xml.h"
-#include <ctime> // clock(), clock_t, CLOCKS_PER_SEC
-
 #include <OpenSim/Analyses/osimAnalyses.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Simulation/osimSimulation.h>
+
+#include <tests/Testing.h>
+
+#include "SimTKcommon/internal/Xml.h"
+
 #include <catch2/catch_all.hpp>
+
+#include <ctime> // clock(), clock_t, CLOCKS_PER_SEC
 
 using namespace OpenSim;
 using namespace std;

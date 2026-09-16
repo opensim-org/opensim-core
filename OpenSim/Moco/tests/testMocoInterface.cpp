@@ -31,10 +31,11 @@
 #include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 
-#include <fstream>
+#include <tests/Testing.h>
 
 #include <catch2/catch_all.hpp>
-#include "Testing.h"
+
+#include <fstream>
 
 using Catch::Approx;
 using Catch::Matchers::ContainsSubstring;

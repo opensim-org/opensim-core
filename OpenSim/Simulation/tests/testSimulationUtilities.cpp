@@ -21,12 +21,13 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
 #include <OpenSim/Actuators/PointActuator.h>
+
+#include <tests/Testing.h>
 
 #include <catch2/catch_all.hpp>
 

@@ -22,7 +22,9 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/OpenSim.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+#include <tests/Testing.h>
+
 #include <catch2/catch_all.hpp>
 
 using namespace OpenSim;

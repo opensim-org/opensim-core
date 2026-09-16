@@ -43,8 +43,8 @@
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Actuators/osimActuators.h>
 #include <OpenSim/Analyses/osimAnalyses.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include <OpenSim/Auxiliary/auxiliaryTestMuscleFunctions.h>
+
+#include <tests/Testing.h>
 
 #include <catch2/catch_all.hpp>
 

@@ -36,9 +36,11 @@
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Common/XMLDocument.h>
 
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include <catch2/catch_all.hpp>
+#include <tests/Testing.h>
+
 #include "SimTKcommon.h"
+
+#include <catch2/catch_all.hpp>
 
 #include <iostream>
 #include <string>

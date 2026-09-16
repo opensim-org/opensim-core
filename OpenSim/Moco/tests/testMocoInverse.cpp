@@ -18,12 +18,15 @@
 
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Actuators/ModelOperators.h>
+#include <OpenSim/Common/Constant.h>
+#include <OpenSim/Common/PolynomialFunction.h>
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Tools/AnalyzeTool.h>
 #include <OpenSim/Analyses/IMUDataReporter.h>
 
+#include <tests/Testing.h>
+
 #include <catch2/catch_all.hpp>
-#include "Testing.h"
 
 using Catch::Approx;
 

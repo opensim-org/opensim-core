@@ -28,16 +28,19 @@
  */
 
 #include "OpenSim/Actuators/SpringGeneralizedForce.h"
-#include "OpenSim/Auxiliary/auxiliaryTestFunctions.h"
 #include "OpenSim/Common/Reporter.h"
 #include "OpenSim/Simulation/Model/Model.h"
 #include "OpenSim/Simulation/Model/Geometry.h"
 #include "OpenSim/Simulation/SimbodyEngine/ConstantCurvatureJoint.h"
 #include "OpenSim/Simulation/SimulationUtilities.h"
-#include <string>
-// #define VISUALIZE
+
+#include <tests/Testing.h>
 
 #include <catch2/catch_all.hpp>
+
+#include <string>
+
+// #define VISUALIZE
 
 namespace {
 

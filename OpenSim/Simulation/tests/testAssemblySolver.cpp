@@ -27,10 +27,12 @@
 //
 //=============================================================================
 #include <OpenSim/Actuators/ModelFactory.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Common/MultivariatePolynomialFunction.h>
 #include <OpenSim/Simulation/osimSimulation.h>
+
+#include <tests/Testing.h>
+
 #include <catch2/catch_all.hpp>
 
 using namespace OpenSim;

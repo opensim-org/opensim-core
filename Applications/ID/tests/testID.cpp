@@ -21,20 +21,22 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <string>
-#include <iostream>
 #include <OpenSim/version.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Tools/InverseDynamicsTool.h>
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 
+#include <tests/Testing.h>
+
 #include <catch2/catch_all.hpp>
+
+#include <string>
+#include <iostream>
 
 using namespace OpenSim;
 using namespace std;

@@ -24,11 +24,13 @@
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Actuators/PointActuator.h>
-#include <random>
-#include <cstdio>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+#include <tests/Testing.h>
 
 #include <catch2/catch_all.hpp>
+
+#include <random>
+#include <cstdio>
 
 using namespace OpenSim;
 using namespace SimTK;

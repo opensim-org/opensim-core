@@ -62,8 +62,11 @@
 #include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/RollingOnSurfaceConstraint.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+#include <tests/Testing.h>
+
 #include "SimTKsimbody.h"
+
 #include <catch2/catch_all.hpp>
 
 

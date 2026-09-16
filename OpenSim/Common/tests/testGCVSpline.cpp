@@ -22,7 +22,8 @@
 
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+#include <tests/Testing.h>
 
 #include <catch2/catch_all.hpp>
 

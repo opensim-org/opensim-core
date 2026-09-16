@@ -20,16 +20,17 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Actuators/PointActuator.h>
 
-#include <memory>
+#include <tests/Testing.h>
 
 #include <catch2/catch_all.hpp>
+
+#include <memory>
 
 using namespace OpenSim;
 

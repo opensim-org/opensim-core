@@ -27,8 +27,9 @@
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
 #include <OpenSim/Tools/AnalyzeTool.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Analyses/InducedAccelerationsSolver.h>
+
+#include <tests/Testing.h>
 
 #include <catch2/catch_all.hpp>
 

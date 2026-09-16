@@ -21,18 +21,14 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <iostream>
+
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/Array.h>
-
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/ForceReporter.h>
-
 #include <OpenSim/Simulation/Model/ContactGeometrySet.h>
 #include <OpenSim/Simulation/Model/ContactHalfSpace.h>
 #include <OpenSim/Simulation/Model/ContactMesh.h>
@@ -46,12 +42,15 @@
 #include <OpenSim/Simulation/StatesTrajectory.h>
 #include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 #include <OpenSim/Simulation/StatesDocument.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-
 #include <OpenSim/Actuators/osimActuators.h>
 
+#include <tests/Testing.h>
+
 #include "SimTKsimbody.h"
+
 #include <catch2/catch_all.hpp>
+
+#include <iostream>
 
 using namespace SimTK;
 using namespace OpenSim;

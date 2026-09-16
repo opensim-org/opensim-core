@@ -24,7 +24,8 @@
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Tools/CMCTool.h>
 #include <OpenSim/Tools/ForwardTool.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+#include <tests/Testing.h>
 
 #include <catch2/catch_all.hpp>
 

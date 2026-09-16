@@ -20,13 +20,16 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <stdint.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Control/ControlSetController.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Actuators/PointActuator.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+#include <tests/Testing.h>
+
 #include <catch2/catch_all.hpp>
+
+#include <stdint.h>
 
 using namespace OpenSim;
 using namespace std;

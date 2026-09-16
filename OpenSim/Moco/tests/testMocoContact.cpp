@@ -18,6 +18,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Moco/osimMoco.h>
+#include <OpenSim/Common/Constant.h>
 #include <OpenSim/Actuators/ModelOperators.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/MeyerFregly2016Force.h>
@@ -28,8 +29,9 @@
 #include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
 #include <OpenSim/Simulation/VisualizerUtilities.h>
 
+#include <tests/Testing.h>
+
 #include <catch2/catch_all.hpp>
-#include "Testing.h"
 
 const double FRICTION_COEFFICIENT = 0.7;
 

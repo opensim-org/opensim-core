@@ -37,8 +37,9 @@
 
 #include <OpenSim/OpenSim.h>
 
+#include <tests/Testing.h>
+
 #include <catch2/catch_all.hpp>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;

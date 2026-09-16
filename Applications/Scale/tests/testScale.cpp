@@ -41,12 +41,13 @@
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Tools/GenericModelMaker.h>
 
-#include <string>
+#include <tests/Testing.h>
 
 #include <catch2/catch_all.hpp>
+
+#include <string>
 
 using namespace OpenSim;
 

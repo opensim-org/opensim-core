@@ -35,7 +35,8 @@ Tests Include:
 #include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+#include <tests/Testing.h>
 
 #include <catch2/catch_all.hpp>
 

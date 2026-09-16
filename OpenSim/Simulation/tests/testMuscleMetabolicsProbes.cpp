@@ -54,7 +54,8 @@
 #include <OpenSim/Simulation/Model/Bhargava2004MuscleMetabolicsProbe.h>
 #include <OpenSim/Analyses/ProbeReporter.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+#include <tests/Testing.h>
 
 #include <catch2/catch_all.hpp>
 

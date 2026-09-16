@@ -22,7 +22,9 @@
  * -------------------------------------------------------------------------- */
 
 #include "OpenSim/Common/TimeSeriesTable.h"
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+#include <tests/Testing.h>
+
 #include <iostream>
 
 // This example demonstrates creating TimeSeriesTable from a DataTable.
