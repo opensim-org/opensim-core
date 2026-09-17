@@ -26,9 +26,11 @@
 
 // INCLUDE
 #include "osimToolsDLL.h"
-#include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Common/PropertyBool.h>
-#include "MarkerPairSet.h"
+
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Property.h>
+#include <OpenSim/Simulation/Model/BodyScaleSet.h>
+#include <OpenSim/Tools/MarkerPairSet.h>
 
 #ifdef SWIG
     #ifdef OSIMTOOLS_API
@@ -39,7 +41,7 @@
 
 namespace OpenSim {
 
-class BodyScaleSet;
+class MarkerPair;
 class ScaleSet;
 
 //=============================================================================
@@ -57,15 +59,13 @@ OpenSim_DECLARE_CONCRETE_OBJECT(Measurement, Object);
 //=============================================================================
 // DATA
 //=============================================================================
-protected:
-    PropertyObj _markerPairSetProp;
-    MarkerPairSet &_markerPairSet;
-
-    PropertyObj _bodyScaleSetProp;
-    BodyScaleSet &_bodyScaleSet;
-
-    PropertyBool _applyProp;
-    bool &_apply;
+public:
+OpenSim_DECLARE_UNNAMED_PROPERTY(MarkerPairSet,
+        "Set of marker pairs used to determine the scale factors.");
+OpenSim_DECLARE_UNNAMED_PROPERTY(
+        BodyScaleSet, "Set of bodies to be scaled by this measurement.");
+OpenSim_DECLARE_PROPERTY(
+        apply, bool, "Flag to turn on and off scaling for this measurement.");
 
 //=============================================================================
 // METHODS
@@ -75,25 +75,15 @@ protected:
     //--------------------------------------------------------------------------
 public:
     Measurement();
-    Measurement(const Measurement &aMeasurement);
-    virtual ~Measurement();
 
-#ifndef SWIG
-    Measurement& operator=(const Measurement &aMeasurement);
-#endif
-   void copyData(const Measurement &aMeasurement);
+    BodyScaleSet& getBodyScaleSet() { return upd_BodyScaleSet(); }
+    MarkerPairSet& getMarkerPairSet() { return upd_MarkerPairSet(); }
 
-    BodyScaleSet &getBodyScaleSet() { return _bodyScaleSet; }
+    int getNumMarkerPairs() const {return get_MarkerPairSet().getSize();};
+    const MarkerPair& getMarkerPair(int aIndex) const { return get_MarkerPairSet()[aIndex]; };
 
-    MarkerPairSet& getMarkerPairSet() { return _markerPairSet; }
-    int getNumMarkerPairs() const { return _markerPairSet.getSize(); }
-    const MarkerPair& getMarkerPair(int aIndex) const { return _markerPairSet[aIndex]; }
-
-    bool getApply() const { return _apply; }
-    void setApply(bool aApply) { 
-        _apply = aApply;
-        _applyProp.setValueIsDefault(false);
-    }
+    bool getApply() const { return get_apply(); }
+    void setApply(bool aApply) { set_apply(aApply); }
 
     void applyScaleFactor(double aFactor, ScaleSet& aScaleSet);
 
@@ -101,8 +91,7 @@ public:
     static void registerTypes();
 
 private:
-    void setNull();
-    void setupProperties();
+    void constructProperties();
 //=============================================================================
 };  // END of class Measurement
 //=============================================================================
