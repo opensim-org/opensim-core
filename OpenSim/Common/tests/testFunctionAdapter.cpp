@@ -49,5 +49,5 @@ TEST_CASE("Function Adapter has Expected Behavior")
         ASSERT_EQUAL(f1.calcDerivative(deriv,xvec),
             f2.calcDerivative(deriv,xvec), 1e-10);
     }
-    ASSERT(adapter.getArgumentSize() == 1, __FILE__, __LINE__);
+    ASSERT(adapter.getArgumentSize() == 1);
 }

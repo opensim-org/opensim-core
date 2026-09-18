@@ -235,9 +235,9 @@ TEST_CASE("Component Path Behaves as Expected")
     }
 
     // ensure isAbsolute is sane for vector inputs
-    ASSERT(CP{std::vector<std::string>{}, true}.isAbsolute());
-    ASSERT(CP{std::vector<std::string>{""}, true}.isAbsolute());
-    ASSERT(CP{std::vector<std::string>{"a", "b"}, true}.isAbsolute());
+    ASSERT((CP{std::vector<std::string>{}, true}.isAbsolute()));
+    ASSERT((CP{std::vector<std::string>{""}, true}.isAbsolute()));
+    ASSERT((CP{std::vector<std::string>{"a", "b"}, true}.isAbsolute()));
 
     // general tests to ensure it normalizes a variety of paths correctly
     {

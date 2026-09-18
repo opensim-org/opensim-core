@@ -143,7 +143,7 @@ TEST_CASE("testNestedComponentListConsistency") {
     }
 
     // Joints list should be a unique set.
-    ASSERT(std::set<const Joint*>{joints1.begin(), joints1.end()}.size() == 4);
+    ASSERT((std::set<const Joint*>{joints1.begin(), joints1.end()}.size() == 4));
     // Joints1 and Joints2 must be identical.
     ASSERT(joints1 == joints2);
     // Expected number of unique coordinates.
@@ -278,21 +278,15 @@ TEST_CASE("testComponentListConst") {
         countSkipFrames++;
     }
 
-    ASSERT(numComponents == expectedNumComponents,
-            "", 0, "Number of Components mismatch");
-    ASSERT(numBodies == model.getNumBodies(), "", 0, "Number of Bodies mismatch");
-    ASSERT(numBodiesPost == numBodies, "", 0, "Number of Bodies post mismatch");
-    ASSERT(numMuscles == model.getMuscles().getSize(), "", 0,
-        "Number of Muscles mismatch");
-    ASSERT(numJointsWithStateVariables == expectedNumJointsWithStateVariables,
-            "", 0, "Number of Joints with StateVariables mismatch");
+    ASSERT(numComponents == expectedNumComponents);
+    ASSERT(numBodies == model.getNumBodies());
+    ASSERT(numBodiesPost == numBodies);
+    ASSERT(numMuscles == model.getMuscles().getSize());
+    ASSERT(numJointsWithStateVariables == expectedNumJointsWithStateVariables);
     ASSERT(numModelComponentsWithStateVariables ==
-           expectedNumModelComponentsWithStateVariables, "", 0,
-        "Number of Components with StateVariables mismatch");
-    ASSERT(numJntComponents == expectedNumJntComponents, "", 0,
-        "Number of Components within Joints mismatch");
-    ASSERT(countSkipFrames == expectedNumCountSkipFrames, "", 0,
-        "Number of Frames skipping every other one, mismatch");
+           expectedNumModelComponentsWithStateVariables);
+    ASSERT(numJntComponents == expectedNumJntComponents);
+    ASSERT(countSkipFrames == expectedNumCountSkipFrames);
 }
 
 // This test repeats the same tests as testComponentListConst(), but using

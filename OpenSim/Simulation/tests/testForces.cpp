@@ -690,9 +690,7 @@ TEST_CASE("testBushingForce") {
     const BushingForce& bushingForceFromPrevious =
             previousVersionModel.getComponent<BushingForce>("forceset/bushing");
 
-    ASSERT(bushingForce == bushingForceFromPrevious, __FILE__, __LINE__,
-            "current bushing force FAILED to match bushing force from previous "
-            "model.");
+    ASSERT(bushingForce == bushingForceFromPrevious);
 
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter(&osimModel);
@@ -836,9 +834,7 @@ TEST_CASE("testTwoFrameLinkerUpdateFromXMLNode") {
             previousVersionModel.getComponent<BushingForce>(
                     "./forceset/bushing");
 
-    ASSERT(bushingForce == bushingForceFromPrevious, __FILE__, __LINE__,
-            "current bushing force FAILED to match bushing force from previous "
-            "model.");
+    ASSERT(bushingForce == bushingForceFromPrevious);
 }
 
 TEST_CASE("testFunctionBasedBushingForce") {
@@ -1529,14 +1525,12 @@ TEST_CASE("testCoordinateLimitForce") {
     // Check serialization and deserialization
     Model loadedModel{"CoordinateLimitForceTest.osim"};
 
-    ASSERT(loadedModel == *osimModel, "Deserialized CoordinateLimitForceTest "
-                                      "failed to be equivalent to original.");
+    ASSERT(loadedModel == *osimModel);
 
     // check copy
     auto copyModel = std::unique_ptr<Model>{osimModel->clone()};
 
-    ASSERT(*copyModel == loadedModel, "Clone of CoordinateLimitForceTest "
-                                      "failed to be equivalent to original.");
+    ASSERT(*copyModel == loadedModel);
 
     copyModel->print("cloneCoordinateLimitForceTest.osim");
 
@@ -2276,12 +2270,8 @@ TEST_CASE("testBlankevoort1991Ligament") {
     TimeSeriesTable results(ind_col,output_data,outputs);
     STOFileAdapter::write(results, "ligament_strain_test.sto");
 
-    //Check that potential energy and spring and damping forces are zero
-    //when the ligament is slack
-    ASSERT(results.getDependentColumn("strain").getElt(0, 0) < 0.0,
-            __FILE__, __LINE__,
-        "Expected Blankevoort1991Ligament to be slack at first time step of "
-        "test case.");
+    // Blankevoort1991Ligament should be slack at first time step of test case.
+    ASSERT(results.getDependentColumn("strain").getElt(0, 0) < 0.0);
 
     // The potential energy in Blankevoort1991Ligament should be
     // equal to zero when the ligament is slack
@@ -2309,34 +2299,24 @@ TEST_CASE("testBlankevoort1991Ligament") {
     // The strain at the toe_index should be less than the transition_strain
     // property in Blankevoort1991Ligament test.
     ASSERT(results.getDependentColumn("strain").getElt(toe_index, 0) <
-        transition_strain, __FILE__, __LINE__,
-        "Expected strain at the toe_index to be less than the "
-        "transition_strain property in Blankevoort1991Ligament test.");
+           transition_strain);
 
     // The strain at the linear_index should be greater than the
     // transition_strain property in Blankevoort1991Ligament.
     ASSERT(results.getDependentColumn("strain").getElt(linear_index, 0) >
-        transition_strain, __FILE__, __LINE__,
-        "Expected strain at the linear_index to be greater than the "
-        "transition_strain property in Blankevoort1991Ligament test.");
+           transition_strain);
 
     // The potential_energy in the Blankevoort1991Ligament should be greater in
     // the linear region compared to the toe region.
     ASSERT(results.getDependentColumn("potential_energy")
                    .getElt(linear_index, 0) >
-                   results.getDependentColumn("potential_energy")
-                           .getElt(toe_index, 0),
-        __FILE__, __LINE__,
-        "Expexted potential_energy in the Blankevoort1991Ligament to be "
-        "greater in the linear region compared to the toe region");
+           results.getDependentColumn("potential_energy")
+                   .getElt(toe_index, 0));
 
     // The spring_force in the Blankevoort1991Ligament should be greater in the
     // linear region compared to the toe region.
     ASSERT(results.getDependentColumn("spring_force").getElt(linear_index, 0) >
-        results.getDependentColumn("spring_force").getElt(toe_index, 0),
-        __FILE__, __LINE__,
-        "Expected the spring_force in the Blankevoort1991Ligament to be "
-        " greater in the linear region compared to the toe region");
+           results.getDependentColumn("spring_force").getElt(toe_index, 0));
 
     //Check that damping is nonzero if ligament is lengthening
     slotCoord.setSpeedValue(state, 1.0);
@@ -2344,10 +2324,10 @@ TEST_CASE("testBlankevoort1991Ligament") {
     double damping_lengthening =
         lig->getOutputValue<double>(state, "damping_force");
 
-    ASSERT(damping_lengthening > 0.0, __FILE__, __LINE__,
-        "Expected the damping force in Blankevoort1991Ligament to be greater "
-        "than zero when the ligament is streched beyond the slack length "
-        "and the lengthening_speed is positive.");
+    // The damping force in Blankevoort1991Ligament should be greater than zero
+    // when the ligament is streched beyond the slack length and the
+    // lengthening_speed is positive.
+    ASSERT(damping_lengthening > 0.0);
 
     //Check that damping is zero if ligament is shortening
     slotCoord.setSpeedValue(state, -1.0);

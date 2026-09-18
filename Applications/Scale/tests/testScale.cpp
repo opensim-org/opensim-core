@@ -315,13 +315,11 @@ TEST_CASE("scaleModelWithLigament") {
         std::cout << "std:" << its->getName() << "==";
         std::cout << "comp:" << itc->getName() << " : ";
         std::cout << (*its == *itc) << std::endl;
-        ASSERT(*its == *itc, __FILE__, __LINE__,
-            "Scaled ligament " + its->getName() + " did not match standard.");
+        ASSERT(*its == *itc);
     }
 
     //Finally make sure we didn't incorrectly scale anything else in the model
-    ASSERT(std == comp, __FILE__, __LINE__,
-            "Standard model failed to match scaled.");
+    ASSERT(std == comp);
 
     compareModelToStandard("comp_toyLigamentModelScaled_latest.osim",
                            std_scaledModelFile, 1.0e-6);
