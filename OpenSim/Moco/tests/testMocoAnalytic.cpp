@@ -22,8 +22,9 @@
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 
+#include <tests/Testing.h>
+
 #include <catch2/catch_all.hpp>
-#include "Testing.h"
 
 using namespace OpenSim;
 

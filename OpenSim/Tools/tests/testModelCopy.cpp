@@ -21,12 +21,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <stdint.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Actuators/PointActuator.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+#include <tests/Testing.h>
 
 #include <catch2/catch_all.hpp>
+
+#include <stdint.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -39,18 +41,8 @@ namespace {
 void testCopyModel(const string& fileName, const int nbod, 
     const string& physicalFrameName, const int ngeom)
 {
-    const size_t mem0 = getCurrentRSS();
-
     // Automatically finalizes properties by default when loading from file
     Model* model = new Model(fileName);
-
-    // Catch a possible decrease in the memory footprint, which will cause
-    // size_t (unsigned int) to wrap through zero.
-    const size_t mem1 = getCurrentRSS();
-    const size_t increaseInMemory = mem1 > mem0 ? mem1-mem0 : 0;
-
-    cout << "Memory use of '" << fileName <<"' model: " << increaseInMemory/1024
-         << "KB" << endl;
 
     Model *test = nullptr;
     for (int i = 0; i < 10; ++i){
@@ -109,14 +101,6 @@ void testCopyModel(const string& fileName, const int nbod,
     delete modelCopy;
     delete cloneModel;
     delete modelSerialized;
-
-    // New memory footprint.
-    const size_t mem2 = getCurrentRSS();
-    // Increase in memory footprint.
-    const int64_t memory_increase = mem2 > mem1 ? mem2-mem1 : 0;
-
-    cout << "Memory increase AFTER copy and init and delete:  " 
-         << double(memory_increase)/mem1*100 << "%." << endl;
 }
 
 }

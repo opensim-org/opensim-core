@@ -1,7 +1,7 @@
-#ifndef OPENSIM_AUXILIARY_TEST_FUNCTIONS_H_
-#define OPENSIM_AUXILIARY_TEST_FUNCTIONS_H_
+#ifndef OPENSIM_TESTING_H_
+#define OPENSIM_TESTING_H_
 /* -------------------------------------------------------------------------- *
- *                     OpenSim:  auxiliaryTestFunctions.h                     *
+ *                            OpenSim:  Testing.h                             *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2026 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -22,16 +22,19 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+// #include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Common/Exception.h>
-#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/LinearFunction.h>
+#include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Common/PropertyObjArray.h>
-#include "getRSS.h"
+#include <OpenSim/Common/STOFileAdapter.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 
 #include <fstream>
-#include <string>
 #include <regex>
+#include <string>
 #include <type_traits>
 
  /**
@@ -155,7 +158,7 @@ inline void ASSERT(bool cond,
  * specified tolerances. If RMS error for any column is outside the
  * tolerance, throw an Exception.
  */
-void CHECK_STORAGE_AGAINST_STANDARD(const OpenSim::Storage& result, 
+inline void CHECK_STORAGE_AGAINST_STANDARD(const OpenSim::Storage& result, 
                                     const OpenSim::Storage& standard, 
                                     const std::vector<double>& tolerances, 
                                     const std::string& testFile, 
@@ -228,7 +231,7 @@ do { \
     } \
 } while(false) 
 
-OpenSim::Object* randomize(OpenSim::Object* obj)
+inline OpenSim::Object* randomize(OpenSim::Object* obj)
 {
     using namespace OpenSim;
     using namespace std;
@@ -336,117 +339,209 @@ inline bool revertToVersionNumber1(const std::string& filenameOld,
     return changedVersion;
 }
 
-// Estimate the memory usage of a *creator* that heap allocates an object
-// of type C and returns a pointer to it. Creator can also perform any 
-// initialization before returning the pointer.
-template <typename C, typename T>
-size_t estimateMemoryChangeForCreator(T creator, const size_t nSamples = 100)
+/** A debugging utility for investigating muscle equilibrium failures.
+    For a given muscle at a given state report how the muscle fiber and
+    tendon force varies with fiber-length. Also, report the difference, 
+    which represents the function that the muscle equilibrium solver is
+    trying to find a root (zero) for. The intended use is to invoke this
+    method when the muscle fails to compute the equilibrium fiber-length,
+    so that one can plot the equilibrium force error vs. fiber-length
+    to help diagnose the cause of the failure. The force-velocity 
+    multiplier is assumed to be 1.0 (e.g. static fiber) unless otherwise
+    specified.*/
+template <typename T = OpenSim::ActivationFiberLengthMuscle>
+void reportTendonAndFiberForcesAcrossFiberLengths(const T& muscle,
+    const SimTK::State& state, const double fiberVelocityMultiplier = 1.0)
 {
-    std::vector<std::unique_ptr<C>> pointers;
-    std::vector<size_t> deltas;
+    // should only be using this utility for equilibrium muscles 
+    // with a compliant tendon
+    OPENSIM_ASSERT(!muscle.get_ignore_tendon_compliance());
 
-    for (size_t i = 0; i < nSamples; ++i) {
-        size_t mem0 = getCurrentRSS();
-        // Execute the desired creator 
-        // store in unique_ptrs to delay deletion
-        pointers.push_back(std::unique_ptr<C>(creator()));
-        // poll the change in memory usage
-        size_t mem1 = getCurrentRSS();
-        // change in memory usage (negative values are invalid)
-        size_t delta = mem1 > mem0 ? mem1 - mem0 : 0;
-        if(delta) // store only valid values (creator cannot create 0 bytes)
-            deltas.push_back(delta);
+    SimTK::State s = state;
+
+    OpenSim::DataTable_<double, double> forcesVsFiberLengthTable;
+    std::vector<std::string> labels{ "fiber_length", "pathLength",
+        "tendon_force", "fiber_force", "activation", "activeFiberForce",
+        "passiveFiberForce", "equilibriumError" };
+    forcesVsFiberLengthTable.setColumnLabels(labels);
+
+    // Constants
+    const int N = 100;
+    const int nc = int(labels.size());
+
+    const double maxFiberLength = 2.0*muscle.getOptimalFiberLength();
+    const double minFiberLength = muscle.getMinimumFiberLength();
+    const double dl = (maxFiberLength - minFiberLength) / N;
+    const double fiso = muscle.getMaxIsometricForce();
+
+    // Variables
+    double fiberLength = SimTK::NaN;
+    // double vmt = SimTK::NaN;
+    double tendonForce = SimTK::NaN;
+    double activeFiberForce = SimTK::NaN;
+    double passiveFiberForce = SimTK::NaN;
+    double cosphi = SimTK::NaN;
+    double flm = SimTK::NaN;
+    double a = SimTK::NaN;
+
+    SimTK::RowVector row(nc, SimTK::NaN);
+    for (int i = 0; i <= N; ++i) {
+        fiberLength = minFiberLength + i*dl;
+        s.setTime(fiberLength);
+        muscle.setFiberLength(s, fiberLength);
+        muscle.getModel().realizeDynamics(s);
+
+        // vmt = muscle.getSpeed(s);
+
+        tendonForce = muscle.getTendonForce(s);
+
+        a = muscle.getActivation(s);
+
+        flm = muscle.getActiveForceLengthMultiplier(s);
+        cosphi = muscle.getCosPennationAngle(s);
+
+        activeFiberForce = a*fiso*flm*fiberVelocityMultiplier;
+
+        passiveFiberForce = muscle.getPassiveFiberForce(s);
+
+        row[0] = fiberLength; // muscle.getFiberLength(s);
+        row[1] = muscle.getLength(s);
+        row[2] = tendonForce;
+        row[3] = (activeFiberForce + passiveFiberForce)*cosphi;
+        row[4] = muscle.getActivation(s);
+        row[5] = activeFiberForce;
+        row[6] = passiveFiberForce;
+        row[7] = row[3] - row[2];
+
+        forcesVsFiberLengthTable.appendRow(s.getTime(), row);
     }
 
-    OPENSIM_THROW_IF(deltas.size() < 2, OpenSim::Exception,
-        "Insufficient number of nonzero samples to estimate memory change. "
-        "Consider increasing the number of samples.");
+    std::string fileName = "forcesVsFiberLength_"
+        + std::to_string(a) + ".sto";
 
-    size_t nmedian = deltas.size() / 2;
-    // sort the deltas up to and including the nth element
-    std::nth_element(deltas.begin(), deltas.begin() + nmedian, deltas.end());
-
-    return deltas[nmedian];
+    OpenSim::STOFileAdapter::write(forcesVsFiberLengthTable, fileName);
 }
 
-// Determine if getRSS is providing reliable estimates of memory usage by
-// testing against an allocation of known size and verifying that the change
-// in memory use is detected. Employ this method to validate the use of
-// memory use estimators (e.g. estimateMemoryChangeForCreator and
-// estimateMemoryChangeForCommand). Do this at the beginning of your test 
-// involving checks for memory use.
-void validateMemoryUseEstimates(const size_t nSamples = 20)
-{
-    // Approximate size of a small OpenSim model
-    size_t size = 1000 * 1024; // 1K * 1KB = 1MB;
+//==========================================================================
+// Table comparison helpers (formerly OpenSim/Moco/tests/Testing.h)
+//==========================================================================
 
-    struct Block {
-        Block(size_t size) {
-            // allocate block of stuff of specified size
-            p = (char*)malloc(size);
-            // do some random initialization
-            for (size_t i = 0; i < size; i+=1024) {
-                p[i] = rand();
-            }
+// Helper functions for comparing vectors.
+// ---------------------------------------
+inline SimTK::Vector interp(const OpenSim::TimeSeriesTable& actualTable,
+                     const OpenSim::TimeSeriesTable& expectedTable,
+                     const std::string& expectedColumnLabel) {
+    const auto& actualTime = actualTable.getIndependentColumn();
+    // Interpolate the expected values based on `actual`'s time.
+    const auto& expectedTime = expectedTable.getIndependentColumn();
+    const auto& expectedCol =
+            expectedTable.getDependentColumn(expectedColumnLabel);
+    // Create a linear function for interpolation.
+    OpenSim::PiecewiseLinearFunction expectedFunc(
+        (int)expectedTable.getNumRows(), expectedTime.data(), &expectedCol[0]);
+    SimTK::Vector expected((int)actualTable.getNumRows());
+    for (int i = 0; i < (int)actualTable.getNumRows(); ++i) {
+        const auto& time = actualTime[i];
+        expected[i] = expectedFunc.calcValue(SimTK::Vector(1, time));
+    }
+    return expected;
+};
+// Compare each element.
+inline void compare(const OpenSim::TimeSeriesTable& actualTable,
+             const std::string& actualColumnLabel,
+             const OpenSim::TimeSeriesTable& expectedTable,
+             const std::string& expectedColumnLabel,
+             double tol, bool verbose = false) {
+    const auto& actual = actualTable.getDependentColumn(actualColumnLabel);
+    SimTK::Vector expected = interp(actualTable, expectedTable,
+                                    expectedColumnLabel);
+    if (verbose) {
+        std::cout << "Comparing " << expectedColumnLabel << std::endl;
+        for (int i = 0; i < (int)actualTable.getNumRows(); ++i) {
+            std::cout << actual[i] << " " << expected[i] << " "
+                    << SimTK::isNumericallyEqual(actual[i], expected[i], tol)
+                    << std::endl;
         }
-        ~Block() {
-            free(p);
+    }
+    SimTK_TEST_EQ_TOL(actual, expected, tol);
+};
+// A weaker check. Compute the root mean square of the error between the
+// trajectory optimization and the inverse solver and ensure it is below a
+// tolerance.
+inline void rootMeanSquare(
+        const OpenSim::TimeSeriesTable& actualTable,
+        const std::string& actualColumnLabel,
+        const OpenSim::TimeSeriesTable& expectedTable,
+        const std::string& expectedColumnLabel,
+        double tol, bool verbose = false) {
+    const auto& actual = actualTable.getDependentColumn(actualColumnLabel);
+    SimTK::Vector expected = interp(actualTable, expectedTable,
+                                    expectedColumnLabel);
+    const auto rmsError = (actual - expected).normRMS();
+    if (verbose) {
+        std::cout << "Comparing " << expectedColumnLabel << std::endl;
+        for (int i = 0; i < actual.size(); ++i) {
+            std::cout << actual[i] << " " << expected[i] << std::endl;
         }
-        // member is pointer to allocated block
-        char* p{};
-    };
-
-    auto creator = [size]() { 
-        return new Block(size);
-    };
-
-    size_t delta = 0;
-    try {
-        delta = estimateMemoryChangeForCreator<Block>(creator, nSamples);
+        std::cout << "RMS error: " << rmsError << std::endl;
     }
-    catch (const std::exception& ex) {
-        OPENSIM_THROW(OpenSim::Exception,
-            "Failed to estimate change in memory usage. Details:\n"
-            + std::string(ex.what()) );
-    }
+    SimTK_TEST(rmsError < tol);
+};
 
-    OPENSIM_THROW_IF(delta < size/2, OpenSim::Exception,
-        "Cannot estimate memory usage due to invalid getRSS() evaluation."
-        "Estimated "+ std::to_string(delta) + "B but expected " +
-        std::to_string(size) + "B.");
-}
+#define OpenSim_CATCH_MATRIX_INTERNAL(testtype, actual, expected, tol, toltype)\
+do {                                                                         \
+    const auto& a = actual;                                                  \
+    const auto& b = expected;                                                \
+    REQUIRE((a.nrow() == b.nrow()));                                         \
+    REQUIRE((a.ncol() == b.ncol()));                                         \
+    for (int ir = 0; ir < a.nrow(); ++ir) {                                  \
+        for (int ic = 0; ic < a.ncol(); ++ic) {                              \
+            INFO("(" << ir << "," << ic << "): " <<                          \
+                    a.getElt(ir, ic) << " vs " << b.getElt(ir, ic));         \
+            testtype((Catch::Approx(a.getElt(ir, ic)).toltype(tol)           \
+                    == b.getElt(ir, ic)));                                   \
+        }                                                                    \
+    }                                                                        \
+} while (0)
 
-// Estimate the change in memory usage resulting from executing a command
-template <typename T>
-size_t estimateMemoryChangeForCommand(T command, const size_t nSamples = 100)
-{
-    std::vector<size_t> deltas;
+#define OpenSim_REQUIRE_MATRIX(actual, expected)                             \
+do {                                                                         \
+    const auto& a = actual;                                                  \
+    const auto& b = expected;                                                \
+    using TypeA = std::remove_reference<decltype(a)>::type::E;               \
+    using TypeB = std::remove_reference<decltype(b)>::type::E;               \
+    const auto tol = SimTK::Test::defTol2<TypeA, TypeB>();                   \
+    OpenSim_CATCH_MATRIX_INTERNAL(REQUIRE, actual, expected, tol, epsilon);  \
+} while (0)
 
-    for (size_t i = 0; i < nSamples; ++i) {
-        size_t mem0 = getCurrentRSS();
-        // Execute the desired command
-        command();
-        // initialize post-command memory usage to an error causing size
-        size_t mem1 = std::numeric_limits<std::size_t>::max();
-        int cnt = 0;
-        // wait up to 100ms total for memory usage to settle
-        do {
-            // poll the change in memory usage
-            mem1 = getCurrentRSS();
-            // wait just a ms
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        // verify that memory usage is stable over the wait, otherwise continue
-        } while ((getCurrentRSS() != mem1) && (++cnt < 100));
+#define OpenSim_REQUIRE_MATRIX_TOL(actual, expected, tol)                    \
+do {                                                                         \
+    OpenSim_CATCH_MATRIX_INTERNAL(REQUIRE, actual, expected, tol, epsilon);  \
+} while (0)
 
-        // store change in memory usage (negative values are invalid)
-        deltas.push_back(mem1 > mem0 ? mem1 - mem0 : 0);
-    }
+#define OpenSim_REQUIRE_MATRIX_ABSTOL(actual, expected, tol)                 \
+do {                                                                         \
+    OpenSim_CATCH_MATRIX_INTERNAL(REQUIRE, actual, expected, tol, margin);   \
+} while (0)
 
-    size_t nmedian = deltas.size() / 2;
-    // sort the deltas up to and including the nth element
-    std::nth_element(deltas.begin(), deltas.begin() + nmedian, deltas.end());
+#define OpenSim_CHECK_MATRIX(actual, expected)                               \
+do {                                                                         \
+    const auto& aa = actual;                                                 \
+    const auto& bb = expected;                                               \
+    using TypeA = std::remove_reference<decltype(aa)>::type::E;              \
+    using TypeB = std::remove_reference<decltype(bb)>::type::E;              \
+    const auto tol = SimTK::Test::defTol2<TypeA, TypeB>();                   \
+    OpenSim_CATCH_MATRIX_INTERNAL(CHECK, actual, expected, tol, epsilon);    \
+} while (0)
 
-    return deltas[nmedian];
-}
+#define OpenSim_CHECK_MATRIX_TOL(actual, expected, tol)                      \
+do {                                                                         \
+    OpenSim_CATCH_MATRIX_INTERNAL(CHECK, actual, expected, tol, epsilon);    \
+} while (0)
 
-#endif // OPENSIM_AUXILIARY_TEST_FUNCTIONS_H_
+#define OpenSim_CHECK_MATRIX_ABSTOL(actual, expected, tol)                   \
+do {                                                                         \
+    OpenSim_CATCH_MATRIX_INTERNAL(CHECK, actual, expected, tol, margin);     \
+} while (0)
+
+#endif // OPENSIM_TESTING_H_

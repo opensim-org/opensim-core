@@ -943,7 +943,6 @@ EXCLUDE_PATTERNS       = *.svn \
                          */Utilities/* \
                          */Applications/* \
                          */Sandbox/* \
-                         */Auxiliary/* \
                          */Archive/* \
                          *CasOC* 
 

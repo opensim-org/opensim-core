@@ -20,16 +20,17 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <iostream>
-
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include <catch2/catch_all.hpp>
-
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Common/TableUtilities.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
+
+#include <tests/Testing.h>
+
+#include <catch2/catch_all.hpp>
+
+#include <iostream>
 
 using namespace SimTK;
 using namespace OpenSim;

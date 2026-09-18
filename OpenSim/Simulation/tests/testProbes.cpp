@@ -32,17 +32,16 @@
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Actuators/osimActuators.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
 #include <OpenSim/Analyses/ProbeReporter.h>
 #include <OpenSim/Analyses/ForceReporter.h>
-
 #include <OpenSim/Simulation/Model/ActuatorPowerProbe.h>
 #include <OpenSim/Simulation/Model/ActuatorForceProbe.h>
 #include <OpenSim/Simulation/Model/JointInternalPowerProbe.h>
 #include <OpenSim/Simulation/Model/SystemEnergyProbe.h>
-
 #include <OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.h>
+
+#include <tests/Testing.h>
 
 #include <catch2/catch_all.hpp>
 

@@ -28,8 +28,6 @@
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Tools/AnalyzeTool.h>
 #include <OpenSim/Analyses/OutputReporter.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include <OpenSim/Auxiliary/auxiliaryTestMuscleFunctions.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
@@ -41,6 +39,8 @@
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/GCVSplineSet.h>
+
+#include <tests/Testing.h>
 
 #include <catch2/catch_all.hpp>
 

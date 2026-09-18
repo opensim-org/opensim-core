@@ -24,9 +24,9 @@
 
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Common/Logger.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include <OpenSim/Auxiliary/getRSS.h>
 #include <OpenSim/Simulation/Model/StationDefinedFrame.h>
+
+#include <tests/Testing.h>
 
 #include <catch2/catch_all.hpp>
 

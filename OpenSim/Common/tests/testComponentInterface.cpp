@@ -20,13 +20,16 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Common/TableSource.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Common/CommonUtilities.h>
+
+#include <tests/Testing.h>
+
 #include <simbody/internal/SimbodyMatterSubsystem.h>
 #include <simbody/internal/GeneralForceSubsystem.h>
 #include <simbody/internal/Force.h>
@@ -34,6 +37,7 @@
 #include <simbody/internal/MobilizedBody_Ground.h>
 
 #include <catch2/catch_all.hpp>
+
 #include <random>
 
 namespace

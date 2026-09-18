@@ -23,17 +23,18 @@
 #include "OpenSim/Common/C3DFileAdapter.h"
 #include "OpenSim/Common/STOFileAdapter.h"
 #include "OpenSim/Common/TRCFileAdapter.h"
+#include <OpenSim/Common/Stopwatch.h>
+
+#include <tests/Testing.h>
+
+#include <catch2/catch_all.hpp>
+
 #include <chrono>
 #include <cmath>
 #include <cstdlib>
 #include <thread>
 #include <unordered_map>
 #include <vector>
-
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include <OpenSim/Common/Stopwatch.h>
-
-#include <catch2/catch_all.hpp>
 
 namespace {
 

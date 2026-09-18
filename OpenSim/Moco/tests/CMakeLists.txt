@@ -11,7 +11,8 @@ function(MocoAddTest)
     set(multiValueArgs LIB_DEPENDS RESOURCES)
     cmake_parse_arguments(MOCOTEST
             "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    add_executable(${MOCOTEST_NAME} ${MOCOTEST_NAME}.cpp Testing.h)
+    add_executable(${MOCOTEST_NAME} ${MOCOTEST_NAME}.cpp
+            "${CMAKE_SOURCE_DIR}/tests/Testing.h")
     # To organize targets in Visual Studio's Solution Explorer.
     set_target_properties(${MOCOTEST_NAME} PROPERTIES FOLDER "Moco/Tests")
     target_link_libraries(${MOCOTEST_NAME} osimMoco ${MOCOTEST_LIB_DEPENDS} Catch2::Catch2WithMain)

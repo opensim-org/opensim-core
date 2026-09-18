@@ -30,7 +30,8 @@
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 
-#include "Testing.h"
+#include <tests/Testing.h>
+
 #include <catch2/catch_all.hpp>
 
 using Catch::Matchers::ContainsSubstring;

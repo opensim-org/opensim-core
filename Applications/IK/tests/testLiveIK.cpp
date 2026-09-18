@@ -32,10 +32,12 @@
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include <OpenSim/Tools/InverseKinematicsTool.h>
 #include <OpenSim/Tools/IKTaskSet.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include <thread>
+
+#include <tests/Testing.h>
 
 #include <catch2/catch_all.hpp>
+
+#include <thread>
 
 using namespace OpenSim;
 using namespace std;

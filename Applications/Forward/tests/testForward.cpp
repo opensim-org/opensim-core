@@ -25,8 +25,9 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Tools/ForwardTool.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Actuators/ModelFactory.h>
+
+#include <tests/Testing.h>
 
 #include <catch2/catch_all.hpp>
 

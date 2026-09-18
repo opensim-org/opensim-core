@@ -43,7 +43,6 @@
 //
 //=============================================================================
 
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/FunctionAdapter.h>
 #include <OpenSim/Common/LinearFunction.h>
@@ -70,8 +69,11 @@
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <OpenSim/Actuators/PointActuator.h>
 
-#include <memory>
+#include <tests/Testing.h>
+
 #include <catch2/catch_all.hpp>
+
+#include <memory>
 
 using namespace OpenSim;
 using namespace std;

@@ -37,7 +37,8 @@
 #include <OpenSim/Common/RootSolver.h>
 #include <OpenSim/Common/VectorFunctionUncoupledNxN.h>
 
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <tests/Testing.h>
+
 #include <catch2/catch_all.hpp>
 
 #include <cmath>

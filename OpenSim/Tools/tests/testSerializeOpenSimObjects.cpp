@@ -21,7 +21,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Actuators/osimActuators.h>
@@ -29,9 +28,11 @@
 #include <OpenSim/Simulation/Model/FunctionBasedPath.h>
 #include <OpenSim/Simulation/Model/StationDefinedFrame.h>
 #include <OpenSim/Simulation/Model/ExponentialContactForce.h>
+#include <OpenSim/Tools/InverseKinematicsTool.h>
+
+#include <tests/Testing.h>
 
 #include <catch2/catch_all.hpp>
-#include <OpenSim/Tools/InverseKinematicsTool.h>
 
 using namespace OpenSim;
 using namespace std;

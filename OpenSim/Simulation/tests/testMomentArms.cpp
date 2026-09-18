@@ -36,7 +36,9 @@
 //=============================================================================
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+#include <tests/Testing.h>
+
 #include <simbody/internal/MobilizedBody_BuiltIns.h>
 
 #include <catch2/catch_all.hpp>

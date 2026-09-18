@@ -35,10 +35,12 @@ Tests Include:
      Add tests here as Frames are added to OpenSim
 
 //=============================================================================*/
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
+
+#include <tests/Testing.h>
+
 #include <catch2/catch_all.hpp>
 
 using namespace OpenSim;

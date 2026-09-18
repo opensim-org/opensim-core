@@ -34,7 +34,7 @@
 //     Add tests here
 //
 //==============================================================================
-#include <iostream>
+
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
@@ -51,11 +51,15 @@
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/TransformAxis.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+#include <tests/Testing.h>
+
 #include "SimTKsimbody.h"
 #include "SimTKmath.h"
 
 #include <catch2/catch_all.hpp>
+
+#include <iostream>
 
 using namespace OpenSim;
 using namespace std;

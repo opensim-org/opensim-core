@@ -16,6 +16,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include <OpenSim/Common/Sine.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Actuators/PointActuator.h>
@@ -29,7 +30,8 @@
 #include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
 
-#include "Testing.h"
+#include <tests/Testing.h>
+
 #include <catch2/catch_all.hpp>
 
 using Catch::Approx;

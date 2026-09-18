@@ -24,15 +24,16 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PathSpring.h>
 #include <OpenSim/Simulation/Wrap/WrapCylinder.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+#include <tests/Testing.h>
+
+#include <catch2/catch_all.hpp>
 
 #include <string>
 #include <iostream>
 #include <cmath>
 #include <sstream>
 #include <memory>
-
-#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 

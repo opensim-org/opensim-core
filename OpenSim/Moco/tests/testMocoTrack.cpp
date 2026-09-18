@@ -19,8 +19,9 @@
 #include <OpenSim/Actuators/ModelOperators.h>
 #include <OpenSim/Moco/osimMoco.h>
 
+#include <tests/Testing.h>
+
 #include <catch2/catch_all.hpp>
-#include "Testing.h"
 
 using namespace OpenSim;
 
