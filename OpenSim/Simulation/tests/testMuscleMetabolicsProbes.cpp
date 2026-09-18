@@ -537,8 +537,7 @@ TEST_CASE("compareUmbergerProbeToPublishedResults") {
         // expression.
         double forceExpected = sol_Arel * (1 + vNorm) / (sol_Arel - vNorm);
         ASSERT_EQUAL(forceExpected, sol_normalizedForce[i],
-            100*SimTK::SignificantReal, __FILE__, __LINE__,
-            "testMuscleMetabolicsProbes: error in soleus normalized force.");
+            100*SimTK::SignificantReal);
 
         // Mechanical power should be within roundoff error of this analytical
         // expression.
@@ -546,8 +545,7 @@ TEST_CASE("compareUmbergerProbeToPublishedResults") {
         double powerExpected = -forceExpected * sol_maxIsometricForce * v_mps
                                / sol_muscleMass;
         ASSERT_EQUAL(powerExpected, sol_mechanicalPower[i],
-            100*SimTK::SignificantReal, __FILE__, __LINE__,
-            "testMuscleMetabolicsProbes: error in soleus mechanical power.");
+            100*SimTK::SignificantReal);
 
         // Polynomials have been fit to the published results for total energy
         // liberation rate. The maximum absolute error is less than 1.0 [W/kg]
@@ -563,8 +561,7 @@ TEST_CASE("compareUmbergerProbeToPublishedResults") {
             rateExpected = ((-187.6077328*vNorm - 553.9650747)*vNorm
                            - 194.9721769)*vNorm + 332.9105995;
         }
-        ASSERT_EQUAL(rateExpected, sol_totalEnergyRate[i], 1.0,
-            "testMuscleMetabolicsProbes: error in soleus total energy rate.");
+        ASSERT_EQUAL(rateExpected, sol_totalEnergyRate[i], 1.0);
 
         if (DISPLAY_ERROR_CALCULATIONS) {
             cout << setw(w) << -(double)i/(numPoints-1)
@@ -613,8 +610,7 @@ TEST_CASE("compareUmbergerProbeToPublishedResults") {
         // expression.
         double forceExpected = rec_Arel * (1 + vNorm) / (rec_Arel - vNorm);
         ASSERT_EQUAL(forceExpected, rec_normalizedForce[i],
-            100*SimTK::SignificantReal, __FILE__, __LINE__,
-            "testMuscleMetabolicsProbes: error in rectus normalized force.");
+            100*SimTK::SignificantReal);
 
         // Mechanical power should be within roundoff error of this analytical
         // expression.
@@ -622,8 +618,7 @@ TEST_CASE("compareUmbergerProbeToPublishedResults") {
         double powerExpected = -forceExpected * rec_maxIsometricForce * v_mps
                                / rec_muscleMass;
         ASSERT_EQUAL(powerExpected, rec_mechanicalPower[i],
-            100*SimTK::SignificantReal, __FILE__, __LINE__,
-            "testMuscleMetabolicsProbes: error in rectus mechanical power.");
+            100*SimTK::SignificantReal);
 
         // Polynomials have been fit to the published results for total energy
         // liberation rate. The maximum absolute error is less than 1.0 [W/kg]
@@ -639,8 +634,7 @@ TEST_CASE("compareUmbergerProbeToPublishedResults") {
             rateExpected = ((-404.1161485*vNorm - 1267.967225)*vNorm
                            - 744.3435788)*vNorm + 362.7505521;
         }
-        ASSERT_EQUAL(rateExpected, rec_totalEnergyRate[i], 1.0,
-            "testMuscleMetabolicsProbes: error in rectus total energy rate.");
+        ASSERT_EQUAL(rateExpected, rec_totalEnergyRate[i], 1.0);
 
         if (DISPLAY_ERROR_CALCULATIONS) {
             cout << setw(w) << -(double)i/(numPoints-1)
@@ -1159,8 +1153,7 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
                        + probeData[probeCol["umbBasal_rate_m1"]]
                        + probeData[probeCol["umbMechWork_rate_m1"]],
                      probeData[probeCol["umbTotal_rate_m1"]],
-                     100*SimTK::SignificantReal, __FILE__, __LINE__,
-            "Umberger2010: wrong sum of individual rates and mechanical power.");
+                     100*SimTK::SignificantReal);
 
         ASSERT_EQUAL(probeData[probeCol["bhaAct_rate_m1"]]
                        + probeData[probeCol["bhaMaint_rate_m1"]]
@@ -1168,20 +1161,17 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
                        + probeData[probeCol["bhaBasal_rate_m1"]]
                        + probeData[probeCol["bhaMechWork_rate_m1"]],
                      probeData[probeCol["bhaTotal_rate_m1"]],
-                     100*SimTK::SignificantReal, __FILE__, __LINE__,
-            "Bhargava2004: wrong sum of individual rates and mechanical power.");
+                     100*SimTK::SignificantReal);
 
         // Total rate of energy liberation reported must not depend on whether
         // the individual components are reported as well.
         ASSERT_EQUAL(probeData[probeCol["umbTotal_both"]],
                      probeData[probeCol["umbTotalAllPieces_both_total"]],
-                     100*SimTK::SignificantReal, __FILE__, __LINE__,
-            "Umberger2010: total heat rate changes if components are reported.");
+                     100*SimTK::SignificantReal);
 
         ASSERT_EQUAL(probeData[probeCol["bhaTotal_both"]],
                      probeData[probeCol["bhaTotalAllPieces_both_total"]],
-                     100*SimTK::SignificantReal, __FILE__, __LINE__,
-            "Bhargava2004: total heat rate changes if components are reported.");
+                     100*SimTK::SignificantReal);
 
         // Mechanical work rates should agree with fiber velocity and active
         // fiber force data.
@@ -1196,12 +1186,10 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
         const double powerExpected = -forceData[idx_force_muscle1]
                                      * fibVelData[idx_fibVel_muscle1];
         ASSERT_EQUAL(probeData[probeCol["umbMechWork_rate_m1"]], powerExpected,
-                     1.0e-2, __FILE__, __LINE__,
-            "Umberger2010: mechanical power disagrees with muscle analysis.");
+                     1.0e-2);
 
         ASSERT_EQUAL(probeData[probeCol["bhaMechWork_rate_m1"]], powerExpected,
-                     1.0e-2, __FILE__, __LINE__,
-            "Bhargava2004: mechanical power disagrees with muscle analysis.");
+                     1.0e-2);
     }
 
     //--------------------------------------------------------------------------
@@ -1227,49 +1215,41 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
     // Total energy at final time must equal integral of total rate.
     ASSERT_EQUAL(probeData_t1[probeCol["umbTotal_m1"]],
                  probeDataInt[probeCol["umbTotal_rate_m1"]],
-                 1.0e-2, __FILE__, __LINE__,
-        "Umberger2010: integral of total rate differs from final total energy.");
+                 1.0e-2);
 
     ASSERT_EQUAL(probeData_t1[probeCol["bhaTotal_m1"]],
                  probeDataInt[probeCol["bhaTotal_rate_m1"]],
-                 1.0e-2, __FILE__, __LINE__,
-        "Bhargava2004: integral of total rate differs from final total energy.");
+                 1.0e-2);
 
     // Check reporting of metabolic probe components: Umberger2010.
     ASSERT_EQUAL(probeData_t1[probeCol["umbTotalAllPieces_both_basal"]],
                  probeDataInt[probeCol["umbBasal_rate_m1"]],
-                 1.0e-2, __FILE__, __LINE__,
-        "Umberger2010: error in reporting components of metabolic probe.");
+                 1.0e-2);
 
     ASSERT_EQUAL(probeData_t1[probeCol["umbTotalAllPieces_both_muscle1"]],
                  probeData_t1[probeCol["umbTotal_m1"]]
                  - probeDataInt[probeCol["umbBasal_rate_m1"]],
-                 1.0e-2, __FILE__, __LINE__,
-        "Umberger2010: error in reporting components of metabolic probe.");
+                 1.0e-2);
 
     ASSERT_EQUAL(probeData_t1[probeCol["umbTotalAllPieces_both_muscle2"]],
                  probeData_t1[probeCol["umbTotal_m2"]]
                  - probeDataInt[probeCol["umbBasal_rate_m1"]],
-                 1.0e-2, __FILE__, __LINE__,
-        "Umberger2010: error in reporting components of metabolic probe.");
+                 1.0e-2);
 
     // Check reporting of metabolic probe components: Bhargava2004.
     ASSERT_EQUAL(probeData_t1[probeCol["bhaTotalAllPieces_both_basal"]],
                  probeDataInt[probeCol["bhaBasal_rate_m1"]],
-                 1.0e-2, __FILE__, __LINE__,
-        "Bhargava2004: error in reporting components of metabolic probe.");
+                 1.0e-2);
 
     ASSERT_EQUAL(probeData_t1[probeCol["bhaTotalAllPieces_both_muscle1"]],
                  probeData_t1[probeCol["bhaTotal_m1"]]
                  - probeDataInt[probeCol["bhaBasal_rate_m1"]],
-                 1.0e-2, __FILE__, __LINE__,
-        "Bhargava2004: error in reporting components of metabolic probe.");
+                 1.0e-2);
 
     ASSERT_EQUAL(probeData_t1[probeCol["bhaTotalAllPieces_both_muscle2"]],
                  probeData_t1[probeCol["bhaTotal_m2"]]
                  - probeDataInt[probeCol["bhaBasal_rate_m1"]],
-                 1.0e-2, __FILE__, __LINE__,
-        "Bhargava2004: error in reporting components of metabolic probe.");
+                 1.0e-2);
 
     // Check reporting for multiple muscles.
     //   Total energy for muscle1      = basal + heat1 + work1
@@ -1279,15 +1259,13 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
                  probeData_t1[probeCol["umbTotal_m1"]]
                  + probeData_t1[probeCol["umbTotal_m2"]]
                  - probeDataInt[probeCol["umbBasal_rate_m1"]],
-                 1.0e-2, __FILE__, __LINE__,
-        "Umberger2010: error in reporting data for multiple muscles.");
+                 1.0e-2);
 
     ASSERT_EQUAL(probeData_t1[probeCol["bhaTotal_both"]],
                  probeData_t1[probeCol["bhaTotal_m1"]]
                  + probeData_t1[probeCol["bhaTotal_m2"]]
                  - probeDataInt[probeCol["bhaBasal_rate_m1"]],
-                 1.0e-2, __FILE__, __LINE__,
-        "Bhargava2004: error in reporting data for multiple muscles.");
+                 1.0e-2);
 
     //--------------------------------------------------------------------------
     // Run simulation with lower activation and ensure less energy is liberated.
