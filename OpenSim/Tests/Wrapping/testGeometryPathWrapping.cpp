@@ -199,11 +199,11 @@ namespace {
 
             double ma1 = spring1->computeMomentArm(s, coord);
 
-            ASSERT_EQUAL<double>(-r, ma1, .0001); // SimTK::Eps
+            ASSERT_EQUAL(-r, ma1, .0001); // SimTK::Eps
             double len1 = spring1->getLength(s);
             // Length is 2*r -0.1 by construction plus a portion of a quarter 
             // circle with radius r proportional to i.
-            ASSERT_EQUAL<double>(len1, 
+            ASSERT_EQUAL(len1, 
                     2*r-0.1 + 0.25 * 2 * SimTK::Pi * r * i / nsteps, 1e-6); 
 
         }
@@ -265,7 +265,7 @@ namespace {
         double lengthAnalyticalApprox = 
                 SimTK::Pi * (a + b) * (1 + 3 * h / (10 + std::sqrt(4 - 3 * h)));
         // Length is 1/4 ellipse + 2r -.1.
-        ASSERT_EQUAL<double>(len1, 2 * r - 0.1 + lengthAnalyticalApprox/4, 1e-4);
+        ASSERT_EQUAL(len1, 2 * r - 0.1 + lengthAnalyticalApprox/4, 1e-4);
 
     }
 

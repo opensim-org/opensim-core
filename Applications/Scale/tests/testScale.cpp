@@ -91,9 +91,8 @@ namespace {
                 target->getComponent<Marker>(absPathStr).get_location();
 
             std::cout << "  '" << absPathStr << "' - location: " << result_loc << std::endl;
-            ASSERT_EQUAL(result_loc, target_loc, tol, __FILE__, __LINE__,
-                "Marker '" + absPathStr + "' location in scaled model does not "
-                + "match standard of " + target_loc.toString());
+            CAPTURE(absPathStr);
+            ASSERT_EQUAL(result_loc, target_loc, tol);
         }
 
         // Check number of GeometryPath Components (otherwise, test will pass even
@@ -126,11 +125,8 @@ namespace {
                     target->getComponent<GeometryPath>(absPathStr)
                     .getPathPointSet()[i].getLocation(sTarget);
 
-                ASSERT_EQUAL(result_loc, target_loc, tol, __FILE__, __LINE__,
-                    "The location of point " + std::to_string(i)
-                    + " in GeometryPath '" + absPathStr + "' is "
-                    + result_loc.toString() + ", which does not match standard of "
-                    + target_loc.toString());
+                CAPTURE(absPathStr, i);
+                ASSERT_EQUAL(result_loc, target_loc, tol);
             }
         }
     }
@@ -357,11 +353,7 @@ TEST_CASE("Scale PhysicalOffsetFrames in models with atypical ownership trees") 
         model->scale(s, scaleSet, false);
         const Vec3 finalLoc = body.findStationLocationInGround(s, Vec3(0));
 
-        ASSERT_EQUAL(finalLoc, expectedLoc, SimTK::SignificantReal,
-            __FILE__, __LINE__,
-            "Incorrect final COM location:\n  initial: " + initialLoc.toString()
-            + "\n    final: " + finalLoc.toString() + " (expected: "
-            + expectedLoc.toString() + ")");
+        ASSERT_EQUAL(finalLoc, expectedLoc, SimTK::SignificantReal);
     };
 
     // Case 1: Use PinJoint's convenience constructor to create the child POF
@@ -508,11 +500,8 @@ TEST_CASE("Scale PhysicalOffsetFrames in models with atypical ownership trees") 
         {
             const Vec3 loc = marker->getLocationInGround(s);
 
-            ASSERT_EQUAL(loc, expectedMarkerLoc, SimTK::SignificantReal,
-                __FILE__, __LINE__,
-                "Incorrect location of Marker '" + marker->getName()
-                + "' (" + msg + ")\n  location: " + loc.toString()
-                + "\n  expected: " + expectedMarkerLoc.toString());
+            CAPTURE(marker->getName(), msg);
+            ASSERT_EQUAL(loc, expectedMarkerLoc, SimTK::SignificantReal);
         };
 
         testMarkerLoc(marker1, s, "before scaling");
@@ -587,10 +576,8 @@ TEST_CASE("Scale PhysicalOffsetFrames in models with atypical ownership trees") 
                 const Vec3& p1 = pps1[i].getLocationInGround(s);
                 const Vec3& p2 = pps2[i].getLocationInGround(s);
 
-                ASSERT_EQUAL(p1, p2, SimTK::SignificantReal, __FILE__, __LINE__,
-                    "The location of point " + std::to_string(i)
-                    + " does not match (" + msg + ")\n  PathActuator1: "
-                    + p1.toString() + "\n  PathActuator2: " + p2.toString());
+                CAPTURE(i, msg);
+                ASSERT_EQUAL(p1, p2, SimTK::SignificantReal);
             }
         };
 
@@ -647,19 +634,13 @@ TEST_CASE("Scaling Joints and Constraints") {
         // Radii of ellipsoid1 should not have changed.
         const Vec3& actual1   = ellipsoid1->get_radii_x_y_z();
         const Vec3& expected1 = radii;
-        ASSERT_EQUAL(actual1, expected1, SimTK::SignificantReal,
-            __FILE__, __LINE__,
-            "EllipsoidJoint 'ellipsoid1' has incorrect radii.\n  actual: "
-            + actual1.toString() + ", expected: " + expected1.toString());
+        ASSERT_EQUAL(actual1, expected1, SimTK::SignificantReal);
 
         // Radii of ellipsoid2 should have been scaled using the scale factors
         // corresponding to body2.
         const Vec3& actual2   = ellipsoid2->get_radii_x_y_z();
         const Vec3& expected2 = radii.elementwiseMultiply(scaleFactors);
-        ASSERT_EQUAL(actual2, expected2, SimTK::SignificantReal,
-            __FILE__, __LINE__,
-            "EllipsoidJoint 'ellipsoid2' has incorrect radii.\n  actual: "
-            + actual2.toString() + ", expected: " + expected2.toString());
+        ASSERT_EQUAL(actual2, expected2, SimTK::SignificantReal);
     }
 
     // Test CustomJoint scaling. Ensure SpatialTransform is scaled if the parent
@@ -698,21 +679,17 @@ TEST_CASE("Scaling Joints and Constraints") {
         // Transform of custom1 should not have changed.
         const OpenSim::Function& fn1 =
             custom1->getSpatialTransform()[3].getFunction();
-        ASSERT_EQUAL(fn1.calcValue(xA), yA, SimTK::SignificantReal,
-            __FILE__, __LINE__, "CustomJoint 'custom1' was incorrectly scaled.");
-        ASSERT_EQUAL(fn1.calcValue(xB), yB, SimTK::SignificantReal,
-            __FILE__, __LINE__, "CustomJoint 'custom1' was incorrectly scaled.");
+        ASSERT_EQUAL(fn1.calcValue(xA), yA, SimTK::SignificantReal);
+        ASSERT_EQUAL(fn1.calcValue(xB), yB, SimTK::SignificantReal);
 
         // Transform of custom2 should have been scaled using the scale factors
         // corresponding to body2.
         const OpenSim::Function& fn2 =
             custom2->getSpatialTransform()[3].getFunction();
         ASSERT_EQUAL(fn2.calcValue(xA), yA * scaleFactors[0],
-            SimTK::SignificantReal, __FILE__, __LINE__,
-            "CustomJoint 'custom2' was incorrectly scaled.");
+                SimTK::SignificantReal);
         ASSERT_EQUAL(fn2.calcValue(xB), yB * scaleFactors[0],
-            SimTK::SignificantReal, __FILE__, __LINE__,
-            "CustomJoint 'custom2' was incorrectly scaled.");
+                SimTK::SignificantReal);
     }
 
     // Test CoordinateCouplerConstraint scaling.
@@ -755,13 +732,11 @@ TEST_CASE("Scaling Joints and Constraints") {
         // Test coupling function before scaling.
         slider1->getCoordinate().setValue(s, 0., true);
         ASSERT_EQUAL(slider2->getCoordinate().getValue(s), intercept,
-            SimTK::SignificantReal, __FILE__, __LINE__,
-            "SliderJoint has incorrect Coordinate value before scaling.");
+            SimTK::SignificantReal);
 
         slider1->getCoordinate().setValue(s, 1., true);
         ASSERT_EQUAL(slider2->getCoordinate().getValue(s), intercept + slope,
-            SimTK::SignificantReal, __FILE__, __LINE__,
-            "SliderJoint has incorrect Coordinate value before scaling.");
+            SimTK::SignificantReal);
 
         // Scale body2 uniformly.
         const double uniformFactor = 1.23456;
@@ -777,14 +752,10 @@ TEST_CASE("Scaling Joints and Constraints") {
         // Test coupling function after scaling.
         slider1->getCoordinate().setValue(s, 0., true);
         ASSERT_EQUAL(slider2->getCoordinate().getValue(s),
-            intercept * uniformFactor,
-            SimTK::SignificantReal, __FILE__, __LINE__,
-            "SliderJoint has incorrect Coordinate value after scaling.");
+            intercept * uniformFactor, SimTK::SignificantReal);
 
         slider1->getCoordinate().setValue(s, 1., true);
         ASSERT_EQUAL(slider2->getCoordinate().getValue(s),
-            (intercept + slope) * uniformFactor,
-            SimTK::SignificantReal, __FILE__, __LINE__,
-            "SliderJoint has incorrect Coordinate value after scaling.");
+            (intercept + slope) * uniformFactor, SimTK::SignificantReal);
     }
 }

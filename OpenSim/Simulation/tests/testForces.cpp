@@ -1602,10 +1602,8 @@ TEST_CASE("testCoordinateLimitForce") {
         double eSys =
                 osimModel->getMultibodySystem().calcEnergy(osim_state) + ediss;
 
-        ASSERT_EQUAL(1.0, e / energy0, integ_accuracy,
-                "CoordinateLimitForce Failed to conserve energy");
-        ASSERT_EQUAL(1.0, eSys / eSys0, integ_accuracy,
-                "CoordinateLimitForce Failed to conserve system energy");
+        ASSERT_EQUAL(1.0, e / energy0, integ_accuracy);
+        ASSERT_EQUAL(1.0, eSys / eSys0, integ_accuracy);
 
         // get the forces applied to the ball by the limit force
         if (h > (positionRange[1] + trans)) {
@@ -1699,8 +1697,7 @@ TEST_CASE("testCoordinateLimitForceRotational") {
 
     double clfPE = clf->computePotentialEnergy(osim_state);
     double constSpringPE = 0.5 * (K_upper * 2.0) * 2.0 * SimTK_DEGREE_TO_RADIAN;
-    ASSERT_EQUAL(clfPE / constSpringPE, 1.0, 0.001,
-            "Specified upper rotational stiffness not met.");
+    ASSERT_EQUAL(clfPE / constSpringPE, 1.0, 0.001);
     ASSERT(clfPE < constSpringPE);
 
     // Now test lower bound
@@ -2174,20 +2171,19 @@ TEST_CASE("testBlankevoort1991Ligament") {
     // Save the forces
     reporter.getForceStorage().print("ligament_forces.mot");
 
-    // something is wrong if the block does not reach equilibrium
-    ASSERT_EQUAL(analytical_force, model_force, 1e-3, __FILE__, __LINE__,
-        "Expected Blankevoort1991Ligament to force to be equal to the "
-        "inertial and gravitational forces acting on block as is "
-        "necessary for dynamic equilibrium.");
+    // Blankevoort1991Ligament force should be equal to the inertial and
+    // gravitational forces acting on block as is necessary for dynamic
+    // equilibrium.
+    ASSERT_EQUAL(analytical_force, model_force, 1e-3);
 
     // Check that Energy is conserved
     double KE1 = osimModel.calcKineticEnergy(osim_state);
     double PE1 = osimModel.calcPotentialEnergy(osim_state);
     double E1 = KE1 + PE1;
 
-    ASSERT_EQUAL(E0, E1, 1e-3, __FILE__, __LINE__,
-        "Expected Blankevoort1991Ligament with damping set to zero to "
-        "conserve energy in a forward dynamic simulation.");
+    // Blankevoort1991Ligament with damping set to zero should conserve energy
+    // in a forward dynamic simulation.
+    ASSERT_EQUAL(E0, E1, 1e-3);
 
     // Test damping force
     double damping_coeff = 0.001;
@@ -2197,9 +2193,9 @@ TEST_CASE("testBlankevoort1991Ligament") {
     osimModel.realizeVelocity(osim_state);
     double damp_force0 = ligament->getDampingForce(osim_state);
 
-    ASSERT_EQUAL(damp_force0, 0.0000, 1e-3, __FILE__, __LINE__,
-        "Expected Blankevoort1991Ligament damping force to be zero when all "
-        "generalized speeds were zero.");
+    // Blankevoort1991Ligament damping force should be zero when all generalized
+    // speeds are zero.
+    ASSERT_EQUAL(damp_force0, 0.0000, 1e-3);
 
     double block_velocity = -1.0;
     sliderCoord.setSpeedValue(osim_state, block_velocity);
@@ -2209,10 +2205,9 @@ TEST_CASE("testBlankevoort1991Ligament") {
 
     double analytical_damping_force = -damping_coeff * block_velocity;
 
-    ASSERT_EQUAL(damp_force1, analytical_damping_force, 1e-3, __FILE__,
-        __LINE__,
-        "Expected Blankevoort1991Ligament damping force to be equal to "
-        "analytical value.");
+    // Blankevoort1991Ligament damping force should be equal to analytical
+    // value.
+    ASSERT_EQUAL(damp_force1, analytical_damping_force, 1e-3);
 
     //=========================================================================
     // Test Setup 2
@@ -2291,26 +2286,17 @@ TEST_CASE("testBlankevoort1991Ligament") {
     // The potential energy in Blankevoort1991Ligament should be
     // equal to zero when the ligament is slack
     ASSERT_EQUAL(results.getDependentColumn("potential_energy").getElt(0, 0),
-            0.0, 1e-3,
-        __FILE__, __LINE__,
-        "Expected potential energy in Blankevoort1991Ligament to be "
-        "equal to zero when the ligament is slack");
+        0.0, 1e-3);
 
     // The spring_force in Blankevoort1991Ligament should be equal to zero when
     // the ligament is slack.
     ASSERT_EQUAL(results.getDependentColumn("spring_force").getElt(0, 0),
-            0.0, 1e-3,
-        __FILE__, __LINE__,
-        "Expected spring_force in Blankevoort1991Ligament to be"
-        "equal to zero when the ligament is slack");
+        0.0, 1e-3);
 
     // The damping_force in Blankevoort1991Ligament should be equal to zero when
     // the ligament is slack.
     ASSERT_EQUAL(results.getDependentColumn("damping_force").getElt(0, 0),
-            0.0, 1e-3,
-        __FILE__, __LINE__,
-        "Expected damping_force in Blankevoort1991Ligament to be"
-        "equal to zero when the ligament is slack");
+        0.0, 1e-3);
 
     //Check that the spring_force and potential_energy are greater when the
     //ligment crosses the transition from the toe region to linear region
@@ -2369,10 +2355,10 @@ TEST_CASE("testBlankevoort1991Ligament") {
     double damping_shortening =
         lig->getOutputValue<double>(state, "damping_force");
 
-    ASSERT_EQUAL(damping_shortening, 0.0, 1e-3, __FILE__, __LINE__,
-        "Expected the damping force in Blankevoort1991Ligament to be "
-        " zero when the ligament is streched beyond the slack "
-        "length, but the lengthening_speed is negative.");
+    // The damping force in Blankevoort1991Ligament should be zero when the
+    // ligament is streched beyond the slack length, but the lengthening_speed
+    // is negative.
+    ASSERT_EQUAL(damping_shortening, 0.0, 1e-3);
 
     //Check linear stiffness in force/length
     slotCoord.setSpeedValue(state, 0.0);
@@ -2389,10 +2375,10 @@ TEST_CASE("testBlankevoort1991Ligament") {
     double calc_stiff = (F2 - F1) / (L2 - L1);
     double lig_stiff = lig->getLinearStiffnessForcePerLength();
 
-    ASSERT_EQUAL(calc_stiff, lig_stiff, 1e-3, __FILE__, __LINE__,
-        "Expected the calculated linear_stiffness in force/length in the "
-        "Blankevoort1991Ligament to be equal to the value returned by "
-        "getLinearStiffnessForcePerLength().");
+    // The calculated linear_stiffness in force/length in the
+    // Blankevoort1991Ligament should be equal to the value returned by
+    // getLinearStiffnessForcePerLength().
+    ASSERT_EQUAL(calc_stiff, lig_stiff, 1e-3);
 
     //Check setting slack_length through reference force
     double ref_force = 2.5;
@@ -2404,10 +2390,10 @@ TEST_CASE("testBlankevoort1991Ligament") {
     model.realizePosition(state);
     double reported_force = lig->getSpringForce(state);
 
-    ASSERT_EQUAL(ref_force, reported_force, 1e-3, __FILE__, __LINE__,
-        "Expected the force in the Blankevoort1991Ligament at the input "
-        "reference state be equal to the force value input "
-        "to setSlackLengthFromReferenceForce().");
+    // The force in the Blankevoort1991Ligament at the input reference
+    // state should be equal to the force value input to
+    // setSlackLengthFromReferenceForce().
+    ASSERT_EQUAL(ref_force, reported_force, 1e-3);
 
     //Check setting slack_length through reference strain
     double ref_strain = 0.05;
@@ -2418,10 +2404,10 @@ TEST_CASE("testBlankevoort1991Ligament") {
     model.realizePosition(state);
     double reported_strain = lig->getStrain(state);
 
-    ASSERT_EQUAL(ref_strain, reported_strain, 1e-3, __FILE__, __LINE__,
-        "Expected the strain in the Blankevoort1991Ligament at the input "
-        "reference state be equal to the strain value input "
-        "to setSlackLengthFromReferenceStrain().");
+    // The strain in the Blankevoort1991Ligament at the input
+    // reference state should be equal to the strain value input to
+    // setSlackLengthFromReferenceStrain().
+    ASSERT_EQUAL(ref_strain, reported_strain, 1e-3);
 }
 
 TEST_CASE("testExponentialCoordinateLimitForce") {

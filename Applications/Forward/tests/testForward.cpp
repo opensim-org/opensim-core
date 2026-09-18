@@ -79,8 +79,9 @@ TEST_CASE("testPendulumExternalLoad") {
         message << "t=" << time <<" state# "<< j << " "
             << standard.getColumnLabels()[j+1] << " std=" << data[j]
             <<"  computed=" << state->getData()[j];
-        ASSERT_EQUAL(data[j], state->getData()[j], 1e-2,
-            __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
+        CAPTURE(time, j, standard.getColumnLabels()[j+1], data[j],
+                state->getData()[j]);
+        ASSERT_EQUAL(data[j], state->getData()[j], 1e-2);
         cout << "ASSERT_EQUAL PASSED " << message.str() << endl;
     }
 }
@@ -106,8 +107,9 @@ TEST_CASE("testPendulumExternalLoadWithPointInGround") {
         message << "t=" << time <<" state# "<< j << " " << standard.getColumnLabels()[j+1]
             << " std=" << data[j] <<"  computed=" << state->getData()[j];
         cout << message.str() << endl;
-        ASSERT_EQUAL(data[j], state->getData()[j], 1e-2,
-            __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
+        CAPTURE(time, j, standard.getColumnLabels()[j+1], data[j],
+                state->getData()[j]);
+        ASSERT_EQUAL(data[j], state->getData()[j], 1e-2);
         cout << "ASSERT_EQUAL PASSED " << endl;
     }
 }
@@ -131,8 +133,9 @@ TEST_CASE("testArm26") {
     for (int j = 0; j < state->getSize(); ++j) {
         stringstream message;
         message << "t=" << time <<" state# "<< j << " " << standard->getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j] << endl;
-        ASSERT_EQUAL(data[j], state->getData()[j], 5.0e-3,
-            __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
+        CAPTURE(time, j, standard->getColumnLabels()[j+1], data[j],
+                state->getData()[j]);
+        ASSERT_EQUAL(data[j], state->getData()[j], 5.0e-3);
         cout << "ASSERT_EQUAL PASSED " << message.str();
     }
 
@@ -144,8 +147,9 @@ TEST_CASE("testArm26") {
     for (int j = 0; j < state->getSize(); ++j) {
         stringstream message;
         message << "t=" << time <<" state# "<< j << " " << standard->getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j] << endl;
-        ASSERT_EQUAL(data[j], state->getData()[j], 5.0e-3,
-            __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
+        CAPTURE(time, j, standard->getColumnLabels()[j+1], data[j],
+                state->getData()[j]);
+        ASSERT_EQUAL(data[j], state->getData()[j], 5.0e-3);
         cout << "ASSERT_EQUAL PASSED " << message.str();
     }
 }
