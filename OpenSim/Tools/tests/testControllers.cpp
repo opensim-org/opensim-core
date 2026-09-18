@@ -155,7 +155,7 @@ TEST_CASE("testControlSetControllerOnBlock") {
 
     si.getQ().dump("Final position:");
     double x_err = fabs(coordinates[0].getValue(si) - 0.5*(controlForce[0]/blockMass)*finalTime*finalTime);
-    ASSERT(x_err <= accuracy, __FILE__, __LINE__, "ControlSetControllerOnBlock failed to produce the expected motion.");
+    ASSERT(x_err <= accuracy);
 
     // Save the simulation results
     Storage states(manager.getStateStorage());

@@ -133,9 +133,7 @@ TEST_CASE("PhysicalOffsetFrameOnBody")
     ASSERT_EQUAL(angs_known, angles, tolerance);
     // make sure that this PhysicalOffsetFrame knows that it is rigidly fixed to the
     // same MobilizedBody as Body rod1
-    ASSERT(rod1.getMobilizedBodyIndex() == offsetFrame->getMobilizedBodyIndex(),
-        __FILE__, __LINE__, 
-        "testPhysicalOffsetFrameOnBody(): incorrect MobilizedBodyIndex");
+    ASSERT(rod1.getMobilizedBodyIndex() == offsetFrame->getMobilizedBodyIndex());
 
     Transform X_RO_3 = offsetFrame->findTransformBetween(s, rod1);
     SimTK::Vec3 angles3 = X_RO_3.R().convertRotationToBodyFixedXYZ();
@@ -255,17 +253,13 @@ TEST_CASE("PhysicalOffsetFrameOnPhysicalOffsetFrame")
 
     // make sure that this PhysicalOffsetFrame knows that it is rigidly fixed to the
     // same MobilizedBody as Body rod1
-    ASSERT(rod1.getMobilizedBodyIndex() == secondFrame->getMobilizedBodyIndex(),
-        __FILE__, __LINE__, 
-        "testPhysicalOffsetFrameOnPhysicalOffsetFrame(): incorrect MobilizedBodyIndex");
+    ASSERT(rod1.getMobilizedBodyIndex() == secondFrame->getMobilizedBodyIndex());
 
     // test base Frames are identical
     const Frame& baseRod = rod1.findBaseFrame();
-    ASSERT(base == baseRod, __FILE__, __LINE__, 
-        "testPhysicalOffsetFrameOnPhysicalOffsetFrame(): incorrect base frame for PhysicalOffsetFrame");
+    ASSERT(base == baseRod);
     const Frame& base1 = offsetFrame->findBaseFrame();
-    ASSERT(base1 == base, __FILE__, __LINE__,
-        "testPhysicalOffsetFrameOnPhysicalOffsetFrame(): incorrect base frames for PhysicalOffsetFrame");
+    ASSERT(base1 == base);
 }
 
 TEST_CASE("PhysicalOffsetFrameOnBodySerialize")
@@ -302,9 +296,7 @@ TEST_CASE("PhysicalOffsetFrameOnBodySerialize")
     ASSERT_EQUAL(X_GO_2.R().convertRotationToBodyFixedXYZ(),
                  X_GO_1.R().convertRotationToBodyFixedXYZ(), tolerance);
     // verify that PhysicalOffsetFrame shares the same underlying MobilizedBody as rod1
-    ASSERT(rod1.getMobilizedBodyIndex() == myExtraFrame.getMobilizedBodyIndex(),
-        __FILE__, __LINE__,
-        "testPhysicalOffsetFrameOnBodySerialize(): incorrect MobilizedBodyIndex");
+    ASSERT(rod1.getMobilizedBodyIndex() == myExtraFrame.getMobilizedBodyIndex());
 }
 
 TEST_CASE("PhysicalOffsetFrameOnPhysicalOffsetFrameOrder")
@@ -345,10 +337,8 @@ TEST_CASE("PhysicalOffsetFrameOnPhysicalOffsetFrameOrder")
 
     // make sure that this offsetFrameDistal knows that it is rigidly fixed 
     // to the same MobilizedBody as the rod2 Body
-    ASSERT(rod2.getMobilizedBodyIndex() == 
-                offsetFrameDistal->getMobilizedBodyIndex(), __FILE__, __LINE__,
-        "testPhysicalOffsetFrameOnPhysicalOffsetFrame(): "
-        "incorrect MobilizedBodyIndex");
+    ASSERT(rod2.getMobilizedBodyIndex() ==
+           offsetFrameDistal->getMobilizedBodyIndex());
 
     // Verify that a direct loop throws an exception
     // Re-wire the PhysicalOffsetFrames to form a loop

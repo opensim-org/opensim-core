@@ -76,33 +76,33 @@ TEST_CASE("MarkerData : general tests")
     ASSERT(md.getFileName()=="dataWithNaNsOfDifferentCases.trc");
     Storage storage;
     md.makeRdStorage(storage);
-    ASSERT(md.getUnits().getType()==Units(string("mm")).getType(), __FILE__, __LINE__);
+    ASSERT(md.getUnits().getType()==Units(string("mm")).getType());
     //std::string mm("mm");
     Units lengthUnit = Units::Millimeters;
-    ASSERT(md.getUnits().getType()==lengthUnit.getType(), __FILE__, __LINE__);
+    ASSERT(md.getUnits().getType()==lengthUnit.getType());
     const Array<std::string>& markerNames = md.getMarkerNames();
-    ASSERT(markerNames.getSize()==14, __FILE__, __LINE__);
-    ASSERT(md.getMarkerIndex("toe")==0, __FILE__, __LINE__);
-    ASSERT(md.getMarkerIndex("lASIS")==13, __FILE__, __LINE__);
-    ASSERT(md.getMarkerIndex("NotFound")==-1, __FILE__, __LINE__);
-    ASSERT(md.getNumFrames()==5, __FILE__, __LINE__);
-    ASSERT(md.getStartFrameTime()==0.0, __FILE__, __LINE__);
-    ASSERT(md.getLastFrameTime()==0.016, __FILE__, __LINE__);
-    ASSERT(md.getDataRate()==250., __FILE__, __LINE__);
-    ASSERT(md.getCameraRate()==250., __FILE__, __LINE__);
+    ASSERT(markerNames.getSize()==14);
+    ASSERT(md.getMarkerIndex("toe")==0);
+    ASSERT(md.getMarkerIndex("lASIS")==13);
+    ASSERT(md.getMarkerIndex("NotFound")==-1);
+    ASSERT(md.getNumFrames()==5);
+    ASSERT(md.getStartFrameTime()==0.0);
+    ASSERT(md.getLastFrameTime()==0.016);
+    ASSERT(md.getDataRate()==250.);
+    ASSERT(md.getCameraRate()==250.);
     //ToBeTested md.convertToUnits(Units(Units::Meters));
 
     MarkerData md2("dataWithNaNsWithSpaces.trc");
     double expectedData[] = {1006.513977, 1014.924316,-195.748917};
     const MarkerFrame& frame2 = md2.getFrame(1);
-    ASSERT(frame2.getFrameTime()==.01, __FILE__, __LINE__);
+    ASSERT(frame2.getFrameTime()==.01);
     const SimTK::Array_<SimTK::Vec3>& markers = frame2.getMarkers();
     const SimTK::Vec3& m1 = markers[0];
-    ASSERT(SimTK::isNaN(m1[0]), __FILE__, __LINE__);
-    ASSERT(SimTK::isNaN(m1[1]), __FILE__, __LINE__);
-    ASSERT(SimTK::isNaN(m1[2]), __FILE__, __LINE__);
+    ASSERT(SimTK::isNaN(m1[0]));
+    ASSERT(SimTK::isNaN(m1[1]));
+    ASSERT(SimTK::isNaN(m1[2]));
     SimTK::Vec3 diff = (markers[1]-SimTK::Vec3(expectedData[0], expectedData[1], expectedData[2]));
-    ASSERT(diff.norm() < 1e-7, __FILE__, __LINE__);
+    ASSERT(diff.norm() < 1e-7);
 
     MarkerData md3("dataWithEformat.trc");
     double expectedData3[] = {-1.52E-01,    2.45E-01,   -1.71E+00};
@@ -110,5 +110,5 @@ TEST_CASE("MarkerData : general tests")
     const SimTK::Array_<SimTK::Vec3>& markers3 = frame3.getMarkers();
     /*const SimTK::Vec3& m31 = */markers3[1];
     /* SimTK::Vec3 diff3 = */(markers3[1]-SimTK::Vec3(expectedData3));
-    ASSERT(diff.norm() < 1e-7, __FILE__, __LINE__);
+    ASSERT(diff.norm() < 1e-7);
 }

@@ -119,8 +119,7 @@ void test(const std::string filename) {
     const std::string forces_file = base + "_grfs.sto";
     const std::string analogs_file = base + "_analog.sto";
 
-    ASSERT(marker_table->getNumRows() > 0, __FILE__, __LINE__,
-        "Failed to read marker data from " + filename);
+    ASSERT(marker_table->getNumRows() > 0);
 
     marker_table->updTableMetaData().setValueForKey("Units", 
                                                     std::string{"mm"});
@@ -130,8 +129,7 @@ void test(const std::string filename) {
     cout << "\tWrote '" << marker_file << "' in "
         << watch.getElapsedTimeFormatted() << endl;
 
-    ASSERT(force_table->getNumRows() > 0, __FILE__, __LINE__,
-        "Failed to read forces data from " + filename);
+    ASSERT(force_table->getNumRows() > 0);
 
     force_table->updTableMetaData().setValueForKey("Units", 
                                                     std::string{"mm"});

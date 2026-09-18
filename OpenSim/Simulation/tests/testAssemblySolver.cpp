@@ -252,7 +252,7 @@ namespace {
             cout << "Post-simulation:" << i << " q1_1 = " << q1_1[i] << ", q1_2 = " << q1_2[i] << endl;
             ASSERT_EQUAL(q1_1[i], q1_2[i], 10 * accuracy);
         }
-        ASSERT(max(abs(q1_1 - q0_1)) > 1e-2, __FILE__, __LINE__, "Check that state changed after simulation FAILED");
+        ASSERT(max(abs(q1_1 - q0_1)) > 1e-2);
     }
 
     double calcLigamentLengthError(const SimTK::State &s, const Model &model)

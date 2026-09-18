@@ -229,11 +229,8 @@ void compareSimulationStates(SimTK::Vector q_sb, SimTK::Vector u_sb,
     //q_err.dump("Diff q's:");
     //u_err.dump("Diff u's:");
 
-    stringstream errorMessage1, errorMessage2;
-    errorMessage1 << "testConstraints compareSimulationStates failed q_err.norm = " << q_err.norm();
-    errorMessage2 << "testConstraints compareSimulationStates failed u_err.norm = " << u_err.norm();
-    ASSERT(q_err.norm() <= 10*integ_accuracy, __FILE__, __LINE__, errorMessagePrefix + errorMessage1.str());
-    ASSERT(u_err.norm() <= 20*integ_accuracy, __FILE__, __LINE__, errorMessagePrefix + errorMessage2.str());
+    ASSERT(q_err.norm() <= 10*integ_accuracy);
+    ASSERT(u_err.norm() <= 20*integ_accuracy);
 }
 
 void compareSimulations(SimTK::MultibodySystem &system, SimTK::State &state, Model *osimModel, SimTK::State &osim_state, string errorMessagePrefix = "")
@@ -531,9 +528,7 @@ TEST_CASE("testCoordinateLocking")
     qf.dump("Final q's"); // pendulum positions
     si2.getU().dump("Final u's"); // pendulum velocities
 
-    stringstream errorMessage;
-    errorMessage << "testCoordinateLocking FAILED\ntestCoordinateLocking: q_err = " << qf[1]-qi[1];
-    ASSERT(fabs(qf[1]-fixedKneeAngle) <= integ_accuracy, __FILE__, __LINE__, errorMessage.str());
+    ASSERT(fabs(qf[1]-fixedKneeAngle) <= integ_accuracy);
 }
 
 TEST_CASE("testWeldConstraint")
