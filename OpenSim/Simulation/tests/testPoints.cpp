@@ -82,7 +82,7 @@ TEST_CASE("testStationOnBody") {
         pendulum->realizeAcceleration(s);
 
         SimTK::Vec3 comInGround =  myStation->getLocationInGround(s);
-        SimTK::Vec3 comBySimbody = 
+        SimTK::Vec3 comBySimbody =
             rod1.getMobilizedBody().findStationLocationInGround(s, com);
         ASSERT_EQUAL(comInGround, comBySimbody, tolerance, __FILE__, __LINE__,
             "testStationOnBody(): failed to resolve station location in ground.");

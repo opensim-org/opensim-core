@@ -110,7 +110,7 @@ TEST_CASE("testStates")
     
     //y4.dump("y4: Default State after second simulation:");
 
-    for (int i = 0; i < y1.size(); i++) 
+    for (int i = 0; i < y1.size(); i++)
     {
         cout << i <<" : y1[i] = " << y1[i] << " :: y3[i] = " << y3[i] << endl;
         ASSERT_EQUAL(y1[i], y3[i], 1e-5,__FILE__, __LINE__, 
