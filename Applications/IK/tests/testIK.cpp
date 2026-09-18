@@ -222,9 +222,9 @@ TEST_CASE("testInverseKinematicsGait2354") {
         InverseKinematicsTool ik1("subject01_Setup_InverseKinematics.xml");
         ik1.run();
         Storage result1(ik1.getOutputMotionFileName());
-        CHECK_STORAGE_AGAINST_STANDARD(result1, standard,
-            std::vector<double>(24, 0.2), __FILE__, __LINE__,
-            "testInverseKinematicsGait2354 failed");
+        OpenSim::Testing::checkStorageAgainstStandard(
+                result1, standard,
+                std::vector<double>(24, 0.2));
     }
 
     SECTION("GUI workflow") {
@@ -234,9 +234,9 @@ TEST_CASE("testInverseKinematicsGait2354") {
         ik2.setModel(mdl);
         ik2.run();
         Storage result2(ik2.getOutputMotionFileName());
-        CHECK_STORAGE_AGAINST_STANDARD(result2, standard,
-            std::vector<double>(24, 0.2), __FILE__, __LINE__,
-            "testInverseKinematicsGait2354 GUI workflow failed");
+        OpenSim::Testing::checkStorageAgainstStandard(
+                result2, standard,
+                std::vector<double>(24, 0.2));
     }
 }
 
@@ -252,9 +252,9 @@ TEST_CASE("testInverseKinematicsScapulothoracicAbduction") {
     Storage result(ik.getOutputMotionFileName());
     // Tolerance of 0.2 degs for rotational coordinates was selected from
     // the other IK regression tests.
-    CHECK_STORAGE_AGAINST_STANDARD(result, standard,
-            std::vector<double>(17, 0.2), __FILE__, __LINE__,
-            "testInverseKinematicsScapulothoracicAbduction failed");
+    OpenSim::Testing::checkStorageAgainstStandard(
+            result, standard,
+            std::vector<double>(17, 0.2));
 }
 
 TEST_CASE("testMarkerWeightAssignments") {

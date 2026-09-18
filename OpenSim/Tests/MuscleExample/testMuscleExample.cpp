@@ -38,11 +38,8 @@ TEST_CASE("testMuscleExample") {
     Storage result1(result1FilenameV1),
             standard1("std_tugOfWar_fatigue_states.sto");
     int ncols = result1.getColumnLabels().getSize();
-    CHECK_STORAGE_AGAINST_STANDARD(result1, standard1,
-                                    std::vector<double>(ncols, 0.01),
-                                    __FILE__,
-                                    __LINE__,
-                                    "tugOfWar fatigue states failed");
+    OpenSim::Testing::checkStorageAgainstStandard(result1, standard1,
+        std::vector<double>(ncols, 0.01));
     cout << "tugOfWar fatigue states passed\n";
 
     const std::string result2Filename{"tugOfWar_fatigue_forces.sto"};
@@ -51,10 +48,7 @@ TEST_CASE("testMuscleExample") {
     Storage result2(result2FilenameV1),
             standard2("std_tugOfWar_forces.mot");
     ncols = result2.getColumnLabels().getSize();
-    CHECK_STORAGE_AGAINST_STANDARD(result2, standard2,
-                                    std::vector<double>(ncols, 20.0),
-                                    __FILE__,
-                                    __LINE__,
-                                    "tugOfWar forces failed");
+    OpenSim::Testing::checkStorageAgainstStandard(result2, standard2,
+        std::vector<double>(ncols, 20.0));
     cout << "tugOfWar forces passed\n";
 }

@@ -41,6 +41,15 @@
 namespace OpenSim::Testing {
 
 /**
+ * Check a Storage against a standard Storage using the specified per-column
+ * tolerances. Fails if there are no common columns, or if the RMS error for
+ * any column is outside its tolerance.
+ */
+void checkStorageAgainstStandard(const OpenSim::Storage& result,
+        const OpenSim::Storage& standard,
+        const std::vector<double>& tolerances);
+
+/**
  * Randomize the property values of an `OpenSim::Object`.
  */
 OpenSim::Object* randomize(OpenSim::Object* obj);
@@ -162,18 +171,6 @@ void reportTendonAndFiberForcesAcrossFiberLengths(const T& muscle,
 }
 
 } // namespace OpenSim::Testing
-
-/**
- * Check this storage object against a standard storage object using the
- * specified tolerances. If RMS error for any column is outside the
- * tolerance, throw an Exception.
- */
-void CHECK_STORAGE_AGAINST_STANDARD(const OpenSim::Storage& result,
-        const OpenSim::Storage& standard,
-        const std::vector<double>& tolerances,
-        const std::string& testFile, const int testFileLine,
-        const std::string& errorMessage);
-
 
 // Assertion macros
 // ----------------

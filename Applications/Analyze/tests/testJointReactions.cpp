@@ -37,9 +37,9 @@ TEST_CASE("testJointReactions") {
         analyze.run();
         Storage result1("SinglePin_JointReaction_ReactionLoads.sto"),
             standard1("std_SinglePin_JointReaction_ReactionLoads.sto");
-        CHECK_STORAGE_AGAINST_STANDARD(result1, standard1,
-            std::vector<double>(standard1.getSmallestNumberOfStates(), 1e-5), __FILE__, __LINE__,
-            "SinglePin failed");
+        OpenSim::Testing::checkStorageAgainstStandard(
+                result1, standard1,
+                std::vector<double>(standard1.getSmallestNumberOfStates(), 1e-5));
     }
 
     SECTION("DoublePendulum3D") {
@@ -47,9 +47,9 @@ TEST_CASE("testJointReactions") {
         analyze2.run();
         Storage result2("DoublePendulum3D_JointReaction_ReactionLoads.sto"),
             standard2("std_DoublePendulum3D_JointReaction_ReactionLoads.sto");
-        CHECK_STORAGE_AGAINST_STANDARD(result2, standard2,
-            std::vector<double>(standard2.getSmallestNumberOfStates(), 1e-5), __FILE__, __LINE__,
-            "DoublePendulum3D failed");
+        OpenSim::Testing::checkStorageAgainstStandard(
+                result2, standard2,
+                std::vector<double>(standard2.getSmallestNumberOfStates(), 1e-5));
     }
 
     SECTION("SinglePin_FrameKeyword") {
@@ -57,9 +57,9 @@ TEST_CASE("testJointReactions") {
         analyze3.run();
         Storage result3("SinglePin_JointReaction_ReactionLoads.sto"),
             standard3("std_SinglePin_JointReaction_ReactionLoads_FrameKeyword.sto");
-        CHECK_STORAGE_AGAINST_STANDARD(result3, standard3,
-            std::vector<double>(standard3.getSmallestNumberOfStates(), 1e-5), __FILE__, __LINE__,
-            "SinglePin_FrameKeyword failed");
+        OpenSim::Testing::checkStorageAgainstStandard(
+                result3, standard3,
+                std::vector<double>(standard3.getSmallestNumberOfStates(), 1e-5));
     }
 
     SECTION("DoublePendulum3D_FrameKeyword") {
@@ -67,8 +67,8 @@ TEST_CASE("testJointReactions") {
         analyze4.run();
         Storage result4("DoublePendulum3D_JointReaction_ReactionLoads.sto"),
             standard4("std_DoublePendulum3D_JointReaction_ReactionLoads_FrameKeyword.sto");
-        CHECK_STORAGE_AGAINST_STANDARD(result4, standard4,
-            std::vector<double>(standard4.getSmallestNumberOfStates(), 1e-5), __FILE__, __LINE__,
-            "DoublePendulum3D_FrameKeyword failed");
+        OpenSim::Testing::checkStorageAgainstStandard(
+                result4, standard4,
+                std::vector<double>(standard4.getSmallestNumberOfStates(), 1e-5));
     }
 }

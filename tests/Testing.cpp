@@ -24,26 +24,25 @@
 
 using namespace OpenSim;
 
-void CHECK_STORAGE_AGAINST_STANDARD(const OpenSim::Storage& result,
-        const OpenSim::Storage& standard, const std::vector<double>& tolerances,
-        const std::string& testFile, const int testFileLine,
-        const std::string& errorMessage) {
+void OpenSim::Testing::checkStorageAgainstStandard(
+        const OpenSim::Storage& result,
+        const OpenSim::Storage& standard,
+        const std::vector<double>& tolerances) {
 
     std::vector<std::string> columnsUsed;
     std::vector<double> comparisons;
     result.compareWithStandard(standard, columnsUsed, comparisons);
 
-    size_t ncolumns = columnsUsed.size();
+    const size_t ncolumns = columnsUsed.size();
 
-    ASSERT(ncolumns > 0, testFile, testFileLine,
-           errorMessage + "- no common columns to compare!");
+    OPENSIM_ASSERT_ALWAYS(ncolumns > 0);
 
     for (size_t i = 0; i < ncolumns; ++i) {
         std::cout << "column:    " << columnsUsed[i] << std::endl;
         std::cout << "RMS error: " << comparisons[i] << std::endl;
         std::cout << "tolerance: " << tolerances[i] << std::endl << std::endl;
-        ASSERT(comparisons[i] < tolerances[i], testFile, testFileLine,
-               errorMessage);
+
+        OPENSIM_ASSERT_ALWAYS(comparisons[i] < tolerances[i]);
     }
 }
 

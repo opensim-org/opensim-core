@@ -107,10 +107,8 @@ TEST_CASE("testUpdatePre40KinematicsFor40MotionType") {
                 SimTK_RADIAN_TO_DEGREE);
 
         const int numColumns = origKinematics.getColumnLabels().getSize();
-        CHECK_STORAGE_AGAINST_STANDARD(*updatedKinematics, origKinematics,
-                std::vector<double>(numColumns, 1e-14),
-                __FILE__, __LINE__,
-                "updatePre40KinematicsStorageFor40MotionType() altered columms incorrectly.");
+        OpenSim::Testing::checkStorageAgainstStandard(*updatedKinematics,
+            origKinematics, std::vector<double>(numColumns, 1e-14));
     }
 
     // Test updatePre40KinematicsFilesFor40MotionType().
@@ -130,10 +128,8 @@ TEST_CASE("testUpdatePre40KinematicsFor40MotionType") {
 
         const int numColumns = origKinematics.getColumnLabels().getSize();
         // We lose precision when through the file.
-        CHECK_STORAGE_AGAINST_STANDARD(updatedKinematics, origKinematics,
-                std::vector<double>(numColumns, 1e-6),
-                __FILE__, __LINE__,
-                "updatePre40KinematicsFilesFor40MotionType() altered columms incorrectly.");
+        OpenSim::Testing::checkStorageAgainstStandard(updatedKinematics,
+            origKinematics, std::vector<double>(numColumns, 1e-6));
     }
 
     {
@@ -150,11 +146,8 @@ TEST_CASE("testUpdatePre40KinematicsFor40MotionType") {
                 SimTK_RADIAN_TO_DEGREE);
 
         const int numColumns = origKinematics.getColumnLabels().getSize();
-        CHECK_STORAGE_AGAINST_STANDARD(*updatedKinematics, origKinematics,
-                std::vector<double>(numColumns, 1e-14),
-                __FILE__, __LINE__,
-                "updatePre40KinematicsStorageFor40MotionType(), with a copied "
-                "model, altered columms incorrectly.");
+        OpenSim::Testing::checkStorageAgainstStandard(*updatedKinematics,
+            origKinematics, std::vector<double>(numColumns, 1e-14));
     }
     const std::string updatedModelFile =
             "testSimulationUtilities_leg6dof9musc_updated.osim";

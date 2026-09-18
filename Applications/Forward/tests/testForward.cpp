@@ -171,8 +171,7 @@ TEST_CASE("testGait2354") {
         rms_tols[2*i+1] = 2.5; // speeds can deviate by a lot due to open-loop test
     }
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
-        __FILE__, __LINE__, "testGait2354 failed");
+    OpenSim::Testing::checkStorageAgainstStandard(results, *standard, rms_tols);
 }
 
 TEST_CASE("testGait2354WithController") {
@@ -195,8 +194,7 @@ TEST_CASE("testGait2354WithController") {
         rms_tols[2*i+1] = 0.1; // speeds should deviate less with feedback controller
     }
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
-        __FILE__, __LINE__, "testGait2354WithController failed");
+    OpenSim::Testing::checkStorageAgainstStandard(results, *standard, rms_tols);
 }
 
 TEST_CASE("testGait2354WithControllerGUI") {
@@ -228,8 +226,7 @@ TEST_CASE("testGait2354WithControllerGUI") {
     int nq = forward.getModel().getNumCoordinates();
     std::vector<double> rms_tols(2 * nstates, SimTK::SqrtEps);
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols,
-        __FILE__, __LINE__, "testGait2354WithControllerGUI failed");
+    OpenSim::Testing::checkStorageAgainstStandard(results, standard, rms_tols);
 
     delete model;
 }
@@ -260,7 +257,7 @@ TEST_CASE("testForwardToolVersusManager") {
     CHECK(managerStates.getSize() == forwardStates.getSize());
 
     std::vector<double> rms_tols(state.getNY(), SimTK::SqrtEps);
-    CHECK_STORAGE_AGAINST_STANDARD(forwardStates, managerStates, rms_tols,
-        __FILE__, __LINE__, "testForwardToolVersusManager failed");
+    OpenSim::Testing::checkStorageAgainstStandard(forwardStates, managerStates,
+        rms_tols);
 
 }
