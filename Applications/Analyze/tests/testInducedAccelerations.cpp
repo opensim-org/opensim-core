@@ -67,9 +67,8 @@ TEST_CASE("Induced Accelerations of Running") {
     analyze.run();
     Storage result1("ResultsInducedAccelerations/subject02_running_arms_InducedAccelerations_center_of_mass.sto");
     Storage standard1("std_subject02_running_arms_InducedAccelerations_CENTER_OF_MASS.sto");
-    CHECK_STORAGE_AGAINST_STANDARD(result1, standard1,
-        std::vector<double>(result1.getSmallestNumberOfStates(), 0.15),
-        __FILE__, __LINE__, "Induced Accelerations of Running failed");
+    OpenSim::Testing::checkStorageAgainstStandard(result1, standard1,
+        std::vector<double>(result1.getSmallestNumberOfStates(), 0.15));
 }
 
 TEST_CASE("testDoublePendulumWithSolver") {

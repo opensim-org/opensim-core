@@ -70,15 +70,11 @@ namespace {
         // Uncomment to use muscle model specific standard
         //Storage stdForces1("std_arm26_"+muscName+"_SO_force.sto");
 
-        CHECK_STORAGE_AGAINST_STANDARD(activations1, stdActivations1,
-                                    std::vector<double>(6, actTol),
-                                    __FILE__, __LINE__,
-                                    "Arm26 activations "+muscName+" failed");
+        OpenSim::Testing::checkStorageAgainstStandard(activations1,
+            stdActivations1, std::vector<double>(6, actTol));
 
-        CHECK_STORAGE_AGAINST_STANDARD(forces1, stdForces1,
-                                    std::vector<double>(6, forceTol),
-                                    __FILE__, __LINE__,
-                                    "Arm26 forces "+muscName+" failed.");
+        OpenSim::Testing::checkStorageAgainstStandard(forces1, stdForces1,
+            std::vector<double>(6, forceTol));
 
 
         AnalyzeTool analyze2("arm26_bounds_Setup_StaticOptimization.xml");
@@ -96,15 +92,11 @@ namespace {
         // Uncomment to use muscle model specific standard
         //Storage stdForces2("std_arm26_bounds_"+muscName+"_SO_force.sto");
 
-        CHECK_STORAGE_AGAINST_STANDARD(activations2, stdActivations2,
-            std::vector<double>(6, actTol),
-            __FILE__, __LINE__,
-            "Arm26 activation "+muscName+" with bounds failed.");
+        OpenSim::Testing::checkStorageAgainstStandard(activations2,
+            stdActivations2, std::vector<double>(6, actTol));
 
-        CHECK_STORAGE_AGAINST_STANDARD(forces2, stdForces2,
-            std::vector<double>(6, forceTol),
-            __FILE__,  __LINE__,
-            "Arm26 forces "+muscName+" with bounds failed.");
+        OpenSim::Testing::checkStorageAgainstStandard(forces2, stdForces2,
+            std::vector<double>(6, forceTol));
     }
 }
 
@@ -137,15 +129,11 @@ TEST_CASE("testModelWithPassiveForces") {
     Storage forces(resultsDir + "/walk_subject01_ankle_spring_StaticOptimization_force.sto");
     Storage stdForces("std_walk_subject01_ankle_spring_StaticOptimization_force.sto");
 
-    CHECK_STORAGE_AGAINST_STANDARD(activations, stdActivations,
-        std::vector<double>(28, 0.025),
-        __FILE__, __LINE__,
-        "ModelWithPassiveForces activations failed");
+    OpenSim::Testing::checkStorageAgainstStandard(activations, stdActivations,
+        std::vector<double>(28, 0.025));
 
-    CHECK_STORAGE_AGAINST_STANDARD(forces, stdForces,
-        std::vector<double>(48, 3),
-        __FILE__, __LINE__,
-        "ModelWithPassiveForces forces failed.");
+    OpenSim::Testing::checkStorageAgainstStandard(forces, stdForces,
+        std::vector<double>(48, 3));
     cout << resultsDir << ": test ModelWithPassiveForces passed." << endl;
 
 }

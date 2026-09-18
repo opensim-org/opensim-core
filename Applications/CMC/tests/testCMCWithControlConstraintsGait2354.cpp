@@ -52,8 +52,9 @@ TEST_CASE("testGait2354") {
     rms_tols[4] = 0.005;
     rms_tols[5] = 0.005;
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols,
-        __FILE__, __LINE__, "testGait2354 tracking failed");
+    OpenSim::Testing::checkStorageAgainstStandard(
+            results, standard,
+            rms_tols);
 
     Storage results2("subject01_ResultsCMC/subject01_walk1_states.sto");
     Storage standard2("std_subject01_walk1_states_WithControlConstraints.sto");
@@ -66,6 +67,7 @@ TEST_CASE("testGait2354") {
         rms_tols2[2*i+1] = 0.25; // velocities rad/s
     }
 
-    CHECK_STORAGE_AGAINST_STANDARD(results2, standard2, rms_tols2,
-        __FILE__, __LINE__, "testGait2354 states failed");
+    OpenSim::Testing::checkStorageAgainstStandard(
+            results2, standard2,
+            rms_tols2);
 }

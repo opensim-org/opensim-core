@@ -545,23 +545,20 @@ TEST_CASE("Compare Hertz and Mesh Contact Results") {
     // Hertz theory and ElasticFoundation will not be the same, but they should
     // yield similar results, to withing
     std::vector<double> rms_tols_1(nforces, 12);
-    CHECK_STORAGE_AGAINST_STANDARD(meshToMesh, hertz, rms_tols_1,
-            __FILE__, __LINE__,
-            "ElasticFoundation FAILED to Match Hertz Contact ");
+    OpenSim::Testing::checkStorageAgainstStandard(meshToMesh, hertz,
+        rms_tols_1);
 
     // ElasticFoundation on mesh to mesh and mesh to non-mesh should be
     // virtually identical
     std::vector<double> rms_tols_2(nforces, 0.5);
-    CHECK_STORAGE_AGAINST_STANDARD(meshToMesh, meshToNoMesh, rms_tols_2,
-            __FILE__, __LINE__,
-            "ElasticFoundation Mesh-Mesh FAILED to match Mesh-noMesh Case ");
+    OpenSim::Testing::checkStorageAgainstStandard(meshToMesh, meshToNoMesh,
+        rms_tols_2);
 
     // ElasticFoundation on non-mesh to mesh and mesh to non-mesh should be
     // identical
     std::vector<double> rms_tols_3(nforces, integ_accuracy);
-    CHECK_STORAGE_AGAINST_STANDARD(noMeshToMesh, meshToNoMesh, rms_tols_3,
-            __FILE__, __LINE__,
-            "ElasticFoundation noMesh-Mesh FAILED to match Mesh-noMesh Case ");
+    OpenSim::Testing::checkStorageAgainstStandard(noMeshToMesh, meshToNoMesh,
+        rms_tols_3);
 
 }
 
