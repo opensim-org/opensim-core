@@ -2288,18 +2288,24 @@ TEST_CASE("testBlankevoort1991Ligament") {
         "Expected Blankevoort1991Ligament to be slack at first time step of "
         "test case.");
 
+    // The potential energy in Blankevoort1991Ligament should be
+    // equal to zero when the ligament is slack
     ASSERT_EQUAL(results.getDependentColumn("potential_energy").getElt(0, 0),
             0.0, 1e-3,
         __FILE__, __LINE__,
         "Expected potential energy in Blankevoort1991Ligament to be "
         "equal to zero when the ligament is slack");
 
+    // The spring_force in Blankevoort1991Ligament should be equal to zero when
+    // the ligament is slack.
     ASSERT_EQUAL(results.getDependentColumn("spring_force").getElt(0, 0),
             0.0, 1e-3,
         __FILE__, __LINE__,
         "Expected spring_force in Blankevoort1991Ligament to be"
         "equal to zero when the ligament is slack");
 
+    // The damping_force in Blankevoort1991Ligament should be equal to zero when
+    // the ligament is slack.
     ASSERT_EQUAL(results.getDependentColumn("damping_force").getElt(0, 0),
             0.0, 1e-3,
         __FILE__, __LINE__,
@@ -2314,16 +2320,22 @@ TEST_CASE("testBlankevoort1991Ligament") {
 
     double transition_strain = lig->get_transition_strain();
 
+    // The strain at the toe_index should be less than the transition_strain
+    // property in Blankevoort1991Ligament test.
     ASSERT(results.getDependentColumn("strain").getElt(toe_index, 0) <
         transition_strain, __FILE__, __LINE__,
         "Expected strain at the toe_index to be less than the "
         "transition_strain property in Blankevoort1991Ligament test.");
 
+    // The strain at the linear_index should be greater than the
+    // transition_strain property in Blankevoort1991Ligament.
     ASSERT(results.getDependentColumn("strain").getElt(linear_index, 0) >
         transition_strain, __FILE__, __LINE__,
         "Expected strain at the linear_index to be greater than the "
         "transition_strain property in Blankevoort1991Ligament test.");
 
+    // The potential_energy in the Blankevoort1991Ligament should be greater in
+    // the linear region compared to the toe region.
     ASSERT(results.getDependentColumn("potential_energy")
                    .getElt(linear_index, 0) >
                    results.getDependentColumn("potential_energy")
@@ -2332,6 +2344,8 @@ TEST_CASE("testBlankevoort1991Ligament") {
         "Expexted potential_energy in the Blankevoort1991Ligament to be "
         "greater in the linear region compared to the toe region");
 
+    // The spring_force in the Blankevoort1991Ligament should be greater in the
+    // linear region compared to the toe region.
     ASSERT(results.getDependentColumn("spring_force").getElt(linear_index, 0) >
         results.getDependentColumn("spring_force").getElt(toe_index, 0),
         __FILE__, __LINE__,
