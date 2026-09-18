@@ -35,14 +35,14 @@ TEST_CASE("testCustomActuatorExample") {
         result1Filename{"SpringActuatedLeg_states_degrees.sto"};
     const std::string
         result1FilenameV1{"SpringActuatedLeg_states_degrees_V1.sto"};
-    revertToVersionNumber1(result1Filename, result1FilenameV1);
+    OpenSim::Testing::revertToVersionNumber1(result1Filename, result1FilenameV1);
     Storage result1(result1FilenameV1),
             standard1("std_SpringActuatedLeg_states_degrees.mot");
     std::vector<double> tolerances(6, 1.0);   // angles have 1 deg tolerance
     tolerances[1] = tolerances[3] = tolerances[5] = 5.0; // angular speeds have a 5 deg/s tolerance
 
-    CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, tolerances,
-        __FILE__, __LINE__, "spring actuated leg states degrees failed");
+    OpenSim::Testing::checkStorageAgainstStandard(result1, standard1,
+        tolerances);
     log_info("spring actuated leg states degrees passed");
     log_info("");
 
@@ -51,11 +51,10 @@ TEST_CASE("testCustomActuatorExample") {
 
     const std::string result2Filename{"actuator_forces.sto"};
     const std::string result2FilenameV1{"actuator_forces_V1.sto"};
-    revertToVersionNumber1(result2Filename, result2FilenameV1);
+    OpenSim::Testing::revertToVersionNumber1(result2Filename, result2FilenameV1);
     Storage result2(result2FilenameV1),
             standard2("std_actuator_forces.mot");
-    CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, forceTol,
-                                    __FILE__, __LINE__, "actuator forces failed");
+    OpenSim::Testing::checkStorageAgainstStandard(result2, standard2, forceTol);
     log_info("actuator forces passed");
     log_info("");
 }

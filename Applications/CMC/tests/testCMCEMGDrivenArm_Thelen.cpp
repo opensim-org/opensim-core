@@ -50,7 +50,7 @@ TEST_CASE("testCMCEMGDrivenArm_Thelen") {
     rms_tols[10] = 0.50;  // biceps long normally low but because of EMG tracking should be on more
     rms_tols[12] = 0.50;  // biceps short normally on but because of EMG tracking should be lower
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
-                                    __FILE__, __LINE__,
-                                    "testCMCEMGDrivenArm_Thelen failed");
+    OpenSim::Testing::checkStorageAgainstStandard(
+            results, *standard,
+            rms_tols);
 }

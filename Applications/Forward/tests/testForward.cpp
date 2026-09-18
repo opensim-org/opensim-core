@@ -79,8 +79,9 @@ TEST_CASE("testPendulumExternalLoad") {
         message << "t=" << time <<" state# "<< j << " "
             << standard.getColumnLabels()[j+1] << " std=" << data[j]
             <<"  computed=" << state->getData()[j];
-        ASSERT_EQUAL(data[j], state->getData()[j], 1e-2,
-            __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
+        CAPTURE(time, j, standard.getColumnLabels()[j+1], data[j],
+                state->getData()[j]);
+        ASSERT_EQUAL(data[j], state->getData()[j], 1e-2);
         cout << "ASSERT_EQUAL PASSED " << message.str() << endl;
     }
 }
@@ -106,8 +107,9 @@ TEST_CASE("testPendulumExternalLoadWithPointInGround") {
         message << "t=" << time <<" state# "<< j << " " << standard.getColumnLabels()[j+1]
             << " std=" << data[j] <<"  computed=" << state->getData()[j];
         cout << message.str() << endl;
-        ASSERT_EQUAL(data[j], state->getData()[j], 1e-2,
-            __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
+        CAPTURE(time, j, standard.getColumnLabels()[j+1], data[j],
+                state->getData()[j]);
+        ASSERT_EQUAL(data[j], state->getData()[j], 1e-2);
         cout << "ASSERT_EQUAL PASSED " << endl;
     }
 }
@@ -131,8 +133,9 @@ TEST_CASE("testArm26") {
     for (int j = 0; j < state->getSize(); ++j) {
         stringstream message;
         message << "t=" << time <<" state# "<< j << " " << standard->getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j] << endl;
-        ASSERT_EQUAL(data[j], state->getData()[j], 5.0e-3,
-            __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
+        CAPTURE(time, j, standard->getColumnLabels()[j+1], data[j],
+                state->getData()[j]);
+        ASSERT_EQUAL(data[j], state->getData()[j], 5.0e-3);
         cout << "ASSERT_EQUAL PASSED " << message.str();
     }
 
@@ -144,8 +147,9 @@ TEST_CASE("testArm26") {
     for (int j = 0; j < state->getSize(); ++j) {
         stringstream message;
         message << "t=" << time <<" state# "<< j << " " << standard->getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j] << endl;
-        ASSERT_EQUAL(data[j], state->getData()[j], 5.0e-3,
-            __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
+        CAPTURE(time, j, standard->getColumnLabels()[j+1], data[j],
+                state->getData()[j]);
+        ASSERT_EQUAL(data[j], state->getData()[j], 5.0e-3);
         cout << "ASSERT_EQUAL PASSED " << message.str();
     }
 }
@@ -171,8 +175,7 @@ TEST_CASE("testGait2354") {
         rms_tols[2*i+1] = 2.5; // speeds can deviate by a lot due to open-loop test
     }
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
-        __FILE__, __LINE__, "testGait2354 failed");
+    OpenSim::Testing::checkStorageAgainstStandard(results, *standard, rms_tols);
 }
 
 TEST_CASE("testGait2354WithController") {
@@ -195,8 +198,7 @@ TEST_CASE("testGait2354WithController") {
         rms_tols[2*i+1] = 0.1; // speeds should deviate less with feedback controller
     }
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
-        __FILE__, __LINE__, "testGait2354WithController failed");
+    OpenSim::Testing::checkStorageAgainstStandard(results, *standard, rms_tols);
 }
 
 TEST_CASE("testGait2354WithControllerGUI") {
@@ -228,8 +230,7 @@ TEST_CASE("testGait2354WithControllerGUI") {
     int nq = forward.getModel().getNumCoordinates();
     std::vector<double> rms_tols(2 * nstates, SimTK::SqrtEps);
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols,
-        __FILE__, __LINE__, "testGait2354WithControllerGUI failed");
+    OpenSim::Testing::checkStorageAgainstStandard(results, standard, rms_tols);
 
     delete model;
 }
@@ -260,7 +261,7 @@ TEST_CASE("testForwardToolVersusManager") {
     CHECK(managerStates.getSize() == forwardStates.getSize());
 
     std::vector<double> rms_tols(state.getNY(), SimTK::SqrtEps);
-    CHECK_STORAGE_AGAINST_STANDARD(forwardStates, managerStates, rms_tols,
-        __FILE__, __LINE__, "testForwardToolVersusManager failed");
+    OpenSim::Testing::checkStorageAgainstStandard(forwardStates, managerStates,
+        rms_tols);
 
 }

@@ -1,0 +1,5 @@
+if(BUILD_TESTING)
+    add_library(osimTesting Testing.cpp Testing.h)
+    OpenSimConfigureTarget(osimTesting)
+    target_link_libraries(osimTesting PUBLIC osimCommon)
+endif()

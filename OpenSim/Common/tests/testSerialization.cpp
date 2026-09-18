@@ -653,23 +653,23 @@ TEST_CASE("Object Serialization")
 
     // Now compare object properties to make sure we're not reading and writing the file as just text!
     int numProperties1 = obj1.getPropertySet().getSize();
-    ASSERT(numProperties1 == obj2.getPropertySet().getSize(), __FILE__, __LINE__, "num properties");
+    ASSERT(numProperties1 == obj2.getPropertySet().getSize());
 
-    ASSERT(obj1 == obj2, __FILE__, __LINE__, "equality");
+    ASSERT(obj1 == obj2);
 
     PropertySet &propSet1 = obj1.getPropertySet();
     PropertySet &propSet2 = obj2.getPropertySet();
     for (int i=0; i < numProperties1; i++){
         Property_Deprecated *prop1 = propSet1.get(i);
         Property_Deprecated *prop2 = propSet2.get(i);
-        ASSERT(prop1->getName() == prop2->getName(), __FILE__, __LINE__, "property names");
+        ASSERT(prop1->getName() == prop2->getName());
     }
 
-    ASSERT(((PropertyBool*) propSet1.get(0))->getValueBool() == ((PropertyBool*) propSet2.get(0))->getValueBool(), __FILE__, __LINE__, "bool property");
+    ASSERT(((PropertyBool*) propSet1.get(0))->getValueBool() == ((PropertyBool*) propSet2.get(0))->getValueBool());
 
-    ASSERT(((PropertyInt*) propSet1.get(1))->getValueInt() == ((PropertyInt*) propSet2.get(1))->getValueInt(), __FILE__, __LINE__, "int property");
+    ASSERT(((PropertyInt*) propSet1.get(1))->getValueInt() == ((PropertyInt*) propSet2.get(1))->getValueInt());
 
-    ASSERT(((PropertyDbl*) propSet1.get(2))->getValueDbl() == ((PropertyDbl*) propSet2.get(2))->getValueDbl(), __FILE__, __LINE__, "double property");
+    ASSERT(((PropertyDbl*) propSet1.get(2))->getValueDbl() == ((PropertyDbl*) propSet2.get(2))->getValueDbl());
 
     /* The following actually fails due to extra spaces when we read back from file!.*/
     string& str1 = ((PropertyStr*) propSet1.get(6))->getValueStr();

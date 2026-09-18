@@ -305,9 +305,8 @@ void compareResultsToStandard() {
         Storage result1("tugOfWar_states.sto"),
             standard1("std_tugOfWar_states.sto");
 
-        CHECK_STORAGE_AGAINST_STANDARD(result1, standard1,
-            std::vector<double>(16, 0.02), __FILE__, __LINE__,
-            "testAddComponents::tugOfWar states failed");
+        OpenSim::Testing::checkStorageAgainstStandard(result1, standard1,
+            std::vector<double>(16, 0.02));
         cout << "testAddComponents::tugOfWar states passed\n";
 
         Storage result2("tugOfWar_forces.sto"),
@@ -317,9 +316,7 @@ void compareResultsToStandard() {
         // 10N is 1% of the muscles maximum isometric force
         tols[0] = tols[1] = 10;
 
-        CHECK_STORAGE_AGAINST_STANDARD(result2, standard2,
-            tols, __FILE__, __LINE__,
-            "testAddComponents::tugOfWar forces failed");
+        OpenSim::Testing::checkStorageAgainstStandard(result2, standard2, tols);
         cout << "testAddComponents::tugOfWar forces passed\n";
     }
     catch (const OpenSim::Exception& e) {

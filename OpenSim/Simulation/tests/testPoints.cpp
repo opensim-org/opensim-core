@@ -82,22 +82,19 @@ TEST_CASE("testStationOnBody") {
         pendulum->realizeAcceleration(s);
 
         SimTK::Vec3 comInGround =  myStation->getLocationInGround(s);
-        SimTK::Vec3 comBySimbody = 
+        SimTK::Vec3 comBySimbody =
             rod1.getMobilizedBody().findStationLocationInGround(s, com);
-        ASSERT_EQUAL(comInGround, comBySimbody, tolerance, __FILE__, __LINE__,
-            "testStationOnBody(): failed to resolve station location in ground.");
+        ASSERT_EQUAL(comInGround, comBySimbody, tolerance);
 
         SimTK::Vec3 comVInGround = myStation->getVelocityInGround(s);
         SimTK::Vec3 comVBySimbody =
             rod1.getMobilizedBody().findStationVelocityInGround(s, com);
-        ASSERT_EQUAL(comVInGround, comVBySimbody, tolerance, __FILE__, __LINE__,
-            "testStationOnBody(): failed to resolve station velocity in ground.");
+        ASSERT_EQUAL(comVInGround, comVBySimbody, tolerance);
 
         SimTK::Vec3 comAInGround = myStation->getAccelerationInGround(s);
         SimTK::Vec3 comABySimbody =
             rod1.getMobilizedBody().findStationAccelerationInGround(s, com);
-        ASSERT_EQUAL(comAInGround, comABySimbody, tolerance, __FILE__, __LINE__,
-            "testStationOnBody(): failed to resolve station velocity in ground.");
+        ASSERT_EQUAL(comAInGround, comABySimbody, tolerance);
     }
 }
 

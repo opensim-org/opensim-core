@@ -175,9 +175,7 @@ namespace {
 
         double inertial = mass*comAcc[1];
 
-        ASSERT_EQUAL((totalYforce - bw - inertial) / bw, 0.0, SimTK::SqrtEps,
-            __FILE__, __LINE__,
-            "Constraint force does not match body-weight plus inertial force (mg+ma).");
+        ASSERT_EQUAL((totalYforce - bw - inertial) / bw, 0.0, SimTK::SqrtEps);
 
         //const CoordinateSet &coords = model.getCoordinateSet();
         double q_error = 0;
@@ -246,15 +244,15 @@ namespace {
         //cout << "******************* Init System Initial State *******************" << endl;
         for (int i = 0; i < q0_1.size(); i++) {
             cout << "Pre-simulation:" << i << " q0_1 = " << q0_1[i] << ", q0_2 = " << q0_2[i] << endl;
-            ASSERT_EQUAL(q0_1[i], q0_2[i], 10*accuracy, __FILE__, __LINE__, "Initial state changed after 2nd call to initSystem");
+            ASSERT_EQUAL(q0_1[i], q0_2[i], 10*accuracy);
         }
 
         cout << "******************* Init System Final State *******************" << endl;
         for (int i = 0; i < q1_1.size(); i++) {
             cout << "Post-simulation:" << i << " q1_1 = " << q1_1[i] << ", q1_2 = " << q1_2[i] << endl;
-            ASSERT_EQUAL(q1_1[i], q1_2[i], 10 * accuracy, __FILE__, __LINE__, "State differed after a simulation from same init state.");
+            ASSERT_EQUAL(q1_1[i], q1_2[i], 10 * accuracy);
         }
-        ASSERT(max(abs(q1_1 - q0_1)) > 1e-2, __FILE__, __LINE__, "Check that state changed after simulation FAILED");
+        ASSERT(max(abs(q1_1 - q0_1)) > 1e-2);
     }
 
     double calcLigamentLengthError(const SimTK::State &s, const Model &model)
@@ -337,8 +335,7 @@ namespace {
             // qerr = coords[0].getValue(state)-kneeAngle;
             //        cout << "Assembly errors:: cerr = " << cerr << " m,  qerr = "
             //          << convertRadiansToDegrees(qerr) << " degrees" << endl;
-            ASSERT_EQUAL(0.0, cerr, model.get_assembly_accuracy(),
-                __FILE__, __LINE__, "Constraints NOT satisfied to within assembly accuracy");
+            ASSERT_EQUAL(0.0, cerr, model.get_assembly_accuracy());
         }
     }
 }
@@ -409,9 +406,7 @@ TEST_CASE("CoordinateCouplerCompoundFunction") {
         // Compute the constraint error.
         const auto& q = state.getQ();
         auto error = q[2] - (coeffs[0]*q[0] + coeffs[1]*q[1] + coeffs[2]);
-        ASSERT_EQUAL(0.0, error, 1e-10, __FILE__, __LINE__,
-                "CoordinateCouplerConstraint failed to constrain the dependent "
-                "coordinate based on a LinearFunction.");
+        ASSERT_EQUAL(0.0, error, 1e-10);
     }
 
     // Multi-variate polynomial function.
@@ -436,8 +431,6 @@ TEST_CASE("CoordinateCouplerCompoundFunction") {
         auto polyValue = coeffs[0] + coeffs[1]*q[1] + coeffs[2]*q[1]*q[1] +
             coeffs[3]*q[0] + coeffs[4]*q[0]*q[1] + coeffs[5]*q[0]*q[0];
         auto error = q[2] - polyValue;
-        ASSERT_EQUAL(0.0, error, 1e-10, __FILE__, __LINE__,
-                "CoordinateCouplerConstraint failed to constrain the dependent "
-                "coordinate based on a MultivariatePolynomialFunction.");
+        ASSERT_EQUAL(0.0, error, 1e-10);
     }
 }

@@ -132,12 +132,11 @@ namespace {
                         dynamic_cast<const Thelen2003Muscle*>(&muscle)) {
                         thelen->printCurveToCSVFile(
                             Thelen2003Muscle::CurveType::FiberForceVelocity, "");
-                        reportTendonAndFiberForcesAcrossFiberLengths(*thelen, s);
-                        }
-                    else if (const auto* millard =
+                        OpenSim::Testing::reportTendonAndFiberForcesAcrossFiberLengths(*thelen, s);
+                    } else if (const auto* millard =
                         dynamic_cast<const Millard2012EquilibriumMuscle*>(&muscle)) {
-                        reportTendonAndFiberForcesAcrossFiberLengths(*millard, s);
-                        }
+                        OpenSim::Testing::reportTendonAndFiberForcesAcrossFiberLengths(*millard, s);
+                    }
 
                     throw;
                 }
@@ -158,10 +157,9 @@ namespace {
                 tf = muscle.getTendonForce(s);
 
                 // equilibrium demands tendon and muscle fiber forces are equivalent
-                ASSERT_EQUAL<double>(tf, mf, equilTol,
-                    __FILE__, __LINE__, "testMuscleEquilibriumSolve(): " +
-                    muscle.getConcreteClassName() +
-                    " failed to solve for muscle (fiber) and tendon equilibrium. ");
+                CAPTURE(muscle.getConcreteClassName(), i, j, activation,
+                        tf, mf);
+                ASSERT_EQUAL(tf, mf, equilTol);
             }
         }
     }
@@ -384,9 +382,7 @@ namespace {
         double length = actu.getLength(si);
         double trueLength = startX + xSinG - anchorWidth/2;
 
-        ASSERT_EQUAL(length/trueLength, 1.0, InitializationTestTolerance,
-                    __FILE__, __LINE__,
-                    "testMuscles: path failed to initialize to correct length." );
+        ASSERT_EQUAL(length/trueLength, 1.0, InitializationTestTolerance);
 
         model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
 
@@ -508,9 +504,7 @@ namespace {
 
                 dKEPEW_dt = dtendonPE + dfiberPE - dfiberW - dboundaryW;
 
-                ASSERT_EQUAL( dKEPEW_dt, 0.0, CorrectnessTestTolerance,
-                              __FILE__, __LINE__,
-                            "testMuscles: d/dt(system energy-work) non-zero.");
+                ASSERT_EQUAL(dKEPEW_dt, 0.0, CorrectnessTestTolerance);
             }
         }
     }
@@ -702,27 +696,21 @@ TEST_CASE("testThelen2003Muscle")
         const MuscleFixedWidthPennationModel& pennMdl =
             myMcl->getPennationModel();
         ASSERT_EQUAL(optimalFiberLength, pennMdl.get_optimal_fiber_length(),
-            SimTK::SignificantReal, __FILE__, __LINE__,
-            "optimal_fiber_length was not set in pennation model");
+            SimTK::SignificantReal);
         ASSERT_EQUAL(pennAngAtOptimal, pennMdl.get_pennation_angle_at_optimal(),
-            SimTK::SignificantReal, __FILE__, __LINE__,
-            "pennation_angle_at_optimal was not set in pennation model");
+            SimTK::SignificantReal);
         ASSERT_EQUAL(maximumPennation, pennMdl.get_maximum_pennation_angle(),
-            SimTK::SignificantReal, __FILE__, __LINE__,
-            "maximum_pennation_angle was not set in pennation model");
+            SimTK::SignificantReal);
 
         // Check properties of MuscleFirstOrderActivationDynamicModel.
         const MuscleFirstOrderActivationDynamicModel& actMdl =
             myMcl->getActivationModel();
         ASSERT_EQUAL(actTimeConstant, actMdl.get_activation_time_constant(),
-            SimTK::SignificantReal, __FILE__, __LINE__,
-            "activation_time_constant was not set in activation model");
+            SimTK::SignificantReal);
         ASSERT_EQUAL(deactTimeConstant, actMdl.get_deactivation_time_constant(),
-            SimTK::SignificantReal, __FILE__, __LINE__,
-            "deactivation_time_constant was not set in activation model");
+            SimTK::SignificantReal);
         ASSERT_EQUAL(minimumActivation, actMdl.get_minimum_activation(),
-            SimTK::SignificantReal, __FILE__, __LINE__,
-            "minimum_activation was not set in activation model");
+            SimTK::SignificantReal);
 
         myModel.finalizeConnections();  // Needed so sockets have correct absolute path on print
         // Print model and read back in.
@@ -736,27 +724,21 @@ TEST_CASE("testThelen2003Muscle")
         const MuscleFixedWidthPennationModel& pennMdl2 =
             myMcl2.getPennationModel();
         ASSERT_EQUAL(optimalFiberLength, pennMdl2.get_optimal_fiber_length(),
-            SimTK::SignificantReal, __FILE__, __LINE__,
-            "optimal_fiber_length was not set in pennation model");
+            SimTK::SignificantReal);
         ASSERT_EQUAL(pennAngAtOptimal, pennMdl2.get_pennation_angle_at_optimal(),
-            SimTK::SignificantReal, __FILE__, __LINE__,
-            "pennation_angle_at_optimal was not set in pennation model");
+            SimTK::SignificantReal);
         ASSERT_EQUAL(maximumPennation, pennMdl2.get_maximum_pennation_angle(),
-            SimTK::SignificantReal, __FILE__, __LINE__,
-            "maximum_pennation_angle was not set in pennation model");
+            SimTK::SignificantReal);
 
         // Check properties of MuscleFirstOrderActivationDynamicModel.
         const MuscleFirstOrderActivationDynamicModel& actMdl2 =
             myMcl2.getActivationModel();
         ASSERT_EQUAL(actTimeConstant, actMdl2.get_activation_time_constant(),
-            SimTK::SignificantReal, __FILE__, __LINE__,
-            "activation_time_constant was not set in activation model");
+            SimTK::SignificantReal);
         ASSERT_EQUAL(deactTimeConstant, actMdl2.get_deactivation_time_constant(),
-            SimTK::SignificantReal, __FILE__, __LINE__,
-            "deactivation_time_constant was not set in activation model");
+            SimTK::SignificantReal);
         ASSERT_EQUAL(minimumActivation, actMdl2.get_minimum_activation(),
-            SimTK::SignificantReal, __FILE__, __LINE__,
-            "minimum_activation was not set in activation model");
+            SimTK::SignificantReal);
     }
 
     // Test exception when muscle cannot be initialized.

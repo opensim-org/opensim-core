@@ -457,7 +457,8 @@ function(OpenSimAddTests)
             add_executable(${TEST_NAME} ${test_program}
                 ${OSIMADDTESTS_SOURCES})
             OpenSimConfigureTarget(${TEST_NAME})
-            target_link_libraries(${TEST_NAME} ${OSIMADDTESTS_LINKLIBS})
+            target_link_libraries(${TEST_NAME} ${OSIMADDTESTS_LINKLIBS}
+                    osimTesting)
             set(test_args "")
             if(APPLE)
                 list(APPEND test_args "~[win]~[linux]~[win/linux]~[linux/win]")

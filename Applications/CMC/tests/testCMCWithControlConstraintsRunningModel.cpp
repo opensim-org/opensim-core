@@ -53,8 +53,9 @@ TEST_CASE("testRunningModel") {
     rms_tols[4] = 0.0025;
     rms_tols[5] = 0.0025;
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__,
-        "testRunningModel tracking failed");
+    OpenSim::Testing::checkStorageAgainstStandard(
+            results, standard,
+            rms_tols);
 
     Storage results_states("runningModel_CMC_Results/runningModel_CMC_test_states.sto");
     Storage standard_states("std_runningModel_CMC_states.sto");
@@ -68,8 +69,9 @@ TEST_CASE("testRunningModel") {
         rms_states_tols[i] = 0.2; // velocities
     }
 
-    CHECK_STORAGE_AGAINST_STANDARD(results_states, standard_states, rms_states_tols,
-        __FILE__, __LINE__, "testRunningModel activations failed");
+    OpenSim::Testing::checkStorageAgainstStandard(
+            results_states, standard_states,
+            rms_states_tols);
 
     cout << "\n testRunningModel passed\n" << endl;
 }

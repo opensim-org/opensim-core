@@ -780,8 +780,7 @@ TEST_CASE("Component Interface Misc.")
     //     OpenSim::Exception
     // );
 
-    ASSERT(theWorld == *world2, __FILE__, __LINE__,
-        "Model serialization->deserialization FAILED");
+    ASSERT(theWorld == *world2);
 
     world2->setName("InternalWorld");
     world2->connect();
@@ -799,21 +798,17 @@ TEST_CASE("Component Interface Misc.")
     TheWorld world3;
     world3 = *world2;
 
-    ASSERT(&world3 != world2, __FILE__, __LINE__,
-        "Model copy assignment FAILED: A copy was not made.");
+    ASSERT(&world3 != world2);
 
     world3.finalizeFromProperties();
 
-    ASSERT(world3 == *world2, __FILE__, __LINE__,
-        "Model copy assignment FAILED: Property values are not identical.");
+    ASSERT(world3 == *world2);
 
     world3.getComponent("Bar").getSocket<Foo>("parentFoo");
 
     auto& barInWorld3 = world3.getComponent<Bar>("Bar");
     auto& barInWorld2 = world2->getComponent<Bar>("Bar");
-    ASSERT(&barInWorld3 != &barInWorld2, __FILE__, __LINE__,
-        "Model copy assignment FAILED: property was not copied but "
-        "assigned the same memory");
+    ASSERT(&barInWorld3 != &barInWorld2);
 
     world3.setName("World3");
 
@@ -903,16 +898,14 @@ TEST_CASE("Component Interface Misc.")
 
     // Get the results of integrating the system forward
     const TimeSeriesTable_<Real>& results = reporter->getTable();
-    ASSERT(results.getNumRows() == 11, __FILE__, __LINE__,
-        "Number of rows in Reporter results not equal to number of time intervals.");
+    ASSERT(results.getNumRows() == 11);
     cout << "************** Contents of Table of Results ****************" << endl;
     cout << results << endl;
     cout << "***************** Qs Output at Final state *****************" << endl;
     auto& finalVal = foo.getOutputValue<Vector>(s, "Qs");
     (~finalVal).dump();
     size_t ncols = results.getNumColumns();
-    ASSERT(ncols == static_cast<size_t>(finalVal.size()), __FILE__, __LINE__,
-        "Number of cols in Reporter results not equal to size of Output'Qs' size.");
+    ASSERT(ncols == static_cast<size_t>(finalVal.size()));
 
     // Check the result of the integration on our state variables.
     ASSERT_EQUAL(3.5, bar.getOutputValue<double>(s, "fiberLength"), 1e-10);

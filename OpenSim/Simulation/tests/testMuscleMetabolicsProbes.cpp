@@ -537,8 +537,7 @@ TEST_CASE("compareUmbergerProbeToPublishedResults") {
         // expression.
         double forceExpected = sol_Arel * (1 + vNorm) / (sol_Arel - vNorm);
         ASSERT_EQUAL(forceExpected, sol_normalizedForce[i],
-            100*SimTK::SignificantReal, __FILE__, __LINE__,
-            "testMuscleMetabolicsProbes: error in soleus normalized force.");
+            100*SimTK::SignificantReal);
 
         // Mechanical power should be within roundoff error of this analytical
         // expression.
@@ -546,8 +545,7 @@ TEST_CASE("compareUmbergerProbeToPublishedResults") {
         double powerExpected = -forceExpected * sol_maxIsometricForce * v_mps
                                / sol_muscleMass;
         ASSERT_EQUAL(powerExpected, sol_mechanicalPower[i],
-            100*SimTK::SignificantReal, __FILE__, __LINE__,
-            "testMuscleMetabolicsProbes: error in soleus mechanical power.");
+            100*SimTK::SignificantReal);
 
         // Polynomials have been fit to the published results for total energy
         // liberation rate. The maximum absolute error is less than 1.0 [W/kg]
@@ -563,8 +561,7 @@ TEST_CASE("compareUmbergerProbeToPublishedResults") {
             rateExpected = ((-187.6077328*vNorm - 553.9650747)*vNorm
                            - 194.9721769)*vNorm + 332.9105995;
         }
-        ASSERT_EQUAL(rateExpected, sol_totalEnergyRate[i], 1.0,
-            "testMuscleMetabolicsProbes: error in soleus total energy rate.");
+        ASSERT_EQUAL(rateExpected, sol_totalEnergyRate[i], 1.0);
 
         if (DISPLAY_ERROR_CALCULATIONS) {
             cout << setw(w) << -(double)i/(numPoints-1)
@@ -613,8 +610,7 @@ TEST_CASE("compareUmbergerProbeToPublishedResults") {
         // expression.
         double forceExpected = rec_Arel * (1 + vNorm) / (rec_Arel - vNorm);
         ASSERT_EQUAL(forceExpected, rec_normalizedForce[i],
-            100*SimTK::SignificantReal, __FILE__, __LINE__,
-            "testMuscleMetabolicsProbes: error in rectus normalized force.");
+            100*SimTK::SignificantReal);
 
         // Mechanical power should be within roundoff error of this analytical
         // expression.
@@ -622,8 +618,7 @@ TEST_CASE("compareUmbergerProbeToPublishedResults") {
         double powerExpected = -forceExpected * rec_maxIsometricForce * v_mps
                                / rec_muscleMass;
         ASSERT_EQUAL(powerExpected, rec_mechanicalPower[i],
-            100*SimTK::SignificantReal, __FILE__, __LINE__,
-            "testMuscleMetabolicsProbes: error in rectus mechanical power.");
+            100*SimTK::SignificantReal);
 
         // Polynomials have been fit to the published results for total energy
         // liberation rate. The maximum absolute error is less than 1.0 [W/kg]
@@ -639,8 +634,7 @@ TEST_CASE("compareUmbergerProbeToPublishedResults") {
             rateExpected = ((-404.1161485*vNorm - 1267.967225)*vNorm
                            - 744.3435788)*vNorm + 362.7505521;
         }
-        ASSERT_EQUAL(rateExpected, rec_totalEnergyRate[i], 1.0,
-            "testMuscleMetabolicsProbes: error in rectus total energy rate.");
+        ASSERT_EQUAL(rateExpected, rec_totalEnergyRate[i], 1.0);
 
         if (DISPLAY_ERROR_CALCULATIONS) {
             cout << setw(w) << -(double)i/(numPoints-1)
@@ -728,42 +722,34 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
     Umberger2010MuscleMetabolicsProbe* umbergerTest = new
         Umberger2010MuscleMetabolicsProbe(true, true, true, true);
     model.addProbe(umbergerTest);
-    ASSERT(model.getNumProbes()==1, __FILE__, __LINE__,
-        "Umberger2010MuscleMetabolicsProbe could not be added to the model.");
+    ASSERT(model.getNumProbes()==1);
 
     // Add a muscle to the probe without providing the muscle mass.
     umbergerTest->addMuscle(muscle1->getName(), 0.6);
     model.setup();
-    ASSERT(umbergerTest->getNumMetabolicMuscles()==1, __FILE__, __LINE__,
-        "Muscle could not be added to Umberger2010MuscleMetabolicsProbe.");
-    ASSERT(!umbergerTest->isUsingProvidedMass(muscle1->getName()), __FILE__,
-        __LINE__, "Umberger probe should not be using provided muscle mass.");
+    ASSERT(umbergerTest->getNumMetabolicMuscles()==1);
+    ASSERT(!umbergerTest->isUsingProvidedMass(muscle1->getName()));
 
     // Change the muscle mass calculation.
     umbergerTest->useProvidedMass(muscle1->getName(), 1.0);
-    ASSERT(umbergerTest->isUsingProvidedMass(muscle1->getName()), __FILE__,
-        __LINE__, "Umberger probe should be using provided muscle mass.");
+    ASSERT(umbergerTest->isUsingProvidedMass(muscle1->getName()));
     umbergerTest->useCalculatedMass(muscle1->getName());
-    ASSERT(!umbergerTest->isUsingProvidedMass(muscle1->getName()), __FILE__,
-        __LINE__, "Umberger probe should not be using provided muscle mass.");
+    ASSERT(!umbergerTest->isUsingProvidedMass(muscle1->getName()));
 
     // Add another muscle to the probe, this time providing the muscle mass.
     umbergerTest->addMuscle(muscle2->getName(), 0.6, 1.0);
     model.setup();
-    ASSERT(umbergerTest->isUsingProvidedMass(muscle2->getName()), __FILE__,
-        __LINE__, "Umberger probe should be using provided muscle mass.");
+    ASSERT(umbergerTest->isUsingProvidedMass(muscle2->getName()));
 
     // Remove a muscle from the probe.
     umbergerTest->removeMuscle(muscle1->getName());
     model.setup();
-    ASSERT(umbergerTest->getNumMetabolicMuscles()==1, __FILE__, __LINE__,
-        "Muscle could not be removed from Umberger2010MuscleMetabolicsProbe.");
+    ASSERT(umbergerTest->getNumMetabolicMuscles()==1);
 
     // Remove the probe from the model.
     model.removeProbe(umbergerTest);
     model.setup();
-    ASSERT(model.getNumProbes()==0, __FILE__, __LINE__,
-        "Umberger2010MuscleMetabolicsProbe could not be removed from the model.");
+    ASSERT(model.getNumProbes()==0);
 
     //--------------------------------------------------------------------------
     // Configuration tests for Bhargava2004MuscleMetabolicsProbe. Ensure probes
@@ -777,42 +763,34 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
     Bhargava2004MuscleMetabolicsProbe* bhargavaTest = new
         Bhargava2004MuscleMetabolicsProbe(true, true, true, true, true);
     model.addProbe(bhargavaTest);
-    ASSERT(model.getNumProbes()==1, __FILE__, __LINE__,
-        "Bhargava2004MuscleMetabolicsProbe could not be added to the model.");
+    ASSERT(model.getNumProbes()==1);
 
     // Add a muscle to the probe without providing the muscle mass.
     bhargavaTest->addMuscle(muscle1->getName(), 0.6, 40, 133, 74, 111);
     model.setup();
-    ASSERT(bhargavaTest->getNumMetabolicMuscles()==1, __FILE__, __LINE__,
-        "Muscle could not be added to Bhargava2004MuscleMetabolicsProbe.");
-    ASSERT(!bhargavaTest->isUsingProvidedMass(muscle1->getName()), __FILE__,
-        __LINE__, "Bhargava probe should not be using provided muscle mass.");
+    ASSERT(bhargavaTest->getNumMetabolicMuscles()==1);
+    ASSERT(!bhargavaTest->isUsingProvidedMass(muscle1->getName()));
 
     // Change the muscle mass calculation.
     bhargavaTest->useProvidedMass(muscle1->getName(), 1.0);
-    ASSERT(bhargavaTest->isUsingProvidedMass(muscle1->getName()), __FILE__,
-        __LINE__, "Bhargava probe should be using provided muscle mass.");
+    ASSERT(bhargavaTest->isUsingProvidedMass(muscle1->getName()));
     bhargavaTest->useCalculatedMass(muscle1->getName());
-    ASSERT(!bhargavaTest->isUsingProvidedMass(muscle1->getName()), __FILE__,
-        __LINE__, "Bhargava probe should not be using provided muscle mass.");
+    ASSERT(!bhargavaTest->isUsingProvidedMass(muscle1->getName()));
 
     // Add another muscle to the probe, this time providing the muscle mass.
     bhargavaTest->addMuscle(muscle1->getName(), 0.6, 40, 133, 74, 111, 1.0);
     model.setup();
-    ASSERT(bhargavaTest->isUsingProvidedMass(muscle1->getName()), __FILE__,
-        __LINE__, "Bhargava probe should be using provided muscle mass.");
+    ASSERT(bhargavaTest->isUsingProvidedMass(muscle1->getName()));
 
     // Remove a muscle from the probe.
     bhargavaTest->removeMuscle(muscle1->getName());
     model.setup();
-    ASSERT(bhargavaTest->getNumMetabolicMuscles()==1, __FILE__, __LINE__,
-        "Muscle could not be removed from Bhargava2004MuscleMetabolicsProbe.");
+    ASSERT(bhargavaTest->getNumMetabolicMuscles()==1);
 
     // Remove the probe from the model.
     model.removeProbe(bhargavaTest);
     model.setup();
-    ASSERT(model.getNumProbes()==0, __FILE__, __LINE__,
-        "Bhargava2004MuscleMetabolicsProbe could not be removed from the model.");
+    ASSERT(model.getNumProbes()==0);
 
     //--------------------------------------------------------------------------
     // Attach Umberger2010 and Bhargava2004 muscle metabolics probes.
@@ -1068,8 +1046,7 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
     // Store column indices.
     const Storage& probeStorage = probeReporter->getProbeStorage();
     const int numProbeOutputs = probeStorage.getColumnLabels().getSize()-1;
-    ASSERT(numProbeOutputs == probeCounter+extraColumns, __FILE__, __LINE__,
-        "Incorrect number of columns in probe storage.");
+    ASSERT(numProbeOutputs == probeCounter+extraColumns);
 
     std::map<std::string, int> probeCol;
     probeCol["umbActMaint_rate_m1"] = probeStorage
@@ -1126,15 +1103,13 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
 
     Storage* forceStorage = muscleAnalysis->getActiveFiberForceStorage();
     const int numForceOutputs = forceStorage->getColumnLabels().getSize()-1;
-    ASSERT(numForceOutputs == 2, __FILE__, __LINE__,
-        "Incorrect number of columns in active fiber force storage.");
+    ASSERT(numForceOutputs == 2);
     const int idx_force_muscle1 = forceStorage
         ->getColumnIndicesForIdentifier(muscle1->getName())[0]-1;
 
     Storage* fibVelStorage = muscleAnalysis->getFiberVelocityStorage();
     const int numFibVelOutputs = fibVelStorage->getColumnLabels().getSize()-1;
-    ASSERT(numFibVelOutputs == 2, __FILE__, __LINE__,
-        "Incorrect number of columns in fiber velocity storage.");
+    ASSERT(numFibVelOutputs == 2);
     const int idx_fibVel_muscle1 = fibVelStorage
         ->getColumnIndicesForIdentifier(muscle1->getName())[0]-1;
 
@@ -1159,8 +1134,7 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
                        + probeData[probeCol["umbBasal_rate_m1"]]
                        + probeData[probeCol["umbMechWork_rate_m1"]],
                      probeData[probeCol["umbTotal_rate_m1"]],
-                     100*SimTK::SignificantReal, __FILE__, __LINE__,
-            "Umberger2010: wrong sum of individual rates and mechanical power.");
+                     100*SimTK::SignificantReal);
 
         ASSERT_EQUAL(probeData[probeCol["bhaAct_rate_m1"]]
                        + probeData[probeCol["bhaMaint_rate_m1"]]
@@ -1168,20 +1142,17 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
                        + probeData[probeCol["bhaBasal_rate_m1"]]
                        + probeData[probeCol["bhaMechWork_rate_m1"]],
                      probeData[probeCol["bhaTotal_rate_m1"]],
-                     100*SimTK::SignificantReal, __FILE__, __LINE__,
-            "Bhargava2004: wrong sum of individual rates and mechanical power.");
+                     100*SimTK::SignificantReal);
 
         // Total rate of energy liberation reported must not depend on whether
         // the individual components are reported as well.
         ASSERT_EQUAL(probeData[probeCol["umbTotal_both"]],
                      probeData[probeCol["umbTotalAllPieces_both_total"]],
-                     100*SimTK::SignificantReal, __FILE__, __LINE__,
-            "Umberger2010: total heat rate changes if components are reported.");
+                     100*SimTK::SignificantReal);
 
         ASSERT_EQUAL(probeData[probeCol["bhaTotal_both"]],
                      probeData[probeCol["bhaTotalAllPieces_both_total"]],
-                     100*SimTK::SignificantReal, __FILE__, __LINE__,
-            "Bhargava2004: total heat rate changes if components are reported.");
+                     100*SimTK::SignificantReal);
 
         // Mechanical work rates should agree with fiber velocity and active
         // fiber force data.
@@ -1196,12 +1167,10 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
         const double powerExpected = -forceData[idx_force_muscle1]
                                      * fibVelData[idx_fibVel_muscle1];
         ASSERT_EQUAL(probeData[probeCol["umbMechWork_rate_m1"]], powerExpected,
-                     1.0e-2, __FILE__, __LINE__,
-            "Umberger2010: mechanical power disagrees with muscle analysis.");
+                     1.0e-2);
 
         ASSERT_EQUAL(probeData[probeCol["bhaMechWork_rate_m1"]], powerExpected,
-                     1.0e-2, __FILE__, __LINE__,
-            "Bhargava2004: mechanical power disagrees with muscle analysis.");
+                     1.0e-2);
     }
 
     //--------------------------------------------------------------------------
@@ -1227,49 +1196,41 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
     // Total energy at final time must equal integral of total rate.
     ASSERT_EQUAL(probeData_t1[probeCol["umbTotal_m1"]],
                  probeDataInt[probeCol["umbTotal_rate_m1"]],
-                 1.0e-2, __FILE__, __LINE__,
-        "Umberger2010: integral of total rate differs from final total energy.");
+                 1.0e-2);
 
     ASSERT_EQUAL(probeData_t1[probeCol["bhaTotal_m1"]],
                  probeDataInt[probeCol["bhaTotal_rate_m1"]],
-                 1.0e-2, __FILE__, __LINE__,
-        "Bhargava2004: integral of total rate differs from final total energy.");
+                 1.0e-2);
 
     // Check reporting of metabolic probe components: Umberger2010.
     ASSERT_EQUAL(probeData_t1[probeCol["umbTotalAllPieces_both_basal"]],
                  probeDataInt[probeCol["umbBasal_rate_m1"]],
-                 1.0e-2, __FILE__, __LINE__,
-        "Umberger2010: error in reporting components of metabolic probe.");
+                 1.0e-2);
 
     ASSERT_EQUAL(probeData_t1[probeCol["umbTotalAllPieces_both_muscle1"]],
                  probeData_t1[probeCol["umbTotal_m1"]]
                  - probeDataInt[probeCol["umbBasal_rate_m1"]],
-                 1.0e-2, __FILE__, __LINE__,
-        "Umberger2010: error in reporting components of metabolic probe.");
+                 1.0e-2);
 
     ASSERT_EQUAL(probeData_t1[probeCol["umbTotalAllPieces_both_muscle2"]],
                  probeData_t1[probeCol["umbTotal_m2"]]
                  - probeDataInt[probeCol["umbBasal_rate_m1"]],
-                 1.0e-2, __FILE__, __LINE__,
-        "Umberger2010: error in reporting components of metabolic probe.");
+                 1.0e-2);
 
     // Check reporting of metabolic probe components: Bhargava2004.
     ASSERT_EQUAL(probeData_t1[probeCol["bhaTotalAllPieces_both_basal"]],
                  probeDataInt[probeCol["bhaBasal_rate_m1"]],
-                 1.0e-2, __FILE__, __LINE__,
-        "Bhargava2004: error in reporting components of metabolic probe.");
+                 1.0e-2);
 
     ASSERT_EQUAL(probeData_t1[probeCol["bhaTotalAllPieces_both_muscle1"]],
                  probeData_t1[probeCol["bhaTotal_m1"]]
                  - probeDataInt[probeCol["bhaBasal_rate_m1"]],
-                 1.0e-2, __FILE__, __LINE__,
-        "Bhargava2004: error in reporting components of metabolic probe.");
+                 1.0e-2);
 
     ASSERT_EQUAL(probeData_t1[probeCol["bhaTotalAllPieces_both_muscle2"]],
                  probeData_t1[probeCol["bhaTotal_m2"]]
                  - probeDataInt[probeCol["bhaBasal_rate_m1"]],
-                 1.0e-2, __FILE__, __LINE__,
-        "Bhargava2004: error in reporting components of metabolic probe.");
+                 1.0e-2);
 
     // Check reporting for multiple muscles.
     //   Total energy for muscle1      = basal + heat1 + work1
@@ -1279,15 +1240,13 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
                  probeData_t1[probeCol["umbTotal_m1"]]
                  + probeData_t1[probeCol["umbTotal_m2"]]
                  - probeDataInt[probeCol["umbBasal_rate_m1"]],
-                 1.0e-2, __FILE__, __LINE__,
-        "Umberger2010: error in reporting data for multiple muscles.");
+                 1.0e-2);
 
     ASSERT_EQUAL(probeData_t1[probeCol["bhaTotal_both"]],
                  probeData_t1[probeCol["bhaTotal_m1"]]
                  + probeData_t1[probeCol["bhaTotal_m2"]]
                  - probeDataInt[probeCol["bhaBasal_rate_m1"]],
-                 1.0e-2, __FILE__, __LINE__,
-        "Bhargava2004: error in reporting data for multiple muscles.");
+                 1.0e-2);
 
     //--------------------------------------------------------------------------
     // Run simulation with lower activation and ensure less energy is liberated.
@@ -1342,8 +1301,7 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
 
     const Storage& probeStorage2 = probeReporter2->getProbeStorage();
     const int numProbeOutputs2 = probeStorage2.getColumnLabels().getSize()-1;
-    ASSERT(numProbeOutputs2 == 4, __FILE__, __LINE__,
-        "Incorrect number of columns in probe storage.");
+    ASSERT(numProbeOutputs2 == 4);
 
     Array<double> probeData2_t1;
     probeData2_t1.setSize(numProbeOutputs2);
@@ -1360,15 +1318,11 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
       .getColumnIndicesForIdentifier("bhargavaTotal_m2_TOTAL")[0]-1;
 
     ASSERT(probeData_t1[probeCol["umbTotal_m1"]] >
-           probeData2_t1[probeCol2["umbTotal_m1"]], __FILE__, __LINE__,
-           "Umberger2010: total energy must decrease with lower activation.");
+           probeData2_t1[probeCol2["umbTotal_m1"]]);
     ASSERT(probeData_t1[probeCol["umbTotal_m2"]] >
-           probeData2_t1[probeCol2["umbTotal_m2"]], __FILE__, __LINE__,
-           "Umberger2010: total energy must decrease with lower activation.");
+           probeData2_t1[probeCol2["umbTotal_m2"]]);
     ASSERT(probeData_t1[probeCol["bhaTotal_m1"]] >
-           probeData2_t1[probeCol2["bhaTotal_m1"]], __FILE__, __LINE__,
-           "Bhargava2004: total energy must decrease with lower activation.");
+           probeData2_t1[probeCol2["bhaTotal_m1"]]);
     ASSERT(probeData_t1[probeCol["bhaTotal_m2"]] >
-           probeData2_t1[probeCol2["bhaTotal_m2"]], __FILE__, __LINE__,
-           "Bhargava2004: total energy must decrease with lower activation.");
+           probeData2_t1[probeCol2["bhaTotal_m2"]]);
 }

@@ -255,15 +255,8 @@ namespace {
         cout << "\nSimbody - OpenSim:  |q_err| = " << qerrnorm
              << "  |u_err| =" << uerrnorm << endl;
 
-        stringstream errorMessage1, errorMessage2;
-        errorMessage1 << "testJoints::compareSimulationStates failed q_err.norm = "
-                      << qerrnorm;
-        errorMessage2 << "testJoints::compareSimulationStates failed u_err.norm = "
-                      << uerrnorm;
-        ASSERT(qerrnorm <= 10 * integ_accuracy, __FILE__, __LINE__,
-                errorMessagePrefix + errorMessage1.str());
-        ASSERT(uerrnorm <= 100 * integ_accuracy, __FILE__, __LINE__,
-                errorMessagePrefix + errorMessage2.str());
+        ASSERT(qerrnorm <= 10 * integ_accuracy);
+        ASSERT(uerrnorm <= 100 * integ_accuracy);
     }
 
     void compareSimulations(SimTK::MultibodySystem& system, SimTK::State& state,
@@ -396,11 +389,8 @@ namespace {
                 "**************"
              << endl;
 
-        ASSERT(!SimTK::isNaN(norm_rel_error), __FILE__, __LINE__,
-                "testEquivalentBodyForceForGenForces FAILED, udot_error = NaN");
-        ASSERT(norm_rel_error <= SimTK::SignificantReal, __FILE__, __LINE__,
-                "testEquivalentBodyForceForGenForces FAILED, udot_error > "
-                "SimTK::SignificantReal");
+        ASSERT(!SimTK::isNaN(norm_rel_error));
+        ASSERT(norm_rel_error <= SimTK::SignificantReal);
     }
 
     void testWeldJoint(bool randomizeBodyOrder) {
@@ -1076,19 +1066,15 @@ TEST_CASE("testEllipsoidJoint") {
         EllipsoidJoint myEllipsoidJt;
 
         ASSERT(myEllipsoidJt.getCoordinate(EllipsoidJoint::Coord::Rotation1X) ==
-                        myEllipsoidJt.get_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myEllipsoidJt.get_coordinates(0));
         ASSERT(myEllipsoidJt.getCoordinate(EllipsoidJoint::Coord::Rotation2Y) ==
-                        myEllipsoidJt.get_coordinates(1),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myEllipsoidJt.get_coordinates(1));
         ASSERT(myEllipsoidJt.getCoordinate(EllipsoidJoint::Coord::Rotation3Z) ==
-                        myEllipsoidJt.get_coordinates(2),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myEllipsoidJt.get_coordinates(2));
         ASSERT_THROW(OpenSim::InvalidCall, myEllipsoidJt.getCoordinate());
 
         ASSERT(myEllipsoidJt.updCoordinate(EllipsoidJoint::Coord::Rotation1X) ==
-                        myEllipsoidJt.upd_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myEllipsoidJt.upd_coordinates(0));
         ASSERT_THROW(OpenSim::InvalidCall, myEllipsoidJt.updCoordinate());
     }
 
@@ -1211,28 +1197,21 @@ TEST_CASE("testFreeJoint") {
         FreeJoint myFreeJoint;
 
         ASSERT(myFreeJoint.getCoordinate(FreeJoint::Coord::Rotation1X) ==
-                        myFreeJoint.get_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myFreeJoint.get_coordinates(0));
         ASSERT(myFreeJoint.getCoordinate(FreeJoint::Coord::Rotation2Y) ==
-                        myFreeJoint.get_coordinates(1),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myFreeJoint.get_coordinates(1));
         ASSERT(myFreeJoint.getCoordinate(FreeJoint::Coord::Rotation3Z) ==
-                        myFreeJoint.get_coordinates(2),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myFreeJoint.get_coordinates(2));
         ASSERT(myFreeJoint.getCoordinate(FreeJoint::Coord::TranslationX) ==
-                        myFreeJoint.get_coordinates(3),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myFreeJoint.get_coordinates(3));
         ASSERT(myFreeJoint.getCoordinate(FreeJoint::Coord::TranslationY) ==
-                        myFreeJoint.get_coordinates(4),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myFreeJoint.get_coordinates(4));
         ASSERT(myFreeJoint.getCoordinate(FreeJoint::Coord::TranslationZ) ==
-                        myFreeJoint.get_coordinates(5),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myFreeJoint.get_coordinates(5));
         ASSERT_THROW(OpenSim::InvalidCall, myFreeJoint.getCoordinate());
 
         ASSERT(myFreeJoint.updCoordinate(FreeJoint::Coord::Rotation1X) ==
-                        myFreeJoint.upd_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myFreeJoint.upd_coordinates(0));
         ASSERT_THROW(OpenSim::InvalidCall, myFreeJoint.updCoordinate());
     }
 
@@ -1301,9 +1280,7 @@ TEST_CASE("testScapulothoracicJoint") {
         const SimTK::Vec3& ellipsoidRadii =
                 scapulothoracicJoint->get_thoracic_ellipsoid_radii_x_y_z();
 
-        ASSERT_EQUAL(ellipsoidRadii, thoraxFactors, SimTK::Eps,
-            __FILE__, __LINE__,
-            "ScapulothoracicJoint failed to scale ellipsoid radii correctly.");
+        ASSERT_EQUAL(ellipsoidRadii, thoraxFactors, SimTK::Eps);
 
         const double& origin_X =
                 scapulothoracicJoint->get_scapula_winging_axis_origin(0);
@@ -1311,13 +1288,9 @@ TEST_CASE("testScapulothoracicJoint") {
         const double& origin_Y =
                 scapulothoracicJoint->get_scapula_winging_axis_origin(1);
 
-        ASSERT_EQUAL(origin_X, unscaled_XY[0] * scapulaFactors[0], SimTK::Eps,
-                __FILE__, __LINE__,
-                "ScapulothoracicJoint failed to scale origin X location.");
+        ASSERT_EQUAL(origin_X, unscaled_XY[0] * scapulaFactors[0], SimTK::Eps);
 
-        ASSERT_EQUAL(origin_Y, unscaled_XY[1] * scapulaFactors[1], SimTK::Eps,
-                __FILE__, __LINE__,
-                "ScapulothoracicJoint failed scale to origin Y location.");
+        ASSERT_EQUAL(origin_Y, unscaled_XY[1] * scapulaFactors[1], SimTK::Eps);
     }
 }
 
@@ -1418,19 +1391,15 @@ TEST_CASE("testBallJoint") {
         BallJoint myBallJoint;
 
         ASSERT(myBallJoint.getCoordinate(BallJoint::Coord::Rotation1X) ==
-                        myBallJoint.get_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myBallJoint.get_coordinates(0));
         ASSERT(myBallJoint.getCoordinate(BallJoint::Coord::Rotation2Y) ==
-                        myBallJoint.get_coordinates(1),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myBallJoint.get_coordinates(1));
         ASSERT(myBallJoint.getCoordinate(BallJoint::Coord::Rotation3Z) ==
-                        myBallJoint.get_coordinates(2),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myBallJoint.get_coordinates(2));
         ASSERT_THROW(OpenSim::InvalidCall, myBallJoint.getCoordinate());
 
         ASSERT(myBallJoint.updCoordinate(BallJoint::Coord::Rotation1X) ==
-                        myBallJoint.upd_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myBallJoint.upd_coordinates(0));
         ASSERT_THROW(OpenSim::InvalidCall, myBallJoint.updCoordinate());
     }
 
@@ -1584,16 +1553,12 @@ TEST_CASE("testPinJoint") {
         PinJoint myPinJoint;
 
         ASSERT(myPinJoint.getCoordinate(PinJoint::Coord::RotationZ) ==
-                        myPinJoint.get_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
-        ASSERT(myPinJoint.getCoordinate() == myPinJoint.get_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
-
+               myPinJoint.get_coordinates(0));
+        ASSERT(myPinJoint.getCoordinate() ==
+               myPinJoint.get_coordinates(0));
         ASSERT(myPinJoint.updCoordinate(PinJoint::Coord::RotationZ) ==
-                        myPinJoint.upd_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
-        ASSERT(myPinJoint.updCoordinate() == myPinJoint.upd_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myPinJoint.upd_coordinates(0));
+        ASSERT(myPinJoint.updCoordinate() == myPinJoint.upd_coordinates(0));
     }
 
 } // end testPinJoint
@@ -1705,18 +1670,13 @@ TEST_CASE("testSliderJoint") {
         SliderJoint mySliderJoint;
 
         ASSERT(mySliderJoint.getCoordinate(SliderJoint::Coord::TranslationX) ==
-                        mySliderJoint.get_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               mySliderJoint.get_coordinates(0));
         ASSERT(mySliderJoint.getCoordinate() ==
-                        mySliderJoint.get_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
-
+               mySliderJoint.get_coordinates(0));
         ASSERT(mySliderJoint.updCoordinate(SliderJoint::Coord::TranslationX) ==
-                        mySliderJoint.upd_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               mySliderJoint.upd_coordinates(0));
         ASSERT(mySliderJoint.updCoordinate() ==
-                        mySliderJoint.upd_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               mySliderJoint.upd_coordinates(0));
     }
 
 } // end testSliderJoint
@@ -1828,19 +1788,15 @@ TEST_CASE("testPlanarJoint") {
         PlanarJoint myPlanarJoint;
 
         ASSERT(myPlanarJoint.getCoordinate(PlanarJoint::Coord::RotationZ) ==
-                        myPlanarJoint.get_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myPlanarJoint.get_coordinates(0));
         ASSERT(myPlanarJoint.getCoordinate(PlanarJoint::Coord::TranslationX) ==
-                        myPlanarJoint.get_coordinates(1),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myPlanarJoint.get_coordinates(1));
         ASSERT(myPlanarJoint.getCoordinate(PlanarJoint::Coord::TranslationY) ==
-                        myPlanarJoint.get_coordinates(2),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myPlanarJoint.get_coordinates(2));
         ASSERT_THROW(OpenSim::InvalidCall, myPlanarJoint.getCoordinate());
 
         ASSERT(myPlanarJoint.updCoordinate(PlanarJoint::Coord::RotationZ) ==
-                        myPlanarJoint.upd_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myPlanarJoint.upd_coordinates(0));
         ASSERT_THROW(OpenSim::InvalidCall, myPlanarJoint.updCoordinate());
     }
 
@@ -2515,20 +2471,12 @@ TEST_CASE("testUserJointReversal") {
     // - pin1's parent is ground and child is rod1
     // - pin2's parent is rod2 and child is rod1 (parent and child are swapped)
     auto& pin1 = model.getComponent<Joint>("./jointset/pin1");
-    ASSERT(pin1.getParentFrame().findBaseFrame().getName() == "ground",
-            __FILE__, __LINE__,
-            "Incorrect parent frame when 'reverse' element is set to 'false'");
-    ASSERT(pin1.getChildFrame().findBaseFrame().getName() == "rod1", __FILE__,
-            __LINE__,
-            "Incorrect child frame when 'reverse' element is set to 'false'");
+    ASSERT(pin1.getParentFrame().findBaseFrame().getName() == "ground");
+    ASSERT(pin1.getChildFrame().findBaseFrame().getName() == "rod1");
 
     auto& pin2 = model.getComponent<Joint>("./jointset/pin2");
-    ASSERT(pin2.getParentFrame().findBaseFrame().getName() == "rod2", __FILE__,
-            __LINE__,
-            "Incorrect parent frame when 'reverse' element is set to 'true'");
-    ASSERT(pin2.getChildFrame().findBaseFrame().getName() == "rod1", __FILE__,
-            __LINE__,
-            "Incorrect child frame when 'reverse' element is set to 'true'");
+    ASSERT(pin2.getParentFrame().findBaseFrame().getName() == "rod2");
+    ASSERT(pin2.getChildFrame().findBaseFrame().getName() == "rod1");
 }
 
 /// test that kinematic loops are broken to form a tree with constraints
@@ -2616,8 +2564,7 @@ TEST_CASE("testAutomaticLoopJointBreaker") {
     int nu = model.getMatterSubsystem().getNumMobilities();
 
     // User should get the dofs they requested
-    ASSERT(ncoords == nu, __FILE__, __LINE__,
-            "Multibody tree failed to preserve user-specified coordinates.");
+    ASSERT(ncoords == nu);
 
     SimTK::Vec3 acc = model.calcMassCenterAcceleration(s);
     // number of active constraints
@@ -2626,8 +2573,7 @@ TEST_CASE("testAutomaticLoopJointBreaker") {
     cout << "Number of model constraints:" << nconstraints
          << "  Number of system constraints: " << nc << endl;
 
-    ASSERT(nc == 6, __FILE__, __LINE__,
-            "Loop closure failed to adequately constrain tree.");
+    ASSERT(nc == 6);
 
     std::string file("testModelWithLoopJoint.osim");
     model.print(file);
@@ -2679,19 +2625,15 @@ TEST_CASE("testCustomJointAccessors") {
         myModel.addJoint(myCustomJoint1);
 
         ASSERT(myCustomJoint1->getCoordinate() ==
-                        myCustomJoint1->get_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myCustomJoint1->get_coordinates(0));
         ASSERT(myCustomJoint1->getCoordinate(0) ==
-                        myCustomJoint1->get_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myCustomJoint1->get_coordinates(0));
         ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint1->getCoordinate(1));
 
         ASSERT(myCustomJoint1->updCoordinate() ==
-                        myCustomJoint1->upd_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myCustomJoint1->upd_coordinates(0));
         ASSERT(myCustomJoint1->updCoordinate(0) ==
-                        myCustomJoint1->upd_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myCustomJoint1->upd_coordinates(0));
         ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint1->updCoordinate(1));
     }
     {
@@ -2708,20 +2650,16 @@ TEST_CASE("testCustomJointAccessors") {
         myModel.addJoint(myCustomJoint2);
 
         ASSERT(myCustomJoint2->getCoordinate(0) ==
-                        myCustomJoint2->get_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myCustomJoint2->get_coordinates(0));
         ASSERT(myCustomJoint2->getCoordinate(1) ==
-                        myCustomJoint2->get_coordinates(1),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myCustomJoint2->get_coordinates(1));
         ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint2->getCoordinate());
         ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint2->getCoordinate(2));
 
         ASSERT(myCustomJoint2->updCoordinate(0) ==
-                        myCustomJoint2->upd_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myCustomJoint2->upd_coordinates(0));
         ASSERT(myCustomJoint2->updCoordinate(1) ==
-                        myCustomJoint2->upd_coordinates(1),
-                __FILE__, __LINE__, "Coordinate accessor failed");
+               myCustomJoint2->upd_coordinates(1));
         ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint2->updCoordinate());
         ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint2->updCoordinate(2));
     }
@@ -2731,19 +2669,15 @@ TEST_CASE("testGimbalJointAccessors") {
     GimbalJoint myGimbalJoint;
 
     ASSERT(myGimbalJoint.getCoordinate(GimbalJoint::Coord::Rotation1X) ==
-                    myGimbalJoint.get_coordinates(0),
-            __FILE__, __LINE__, "Coordinate accessor failed");
+           myGimbalJoint.get_coordinates(0));
     ASSERT(myGimbalJoint.getCoordinate(GimbalJoint::Coord::Rotation2Y) ==
-                    myGimbalJoint.get_coordinates(1),
-            __FILE__, __LINE__, "Coordinate accessor failed");
+           myGimbalJoint.get_coordinates(1));
     ASSERT(myGimbalJoint.getCoordinate(GimbalJoint::Coord::Rotation3Z) ==
-                    myGimbalJoint.get_coordinates(2),
-            __FILE__, __LINE__, "Coordinate accessor failed");
+           myGimbalJoint.get_coordinates(2));
     ASSERT_THROW(OpenSim::InvalidCall, myGimbalJoint.getCoordinate());
 
     ASSERT(myGimbalJoint.updCoordinate(GimbalJoint::Coord::Rotation1X) ==
-                    myGimbalJoint.upd_coordinates(0),
-            __FILE__, __LINE__, "Coordinate accessor failed");
+           myGimbalJoint.upd_coordinates(0));
     ASSERT_THROW(OpenSim::InvalidCall, myGimbalJoint.updCoordinate());
 }
 
@@ -2751,16 +2685,13 @@ TEST_CASE("testUniversalJointAccessors") {
     UniversalJoint myUniversalJoint;
 
     ASSERT(myUniversalJoint.getCoordinate(UniversalJoint::Coord::Rotation1X) ==
-                    myUniversalJoint.get_coordinates(0),
-            __FILE__, __LINE__, "Coordinate accessor failed");
+           myUniversalJoint.get_coordinates(0));
     ASSERT(myUniversalJoint.getCoordinate(UniversalJoint::Coord::Rotation2Y) ==
-                    myUniversalJoint.get_coordinates(1),
-            __FILE__, __LINE__, "Coordinate accessor failed");
+           myUniversalJoint.get_coordinates(1));
     ASSERT_THROW(OpenSim::InvalidCall, myUniversalJoint.getCoordinate());
 
     ASSERT(myUniversalJoint.updCoordinate(UniversalJoint::Coord::Rotation1X) ==
-                    myUniversalJoint.upd_coordinates(0),
-            __FILE__, __LINE__, "Coordinate accessor failed");
+           myUniversalJoint.upd_coordinates(0));
     ASSERT_THROW(OpenSim::InvalidCall, myUniversalJoint.updCoordinate());
 }
 
@@ -2811,33 +2742,25 @@ TEST_CASE("testMotionTypesForCustomJointCoordinates") {
         // hip_rx is the first coordinate and pure rotational about X
         auto coordName = hip->getCoordinate(0).getName();
         auto mt = hip->getCoordinate(0).getMotionType();
-        ASSERT(mt == Coordinate::MotionType::Rotational, __FILE__, __LINE__,
-                "Coordinate `" + coordName +
-                        "' failed to register as MotionType::Rotational");
+        ASSERT(mt == Coordinate::MotionType::Rotational);
 
         // hip_qx is the second coordinate that influences Z rotation but is
         // pure translational along X
         coordName = hip->getCoordinate(1).getName();
         mt = hip->getCoordinate(1).getMotionType();
-        ASSERT(mt == Coordinate::MotionType::Translational, __FILE__, __LINE__,
-                "Coordinate `" + coordName +
-                        "' failed to register as MotionType::Translational");
+        ASSERT(mt == Coordinate::MotionType::Translational);
 
         // hip_qy is the third coordinate that also influences Z rotation but is
         // scaled to translate along Y and therefore NOT a pure translational
         // coordinate either
         coordName = hip->getCoordinate(2).getName();
         mt = hip->getCoordinate(2).getMotionType();
-        ASSERT(mt == Coordinate::MotionType::Coupled, __FILE__, __LINE__,
-                "Coordinate `" + coordName +
-                        "' failed to register as MotionType::Coupled");
+        ASSERT(mt == Coordinate::MotionType::Coupled);
 
         // hip_tz is the fourth coordinate, which is pure translational along Z
         coordName = hip->getCoordinate(3).getName();
         mt = hip->getCoordinate(3).getMotionType();
-        ASSERT(mt == Coordinate::MotionType::Translational, __FILE__, __LINE__,
-                "Coordinate `" + coordName +
-                        "' failed to register as MotionType::Translational");
+        ASSERT(mt == Coordinate::MotionType::Translational);
     }
     {
         // Specifying a linear function with slope of -1 should still yield a
@@ -2875,14 +2798,10 @@ TEST_CASE("testMotionTypesForCustomJointCoordinates") {
 
         // hip_rx is the first coordinate and pure rotational about X
         auto mt = hip->getCoordinate(0).getMotionType();
-        ASSERT(mt == Coordinate::MotionType::Rotational, __FILE__, __LINE__,
-                "Coordinate `" + coordNameRX +
-                        "' failed to register as MotionType::Rotational");
+        ASSERT(mt == Coordinate::MotionType::Rotational);
         // hip_ry is the second coordinate and pure rotational about Y
         mt = hip->getCoordinate(1).getMotionType();
-        ASSERT(mt == Coordinate::MotionType::Rotational, __FILE__, __LINE__,
-                "Coordinate `" + coordNameRY +
-                        "' failed to register as MotionType::Rotational");
+        ASSERT(mt == Coordinate::MotionType::Rotational);
     }
 }
 
@@ -2956,10 +2875,8 @@ TEST_CASE("testNonzeroInterceptCustomJointVsPin") {
     // Verify the MotionType for both Joints are the same (Rotational)
     auto mt1 = hip1->getCoordinate().getMotionType();
     auto mt2 = hip2->getCoordinate().getMotionType();
-    ASSERT(mt1 == Coordinate::MotionType::Rotational, __FILE__, __LINE__,
-            "PinJoint's Coordinate failed to have MotionType::Rotational");
-    ASSERT(mt2 == mt1, __FILE__, __LINE__,
-            "CustomJoint's Coordinate MotionType failed to match PinJoint's");
+    ASSERT(mt1 == Coordinate::MotionType::Rotational);
+    ASSERT(mt2 == mt1);
 
     // Set initial conditions of both pendulum models
     hip1->getCoordinate().setValue(s1, Pi / 3);
@@ -2980,11 +2897,7 @@ TEST_CASE("testNonzeroInterceptCustomJointVsPin") {
     cout << "Pin angle - CustomJoint angle = " << pin_q - cj_q
          << " vs. offset = " << offset << endl;
 
-    ASSERT_EQUAL<double>(pin_q - cj_q, offset, integ_accuracy, __FILE__,
-            __LINE__,
-            "CustomJoint's linear function intercept failed to behave as an "
-            "offset "
-            "of the coordinate value.");
+    ASSERT_EQUAL(pin_q - cj_q, offset, integ_accuracy);
 }
 
 // reproduction to exercise the bug described in issue #3532

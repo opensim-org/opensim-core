@@ -34,19 +34,16 @@ TEST_CASE("testExampleMain") {
 
     const std::string result1Filename{"tugOfWar_states.sto"};
     const std::string result1FilenameV1{"tugOfWar_states_V1.sto"};
-    revertToVersionNumber1(result1Filename, result1FilenameV1);
+    OpenSim::Testing::revertToVersionNumber1(result1Filename, result1FilenameV1);
     Storage result1(result1FilenameV1),
             standard1("std_tugOfWar_states.sto");
-    CHECK_STORAGE_AGAINST_STANDARD(result1, standard1,
-                                    std::vector<double>(16, 0.1),
-                                    __FILE__,
-                                    __LINE__,
-                                    "tugOfWar states failed");
+    OpenSim::Testing::checkStorageAgainstStandard(result1, standard1,
+        std::vector<double>(16, 0.1));
     cout << "tugOfWar states passed\n";
 
     const std::string result3Filename{"tugOfWar_forces.sto"};
     const std::string result3FilenameV1{"tugOfWar_forces_V1.sto"};
-    revertToVersionNumber1(result3Filename, result3FilenameV1);
+    OpenSim::Testing::revertToVersionNumber1(result3Filename, result3FilenameV1);
     Storage result3(result3FilenameV1),
             standard3("std_tugOfWar_forces.mot");
 
@@ -54,10 +51,6 @@ TEST_CASE("testExampleMain") {
     // 10N is 1% of the muscles maximum isometric force
     tols[0] = tols[1] = 10;
 
-    CHECK_STORAGE_AGAINST_STANDARD(result3, standard3,
-                                    tols,
-                                    __FILE__,
-                                    __LINE__,
-                                    "tugOfWar forces failed");
+    OpenSim::Testing::checkStorageAgainstStandard(result3, standard3, tols);
     cout << "tugOfWar forces passed\n";
 }

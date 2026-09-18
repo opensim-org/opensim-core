@@ -48,10 +48,8 @@ void compare_tables(const OpenSim::TimeSeriesTable_<ETY>& table1,
                          Exception,
                          "Column labels are not the same for tables.");
 
-        ASSERT_EQUAL( table1.getIndependentColumn(), 
-                      table2.getIndependentColumn(), tolerance,
-                       __FILE__, __LINE__,
-                         "Independent columns are not equivalent.");
+        ASSERT_EQUAL(table1.getIndependentColumn(),
+                     table2.getIndependentColumn(), tolerance);
     } catch (const OpenSim::KeyNotFound&) {}
 
     const auto& matrix1 = table1.getMatrix();
@@ -62,9 +60,8 @@ void compare_tables(const OpenSim::TimeSeriesTable_<ETY>& table1,
             auto elt1 = matrix1.getElt(r, c); 
             auto elt2 = matrix2.getElt(r, c);
 
-            ASSERT_EQUAL(elt1, elt2, tolerance, __FILE__, __LINE__,
-                "Element at row, " + std::to_string(r) + " col, " +
-                std::to_string(c) + " failed to have matching value.");
+            CAPTURE(r, c);
+            ASSERT_EQUAL(elt1, elt2, tolerance);
         }
 }
 
@@ -122,8 +119,7 @@ void test(const std::string filename) {
     const std::string forces_file = base + "_grfs.sto";
     const std::string analogs_file = base + "_analog.sto";
 
-    ASSERT(marker_table->getNumRows() > 0, __FILE__, __LINE__,
-        "Failed to read marker data from " + filename);
+    ASSERT(marker_table->getNumRows() > 0);
 
     marker_table->updTableMetaData().setValueForKey("Units", 
                                                     std::string{"mm"});
@@ -133,8 +129,7 @@ void test(const std::string filename) {
     cout << "\tWrote '" << marker_file << "' in "
         << watch.getElapsedTimeFormatted() << endl;
 
-    ASSERT(force_table->getNumRows() > 0, __FILE__, __LINE__,
-        "Failed to read forces data from " + filename);
+    ASSERT(force_table->getNumRows() > 0);
 
     force_table->updTableMetaData().setValueForKey("Units", 
                                                     std::string{"mm"});
@@ -216,12 +211,12 @@ void test(const std::string filename) {
     SimTK::RowVectorView forcesTableFirstRow = forces.getRowAtIndex(0);
 
 
-    ASSERT_EQUAL<double>(analogTableFirstRow.getElt(0, 0), -forcesTableFirstRow.getElt(0, 1), SimTK::SignificantReal, __FILE__, __LINE__,
-        "Analog and Force data at col 0 failed to have matching value.");
-    ASSERT_EQUAL<double>(analogTableFirstRow.getElt(0, 1), -forcesTableFirstRow.getElt(0, 0), SimTK::SignificantReal, __FILE__, __LINE__,
-        "Analog and Force data at col 1 failed to have matching value.");
-    ASSERT_EQUAL<double>(analogTableFirstRow.getElt(0, 2), -forcesTableFirstRow.getElt(0, 2), SimTK::SignificantReal, __FILE__, __LINE__,
-        "Analog and Force data at col 2 failed to have matching value.");
+    ASSERT_EQUAL(analogTableFirstRow.getElt(0, 0),
+        -forcesTableFirstRow.getElt(0, 1), SimTK::SignificantReal);
+    ASSERT_EQUAL(analogTableFirstRow.getElt(0, 1),
+        -forcesTableFirstRow.getElt(0, 0), SimTK::SignificantReal);
+    ASSERT_EQUAL(analogTableFirstRow.getElt(0, 2),
+        -forcesTableFirstRow.getElt(0, 2), SimTK::SignificantReal);
 
 }
 
