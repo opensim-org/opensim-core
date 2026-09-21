@@ -590,7 +590,7 @@ TEST_CASE("MocoContactTrackingGoal", "[casadi]") {
                 {"contactBallHalfSpace"}, {});
     }
 
-    rootMeanSquare(externalLoadsDircol, "ground_force_r_vy",
+    OpenSim::Testing::rootMeanSquare(externalLoadsDircol, "ground_force_r_vy",
             externalLoadsTimeStepping, "ground_force_r_vy",
             0.5);
 }

@@ -15,7 +15,8 @@ function(MocoAddTest)
             "${CMAKE_SOURCE_DIR}/tests/Testing.h")
     # To organize targets in Visual Studio's Solution Explorer.
     set_target_properties(${MOCOTEST_NAME} PROPERTIES FOLDER "Moco/Tests")
-    target_link_libraries(${MOCOTEST_NAME} osimMoco ${MOCOTEST_LIB_DEPENDS} Catch2::Catch2WithMain)
+    target_link_libraries(${MOCOTEST_NAME} osimMoco ${MOCOTEST_LIB_DEPENDS}
+            osimTesting Catch2::Catch2WithMain)
     if(APPLE)
         list(APPEND test_args "~[win]~[linux]~[win/linux]~[linux/win]")
     endif()

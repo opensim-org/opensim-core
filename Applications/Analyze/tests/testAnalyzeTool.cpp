@@ -122,7 +122,7 @@ namespace {
             catch (const MuscleCannotEquilibrate& x) {
                 // Write out the muscle equilibrium for error as a function of
                 // fiber-length.
-                reportTendonAndFiberForcesAcrossFiberLengths(muscle, s);
+                OpenSim::Testing::reportTendonAndFiberForcesAcrossFiberLengths(muscle, s);
                 throw x;
             }
             model.realizeDynamics(s);

@@ -132,12 +132,11 @@ namespace {
                         dynamic_cast<const Thelen2003Muscle*>(&muscle)) {
                         thelen->printCurveToCSVFile(
                             Thelen2003Muscle::CurveType::FiberForceVelocity, "");
-                        reportTendonAndFiberForcesAcrossFiberLengths(*thelen, s);
-                        }
-                    else if (const auto* millard =
+                        OpenSim::Testing::reportTendonAndFiberForcesAcrossFiberLengths(*thelen, s);
+                    } else if (const auto* millard =
                         dynamic_cast<const Millard2012EquilibriumMuscle*>(&muscle)) {
-                        reportTendonAndFiberForcesAcrossFiberLengths(*millard, s);
-                        }
+                        OpenSim::Testing::reportTendonAndFiberForcesAcrossFiberLengths(*millard, s);
+                    }
 
                     throw;
                 }
