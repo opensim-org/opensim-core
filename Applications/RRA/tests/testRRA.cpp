@@ -61,6 +61,5 @@ TEST_CASE("testRRA") {
     Storage result("ResultsRRA/subject01_walk1_RRA_Kinematics_q.sto"),
             standard("subject01_walk1_RRA_Kinematics_q_standard.sto");
     CHECK_STORAGE_AGAINST_STANDARD(result, standard,
-        std::vector<double>(24, 0.5),
-        __FILE__, __LINE__, "testRRA: kinematics comparison failed");
+        std::vector<double>(24, 0.5));
 }

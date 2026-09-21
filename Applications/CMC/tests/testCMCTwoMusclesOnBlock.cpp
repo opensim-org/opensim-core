@@ -52,8 +52,7 @@ namespace {
         const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
         string base = "testTwoMusclesOnBlock "+ muscleType;
 
-        CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, rms_tols,
-            __FILE__, __LINE__, base+" failed");
+        CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, rms_tols);
     }
 }
 

@@ -41,8 +41,7 @@ TEST_CASE("testCustomActuatorExample") {
     std::vector<double> tolerances(6, 1.0);   // angles have 1 deg tolerance
     tolerances[1] = tolerances[3] = tolerances[5] = 5.0; // angular speeds have a 5 deg/s tolerance
 
-    CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, tolerances,
-        __FILE__, __LINE__, "spring actuated leg states degrees failed");
+    CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, tolerances);
     log_info("spring actuated leg states degrees passed");
     log_info("");
 
@@ -54,8 +53,7 @@ TEST_CASE("testCustomActuatorExample") {
     OpenSim::Testing::revertToVersionNumber1(result2Filename, result2FilenameV1);
     Storage result2(result2FilenameV1),
             standard2("std_actuator_forces.mot");
-    CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, forceTol,
-                                    __FILE__, __LINE__, "actuator forces failed");
+    CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, forceTol);
     log_info("actuator forces passed");
     log_info("");
 }

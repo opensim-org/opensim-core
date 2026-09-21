@@ -24,27 +24,35 @@
 
 using namespace OpenSim;
 
-void CHECK_STORAGE_AGAINST_STANDARD(const OpenSim::Storage& result,
-        const OpenSim::Storage& standard, const std::vector<double>& tolerances,
-        const std::string& testFile, const int testFileLine,
-        const std::string& errorMessage) {
+bool OpenSim::Testing::storageMatchesStandard(
+        const OpenSim::Storage& result,
+        const OpenSim::Storage& standard,
+        const std::vector<double>& tolerances) {
 
     std::vector<std::string> columnsUsed;
     std::vector<double> comparisons;
     result.compareWithStandard(standard, columnsUsed, comparisons);
 
-    size_t ncolumns = columnsUsed.size();
+    const size_t ncolumns = columnsUsed.size();
 
-    ASSERT(ncolumns > 0, testFile, testFileLine,
-           errorMessage + "- no common columns to compare!");
+    if (ncolumns == 0) {
+        std::cout << "No common columns to compare." << std::endl;
+        return false;
+    }
 
+    bool matches = true;
     for (size_t i = 0; i < ncolumns; ++i) {
         std::cout << "column:    " << columnsUsed[i] << std::endl;
         std::cout << "RMS error: " << comparisons[i] << std::endl;
         std::cout << "tolerance: " << tolerances[i] << std::endl << std::endl;
-        ASSERT(comparisons[i] < tolerances[i], testFile, testFileLine,
-               errorMessage);
+
+        if (!(comparisons[i] < tolerances[i])) {
+            std::cout << "FAILED: column '" << columnsUsed[i]
+                      << "' exceeds its tolerance." << std::endl;
+            matches = false;
+        }
     }
+    return matches;
 }
 
 OpenSim::Object* OpenSim::Testing::randomize(OpenSim::Object* obj) {

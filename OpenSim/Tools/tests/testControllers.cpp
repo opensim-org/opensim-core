@@ -403,12 +403,10 @@ TEST_CASE("testPrescribedControllerFromFile") {
     /*int ncontrols = */osimModel.getNumControls();
 
     CHECK_STORAGE_AGAINST_STANDARD(states, std_states, 
-        std::vector<double>(nstates, 0.005), __FILE__, __LINE__,
-        "testPrescribedControllerFromFile '"+modelName+"'states failed");
+        std::vector<double>(nstates, 0.005));
 
     CHECK_STORAGE_AGAINST_STANDARD(controls, std_controls, 
-        std::vector<double>(nstates, 0.015), __FILE__, __LINE__,
-        "testPrescribedControllerFromFile '"+modelName+"'controls failed");
+        std::vector<double>(nstates, 0.015));
      
     osimModel.disownAllComponents();
 }

@@ -87,8 +87,7 @@ TEST_CASE("testOpenSense") {
     // differences in static pose an should be unaffected by the large
     // (90+ degs) change in heading
     CHECK_STORAGE_AGAINST_STANDARD(ik_X, ik_negX,
-        std::vector<double>(nc, 10.0), __FILE__, __LINE__,
-        "testOpenSense::IK solutions differed due to heading.");
+        std::vector<double>(nc, 10.0));
 
     // Test a case where model pelvis rotation is non-zero so pelvis-x is different from ground-x
     IMUPlacer imuPlacer_rot("calibrate_rotated.xml");

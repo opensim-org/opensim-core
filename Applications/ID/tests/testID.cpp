@@ -47,8 +47,7 @@ TEST_CASE("testArm26") {
     Storage result1("Results/arm26_InverseDynamics.sto");
     Storage standard1("std_arm26_InverseDynamics.sto");
     CHECK_STORAGE_AGAINST_STANDARD( result1, standard1,
-        std::vector<double>(23, 1e-2), __FILE__, __LINE__,
-        "testArm failed");
+        std::vector<double>(23, 1e-2));
 
     // setOutputGenForceFileName including folder name, test
     // that folder will be ignored and file is written to Results
@@ -58,8 +57,7 @@ TEST_CASE("testArm26") {
     id12.run();
     Storage result12("Results/arm26_InverseDynamics_rerun.sto");
     CHECK_STORAGE_AGAINST_STANDARD(result1, result12,
-            std::vector<double>(23, 1e-5), __FILE__, __LINE__,
-            "testArm ignore path in output file spec. failed");
+            std::vector<double>(23, 1e-5));
 }
 
 TEST_CASE("testGait") {
@@ -68,8 +66,7 @@ TEST_CASE("testGait") {
     Storage result2("Results/subject01_InverseDynamics.sto");
     Storage standard2("std_subject01_InverseDynamics.sto");
     CHECK_STORAGE_AGAINST_STANDARD(result2, standard2,
-        std::vector<double>(23, 2.0), __FILE__, __LINE__,
-        "testGait failed");
+        std::vector<double>(23, 2.0));
 }
 
 TEST_CASE("testThoracoscapularShoulderModel") {
