@@ -192,5 +192,5 @@ TEST_CASE("testArm26DisabledMuscles") {
     int nt = statesStore->getTimeColumn(time);
     int nt_d = statesDerivativeStore->getTimeColumn(time_d);
     ASSERT_EQUAL(nt, nt_d);
-    ASSERT_EQUAL<Array<double>>(time, time_d, std::numeric_limits<double>::epsilon());
+    ASSERT_EQUAL(time, time_d, std::numeric_limits<double>::epsilon());
 }
