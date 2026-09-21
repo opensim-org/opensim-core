@@ -538,10 +538,10 @@ TEST_CASE("testMuscleAnalysisSerialization") {
     m.setComputeMoments(true);
     m.print("manalysis.xml");
     MuscleAnalysis roundTrip("manalysis.xml");
-    ASSERT(roundTrip.getComputeMoments());
+    OPENSIM_ASSERT_ALWAYS(roundTrip.getComputeMoments());
     m.setComputeMoments(false);
     m.print("manalysis.xml");
     // Check deserialization and copying
     roundTrip = MuscleAnalysis("manalysis.xml");
-    ASSERT(!roundTrip.getComputeMoments());
+    OPENSIM_ASSERT_ALWAYS(!roundTrip.getComputeMoments());
 }

@@ -115,6 +115,6 @@ TEST_CASE("testStates")
         ASSERT_EQUAL(y1[i], y3[i], 1e-5);
         ASSERT_EQUAL(y2[i], y4[i], 1e-5);
     }
-    ASSERT(max(abs(y1-y2)) > 1e-4);
+    OPENSIM_ASSERT_ALWAYS(max(abs(y1-y2)) > 1e-4);
 }
 

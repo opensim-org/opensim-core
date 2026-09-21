@@ -49,33 +49,33 @@ TEST_CASE("testModelFinalizePropertiesAndConnections") {
 
     // all subcomponents are accounted for since Model constructor invokes
     // finalizeFromProperties().
-    ASSERT(model.countNumComponents() > 0);
+    OPENSIM_ASSERT_ALWAYS(model.countNumComponents() > 0);
 
     // model must be up-to-date with its properties
-    ASSERT(model.isObjectUpToDateWithProperties());
+    OPENSIM_ASSERT_ALWAYS(model.isObjectUpToDateWithProperties());
 
     // get writable access to Components contained in the model's Set
     auto& muscles = model.updMuscles();
     // to make edits, for example, muscles[0].upd_min_control() = 0.02;
-    ASSERT(!model.isObjectUpToDateWithProperties());
+    OPENSIM_ASSERT_ALWAYS(!model.isObjectUpToDateWithProperties());
 
     model.finalizeFromProperties();
-    ASSERT(model.isObjectUpToDateWithProperties());
+    OPENSIM_ASSERT_ALWAYS(model.isObjectUpToDateWithProperties());
 
     // get writable access to another Set for the purpose of editing
     auto& bodies = model.updBodySet();
     // for example, bodies[1].upd_mass() = 0.05;
-    ASSERT(!model.isObjectUpToDateWithProperties());
+    OPENSIM_ASSERT_ALWAYS(!model.isObjectUpToDateWithProperties());
 
     model.finalizeFromProperties();
-    ASSERT(model.isObjectUpToDateWithProperties());
+    OPENSIM_ASSERT_ALWAYS(model.isObjectUpToDateWithProperties());
 
     // make an edit through model's ComponentList access
     for (auto& body : model.updComponentList<Body>()) {
         body.upd_mass_center() = SimTK::Vec3(0);
         break;
     }
-    ASSERT(!model.isObjectUpToDateWithProperties());
+    OPENSIM_ASSERT_ALWAYS(!model.isObjectUpToDateWithProperties());
 
     SimTK::State dummy_state;
 
@@ -136,7 +136,7 @@ TEST_CASE("testModelFinalizePropertiesAndConnections") {
     ASSERT_THROW(ComponentHasNoSystem, model.getSystem());
 
     // verify the new connection was made
-    ASSERT(model.getComponent<Joint>("./jointset/r_elbow")
+    OPENSIM_ASSERT_ALWAYS(model.getComponent<Joint>("./jointset/r_elbow")
         .getParentFrame().getName() == "elbow_in_humerus");
 }
 

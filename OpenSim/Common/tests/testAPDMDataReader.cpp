@@ -58,7 +58,7 @@ TEST_CASE("APDMDataReader Behaves as Expected")
     // test last row as well to make sure all data is read correctly,
     // size is as expected
     size_t numRows = accelTableTyped.getIndependentColumn().size();
-    ASSERT(numRows==1024);
+    OPENSIM_ASSERT_ALWAYS(numRows==1024);
     fromTable = accelTableTyped.getRowAtIndex(numRows - 1)[0];
     fromFile = SimTK::Vec3{ 0.158696249,0.298471016,9.723807335 };
     ASSERT_EQUAL(fromTable, fromFile, tolerance);

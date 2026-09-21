@@ -444,7 +444,7 @@ namespace {
         cout << std::to_string(valOut) << " " << ss.str() << " ";
         cout << propertyDouble->toString() << endl;
 
-        ASSERT(propertyDouble->toString() == ans);
+        OPENSIM_ASSERT_ALWAYS(propertyDouble->toString() == ans);
     }
 
     static void testPropertyOutputHelper(const int& val, const std::string& ans)
@@ -462,7 +462,7 @@ namespace {
         cout << std::to_string(valOut) << " " << ss.str() << " ";
         cout << propertyInt->toString() << endl;
 
-        ASSERT(propertyInt->toString() == ans);
+        OPENSIM_ASSERT_ALWAYS(propertyInt->toString() == ans);
     }
 
     template <int M> static void testPropertyOutputHelper(const SimTK::Vec<M>& val, const std::string& ans)
@@ -480,7 +480,7 @@ namespace {
         cout << ss.str() << "\n";
         cout << propertyVec->toString() << endl;
 
-        ASSERT(propertyVec->toString() == ans);
+        OPENSIM_ASSERT_ALWAYS(propertyVec->toString() == ans);
     }
 
     static void testPropertyOutputHelper(const SimTK::Vector& val, const std::string& ans)
@@ -498,7 +498,7 @@ namespace {
         cout << ss.str() << "\n";
         cout << propertyVector->toString() << endl;
 
-        ASSERT(propertyVector->toString() == ans);
+        OPENSIM_ASSERT_ALWAYS(propertyVector->toString() == ans);
     }
 
     static void testPropertyOutputHelper(const SimTK::Transform& val)
@@ -605,7 +605,7 @@ TEST_CASE("Object Serialization")
     for (unsigned int i = 0; i < ans.size(); ++i) {
         std::string valStr = propertyDouble->toStringForDisplay(i+1);
         cout << valStr << " " << ans[i] << endl;
-        ASSERT(valStr == ans[i]);
+        OPENSIM_ASSERT_ALWAYS(valStr == ans[i]);
     }
     cout << endl;
 
@@ -653,23 +653,29 @@ TEST_CASE("Object Serialization")
 
     // Now compare object properties to make sure we're not reading and writing the file as just text!
     int numProperties1 = obj1.getPropertySet().getSize();
-    ASSERT(numProperties1 == obj2.getPropertySet().getSize(), __FILE__, __LINE__, "num properties");
+    OPENSIM_ASSERT_ALWAYS(numProperties1 == obj2.getPropertySet().getSize());
 
-    ASSERT(obj1 == obj2, __FILE__, __LINE__, "equality");
+    OPENSIM_ASSERT_ALWAYS(obj1 == obj2);
 
     PropertySet &propSet1 = obj1.getPropertySet();
     PropertySet &propSet2 = obj2.getPropertySet();
     for (int i=0; i < numProperties1; i++){
         Property_Deprecated *prop1 = propSet1.get(i);
         Property_Deprecated *prop2 = propSet2.get(i);
-        ASSERT(prop1->getName() == prop2->getName(), __FILE__, __LINE__, "property names");
+        OPENSIM_ASSERT_ALWAYS(prop1->getName() == prop2->getName());
     }
 
-    ASSERT(((PropertyBool*) propSet1.get(0))->getValueBool() == ((PropertyBool*) propSet2.get(0))->getValueBool(), __FILE__, __LINE__, "bool property");
+    OPENSIM_ASSERT_ALWAYS(
+            ((PropertyBool*) propSet1.get(0))->getValueBool()
+            == ((PropertyBool*) propSet2.get(0))->getValueBool());
 
-    ASSERT(((PropertyInt*) propSet1.get(1))->getValueInt() == ((PropertyInt*) propSet2.get(1))->getValueInt(), __FILE__, __LINE__, "int property");
+    OPENSIM_ASSERT_ALWAYS(
+            ((PropertyInt*) propSet1.get(1))->getValueInt()
+            == ((PropertyInt*) propSet2.get(1))->getValueInt());
 
-    ASSERT(((PropertyDbl*) propSet1.get(2))->getValueDbl() == ((PropertyDbl*) propSet2.get(2))->getValueDbl(), __FILE__, __LINE__, "double property");
+    OPENSIM_ASSERT_ALWAYS(
+            ((PropertyDbl*) propSet1.get(2))->getValueDbl()
+            == ((PropertyDbl*) propSet2.get(2))->getValueDbl());
 
     /* The following actually fails due to extra spaces when we read back from file!.*/
     string& str1 = ((PropertyStr*) propSet1.get(6))->getValueStr();
@@ -724,8 +730,8 @@ TEST_CASE("Object Serialization")
     objWithListProp.append_list_SerializableObject(obj_l1);
     objWithListProp.append_list_SerializableObject(obj_l2);
     int loc = objWithListProp.getProperty_list_SerializableObject().findIndexForName("Second");
-    ASSERT(loc == 1);
+    OPENSIM_ASSERT_ALWAYS(loc == 1);
     int notFound = objWithListProp.getProperty_list_SerializableObject().findIndexForName("Third");
-    ASSERT(notFound == -1);
+    OPENSIM_ASSERT_ALWAYS(notFound == -1);
     SimTK_TEST_MUST_THROW(SerializableObject bad("obj1Bad.xml"));
 }

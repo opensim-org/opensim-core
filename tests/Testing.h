@@ -266,12 +266,6 @@ void reportTendonAndFiberForcesAcrossFiberLengths(const T& muscle,
 #define ASSERT_EQUAL(...) \
     OPENSIM_ASSERT_ALWAYS(OpenSim::Testing::isEqual(__VA_ARGS__))
 
-inline void ASSERT(bool cond, 
-                   std::string file="", 
-                   int line=-1, 
-                   std::string message="Exception") {
-    if (!cond) throw OpenSim::Exception(message, file, line);
-}
 #define ASSERT_THROW(EXPECTED_EXCEPTION, STATEMENT) \
 do { \
     bool caughtExpectedException = false; \

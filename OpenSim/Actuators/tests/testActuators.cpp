@@ -132,7 +132,7 @@ TEST_CASE("testTorqueActuator") {
     udotMobility.dump("Accelerations due to mobility forces");
 
     // First make sure that accelerations are not zero accidentally
-    ASSERT(udotMobility.norm() != 0.0 || udotBody.norm() != 0.0);
+    OPENSIM_ASSERT_ALWAYS(udotMobility.norm() != 0.0 || udotBody.norm() != 0.0);
     // Then check if they are equal
     for(int i=0; i<udotMobility.size(); ++i){
         ASSERT_EQUAL(udotMobility[i], udotBody[i], 1.0e-12);
@@ -178,7 +178,8 @@ TEST_CASE("testTorqueActuator") {
     const Vector &udotTorqueActuator = state.getUDot();
 
     // First make sure that accelerations are not zero accidentally
-    ASSERT(udotMobility.norm() != 0.0 || udotTorqueActuator.norm() != 0.0);
+    OPENSIM_ASSERT_ALWAYS(
+            udotMobility.norm() != 0.0 || udotTorqueActuator.norm() != 0.0);
 
     // Then verify that the TorqueActuator also generates the same acceleration
     // as the equivalent applied mobility force
@@ -209,12 +210,11 @@ TEST_CASE("testTorqueActuator") {
 
     // Before exiting lets see if copying the spring works
     TorqueActuator* copyOfActuator = actuator->clone();
-    ASSERT(*copyOfActuator == *actuator);
+    OPENSIM_ASSERT_ALWAYS(*copyOfActuator == *actuator);
     
     // Check that de/serialization works
     Model modelFromFile("TestTorqueActuatorModel.osim");
-    ASSERT(modelFromFile == *model, __FILE__, __LINE__,
-        "Model from file FAILED to match model in memory.");
+    OPENSIM_ASSERT_ALWAYS(modelFromFile == *model);
 
     std::cout << " ********** Test TorqueActuator time =  ********** " << 
         1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
@@ -575,7 +575,7 @@ TEST_CASE("testBodyActuator") {
     udotMobility.dump("Accelerations due to mobility forces");
 
     // First make sure that accelerations are not zero accidentally
-    ASSERT(udotMobility.norm() != 0.0 || udotBody.norm() != 0.0);
+    OPENSIM_ASSERT_ALWAYS(udotMobility.norm() != 0.0 || udotBody.norm() != 0.0);
     // Then check if they are equal
     for (int i = 0; i<udotMobility.size(); ++i){
         ASSERT_EQUAL(udotMobility[i], udotBody[i], SimTK::Eps);
@@ -623,7 +623,8 @@ TEST_CASE("testBodyActuator") {
     udotBodyActuator.dump("Accelerations due to body actuator");
 
     // First make sure that accelerations are not zero accidentally
-    ASSERT(udotMobility.norm() != 0.0 || udotBodyActuator.norm() != 0.0);
+    OPENSIM_ASSERT_ALWAYS(
+            udotMobility.norm() != 0.0 || udotBodyActuator.norm() != 0.0);
     // Then verify that the BodyActuator also generates the same acceleration
     // as the equivalent applied mobility force
     for (int i = 0; i<udotBodyActuator.size(); ++i){
@@ -642,12 +643,11 @@ TEST_CASE("testBodyActuator") {
     // ----------------- Test Copying the model -------------------
     // Before exiting lets see if copying the actuator works
     BodyActuator* copyOfActuator = actuator->clone();
-    ASSERT(*copyOfActuator == *actuator);
+    OPENSIM_ASSERT_ALWAYS(*copyOfActuator == *actuator);
 
     // Check that de/serialization works
     Model modelFromFile("TestBodyActuatorModel.osim");
-    ASSERT(modelFromFile == *model, __FILE__, __LINE__,
-        "Model from file FAILED to match model in memory.");
+    OPENSIM_ASSERT_ALWAYS(modelFromFile == *model);
 
     std::cout << " ********** Test BodyActuator time = ********** " <<
         1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC << "ms\n" << endl;
@@ -846,7 +846,9 @@ TEST_CASE("testActuatorsCombination") {
     // Verify that the bodyActuator_sum also generates the same acceleration
     // as the equivalent applied by 3 Actuators in previous test case
     // Also make sure that accelerations are not zero accidentally
-    ASSERT(udotOnlyBodyActuator.norm() != 0.0 || udotActuatorsCombination.norm() != 0.0);
+    OPENSIM_ASSERT_ALWAYS(
+            udotOnlyBodyActuator.norm() != 0.0 ||
+            udotActuatorsCombination.norm() != 0.0);
     for (int i = 0; i<udotActuatorsCombination.size(); ++i){
         ASSERT_EQUAL(udotOnlyBodyActuator[i], udotActuatorsCombination[i], 1.0e-12);
     }
@@ -886,7 +888,7 @@ TEST_CASE("testActivationCoordinateActuator") {
     model.print("Model_ActivationCoordinateActuator.osim");
 
     Model modelDeserialized("Model_ActivationCoordinateActuator.osim");
-    ASSERT(model == modelDeserialized);
+    OPENSIM_ASSERT_ALWAYS(model == modelDeserialized);
 
     auto* controller = new PrescribedController();
     controller->addActuator(*aca);

@@ -48,7 +48,7 @@ namespace {
 
         storage.print("test_" + name + ".sto");
 
-        ASSERT(numCols == labels.size());
+        OPENSIM_ASSERT_ALWAYS(numCols == labels.size());
     }
 }
 
@@ -63,39 +63,39 @@ TEST_CASE("Test Storage Legacy Behavior")
     // time[\t]v1[\t]v2
     // 1.[\t]   10.0[Space]20
     // 2.[\t\t] 20.0[\t]40
-    ASSERT(st->getSize() == 2);
+    OPENSIM_ASSERT_ALWAYS(st->getSize() == 2);
     const Array<std::string> &lbls = st->getColumnLabels();
-    ASSERT(lbls.getSize() == 3);
+    OPENSIM_ASSERT_ALWAYS(lbls.getSize() == 3);
     int i = 0;
     for (i = 0; i<lbls.getSize(); i++) {
-        ASSERT(lbls[i] == stdLabels[i]);
+        OPENSIM_ASSERT_ALWAYS(lbls[i] == stdLabels[i]);
     }
 
     double val;
     for (i = 0; i<st->getSize(); i++) {
         StateVector& row = (*st->getStateVector(i));
-        ASSERT(row.getTime() == i + 1);
-        ASSERT(row.getData()[0] == row.getTime()*10.0);
+        OPENSIM_ASSERT_ALWAYS(row.getTime() == i + 1);
+        OPENSIM_ASSERT_ALWAYS(row.getData()[0] == row.getTime()*10.0);
         row.getDataValue(0, val);
-        ASSERT(val == row.getTime()*10.0);
-        ASSERT(row.getData()[0] == row.getTime()*10.0);
-        ASSERT(row.getData()[1] == row.getTime()*20.0);
+        OPENSIM_ASSERT_ALWAYS(val == row.getTime()*10.0);
+        OPENSIM_ASSERT_ALWAYS(row.getData()[0] == row.getTime()*10.0);
+        OPENSIM_ASSERT_ALWAYS(row.getData()[1] == row.getTime()*20.0);
     }
     int ncol = st->getSmallestNumberOfStates();
-    ASSERT(ncol == 2);
+    OPENSIM_ASSERT_ALWAYS(ncol == 2);
     Array<double> col(SimTK::CNT<SimTK::Real>::getNaN(), 4);
     st->getDataColumn(1, col);
-    ASSERT(col[0] == 20.);
-    ASSERT(col[1] == 40.0);
+    OPENSIM_ASSERT_ALWAYS(col[0] == 20.);
+    OPENSIM_ASSERT_ALWAYS(col[1] == 40.0);
 
-    ASSERT(st->getStateIndex("v2") == 1);
+    OPENSIM_ASSERT_ALWAYS(st->getStateIndex("v2") == 1);
 
     Storage st2("testDiff.sto");
     // Test Comparison
     double diff = st->compareColumn(st2, stdLabels[1], 0.);
-    ASSERT(fabs(diff) < 1E-7);
+    OPENSIM_ASSERT_ALWAYS(fabs(diff) < 1E-7);
     diff = st->compareColumn(st2, stdLabels[2], 0.);
-    ASSERT(fabs(diff) < 1E-7);
+    OPENSIM_ASSERT_ALWAYS(fabs(diff) < 1E-7);
 
     // Loading version 2 storage file with Storage class.
     auto table = st->exportToTable();

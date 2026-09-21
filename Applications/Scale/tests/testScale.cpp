@@ -199,7 +199,8 @@ TEST_CASE("scaleGait2354") {
     {
         const ScaleSet& computedScaleSet = ScaleSet(
                 setupFilePath+"subject01_scaleSet_applied.xml");
-        ASSERT(compareStdScaleToComputed(stdScaleSet, computedScaleSet));
+        OPENSIM_ASSERT_ALWAYS(
+                compareStdScaleToComputed(stdScaleSet, computedScaleSet));
     }
 
     // See if we have any issues when calling run() twice.
@@ -210,7 +211,8 @@ TEST_CASE("scaleGait2354") {
     {
         const ScaleSet& computedScaleSet = ScaleSet(
                 setupFilePath+"subject01_scaleSet_applied.xml");
-        ASSERT(compareStdScaleToComputed(stdScaleSet, computedScaleSet));
+        OPENSIM_ASSERT_ALWAYS(
+                compareStdScaleToComputed(stdScaleSet, computedScaleSet));
     }
 
     compareModelToStandard(setupFilePath + "subject01_simbody.osim",
@@ -263,7 +265,8 @@ TEST_CASE("scaleGait2354_GUI") {
 
     const ScaleSet& computedScaleSet = ScaleSet(setupFilePath+"subject01_scaleSet_applied_GUI.xml");
 
-    ASSERT(compareStdScaleToComputed(stdScaleSet, computedScaleSet));
+    OPENSIM_ASSERT_ALWAYS(
+            compareStdScaleToComputed(stdScaleSet, computedScaleSet));
 
     compareModelToStandard(setupFilePath + "subject01_simbody.osim",
                            "std_subject01_simbody.osim", 1.0e-6);
@@ -315,13 +318,11 @@ TEST_CASE("scaleModelWithLigament") {
         std::cout << "std:" << its->getName() << "==";
         std::cout << "comp:" << itc->getName() << " : ";
         std::cout << (*its == *itc) << std::endl;
-        ASSERT(*its == *itc, __FILE__, __LINE__,
-            "Scaled ligament " + its->getName() + " did not match standard.");
+        OPENSIM_ASSERT_ALWAYS(*its == *itc);
     }
 
     //Finally make sure we didn't incorrectly scale anything else in the model
-    ASSERT(std == comp, __FILE__, __LINE__,
-            "Standard model failed to match scaled.");
+    OPENSIM_ASSERT_ALWAYS(std == comp);
 
     compareModelToStandard("comp_toyLigamentModelScaled_latest.osim",
                            std_scaledModelFile, 1.0e-6);

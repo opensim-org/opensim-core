@@ -722,42 +722,38 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
     Umberger2010MuscleMetabolicsProbe* umbergerTest = new
         Umberger2010MuscleMetabolicsProbe(true, true, true, true);
     model.addProbe(umbergerTest);
-    ASSERT(model.getNumProbes()==1, __FILE__, __LINE__,
-        "Umberger2010MuscleMetabolicsProbe could not be added to the model.");
+    OPENSIM_ASSERT_ALWAYS(model.getNumProbes()==1);
 
     // Add a muscle to the probe without providing the muscle mass.
     umbergerTest->addMuscle(muscle1->getName(), 0.6);
     model.setup();
-    ASSERT(umbergerTest->getNumMetabolicMuscles()==1, __FILE__, __LINE__,
-        "Muscle could not be added to Umberger2010MuscleMetabolicsProbe.");
-    ASSERT(!umbergerTest->isUsingProvidedMass(muscle1->getName()), __FILE__,
-        __LINE__, "Umberger probe should not be using provided muscle mass.");
+    OPENSIM_ASSERT_ALWAYS(umbergerTest->getNumMetabolicMuscles()==1);
+    OPENSIM_ASSERT_ALWAYS(
+            !umbergerTest->isUsingProvidedMass(muscle1->getName()));
 
     // Change the muscle mass calculation.
     umbergerTest->useProvidedMass(muscle1->getName(), 1.0);
-    ASSERT(umbergerTest->isUsingProvidedMass(muscle1->getName()), __FILE__,
-        __LINE__, "Umberger probe should be using provided muscle mass.");
+    OPENSIM_ASSERT_ALWAYS(
+            umbergerTest->isUsingProvidedMass(muscle1->getName()));
     umbergerTest->useCalculatedMass(muscle1->getName());
-    ASSERT(!umbergerTest->isUsingProvidedMass(muscle1->getName()), __FILE__,
-        __LINE__, "Umberger probe should not be using provided muscle mass.");
+    OPENSIM_ASSERT_ALWAYS(
+            !umbergerTest->isUsingProvidedMass(muscle1->getName()));
 
     // Add another muscle to the probe, this time providing the muscle mass.
     umbergerTest->addMuscle(muscle2->getName(), 0.6, 1.0);
     model.setup();
-    ASSERT(umbergerTest->isUsingProvidedMass(muscle2->getName()), __FILE__,
-        __LINE__, "Umberger probe should be using provided muscle mass.");
+    OPENSIM_ASSERT_ALWAYS(
+            umbergerTest->isUsingProvidedMass(muscle2->getName()));
 
     // Remove a muscle from the probe.
     umbergerTest->removeMuscle(muscle1->getName());
     model.setup();
-    ASSERT(umbergerTest->getNumMetabolicMuscles()==1, __FILE__, __LINE__,
-        "Muscle could not be removed from Umberger2010MuscleMetabolicsProbe.");
+    OPENSIM_ASSERT_ALWAYS(umbergerTest->getNumMetabolicMuscles()==1);
 
     // Remove the probe from the model.
     model.removeProbe(umbergerTest);
     model.setup();
-    ASSERT(model.getNumProbes()==0, __FILE__, __LINE__,
-        "Umberger2010MuscleMetabolicsProbe could not be removed from the model.");
+    OPENSIM_ASSERT_ALWAYS(model.getNumProbes()==0);
 
     //--------------------------------------------------------------------------
     // Configuration tests for Bhargava2004MuscleMetabolicsProbe. Ensure probes
@@ -771,42 +767,38 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
     Bhargava2004MuscleMetabolicsProbe* bhargavaTest = new
         Bhargava2004MuscleMetabolicsProbe(true, true, true, true, true);
     model.addProbe(bhargavaTest);
-    ASSERT(model.getNumProbes()==1, __FILE__, __LINE__,
-        "Bhargava2004MuscleMetabolicsProbe could not be added to the model.");
+    OPENSIM_ASSERT_ALWAYS(model.getNumProbes()==1);
 
     // Add a muscle to the probe without providing the muscle mass.
     bhargavaTest->addMuscle(muscle1->getName(), 0.6, 40, 133, 74, 111);
     model.setup();
-    ASSERT(bhargavaTest->getNumMetabolicMuscles()==1, __FILE__, __LINE__,
-        "Muscle could not be added to Bhargava2004MuscleMetabolicsProbe.");
-    ASSERT(!bhargavaTest->isUsingProvidedMass(muscle1->getName()), __FILE__,
-        __LINE__, "Bhargava probe should not be using provided muscle mass.");
+    OPENSIM_ASSERT_ALWAYS(bhargavaTest->getNumMetabolicMuscles()==1);
+    OPENSIM_ASSERT_ALWAYS(
+            !bhargavaTest->isUsingProvidedMass(muscle1->getName()));
 
     // Change the muscle mass calculation.
     bhargavaTest->useProvidedMass(muscle1->getName(), 1.0);
-    ASSERT(bhargavaTest->isUsingProvidedMass(muscle1->getName()), __FILE__,
-        __LINE__, "Bhargava probe should be using provided muscle mass.");
+    OPENSIM_ASSERT_ALWAYS(
+            bhargavaTest->isUsingProvidedMass(muscle1->getName()));
     bhargavaTest->useCalculatedMass(muscle1->getName());
-    ASSERT(!bhargavaTest->isUsingProvidedMass(muscle1->getName()), __FILE__,
-        __LINE__, "Bhargava probe should not be using provided muscle mass.");
+    OPENSIM_ASSERT_ALWAYS(
+            !bhargavaTest->isUsingProvidedMass(muscle1->getName()));
 
     // Add another muscle to the probe, this time providing the muscle mass.
     bhargavaTest->addMuscle(muscle1->getName(), 0.6, 40, 133, 74, 111, 1.0);
     model.setup();
-    ASSERT(bhargavaTest->isUsingProvidedMass(muscle1->getName()), __FILE__,
-        __LINE__, "Bhargava probe should be using provided muscle mass.");
+    OPENSIM_ASSERT_ALWAYS(
+            bhargavaTest->isUsingProvidedMass(muscle1->getName()));
 
     // Remove a muscle from the probe.
     bhargavaTest->removeMuscle(muscle1->getName());
     model.setup();
-    ASSERT(bhargavaTest->getNumMetabolicMuscles()==1, __FILE__, __LINE__,
-        "Muscle could not be removed from Bhargava2004MuscleMetabolicsProbe.");
+    OPENSIM_ASSERT_ALWAYS(bhargavaTest->getNumMetabolicMuscles()==1);
 
     // Remove the probe from the model.
     model.removeProbe(bhargavaTest);
     model.setup();
-    ASSERT(model.getNumProbes()==0, __FILE__, __LINE__,
-        "Bhargava2004MuscleMetabolicsProbe could not be removed from the model.");
+    OPENSIM_ASSERT_ALWAYS(model.getNumProbes()==0);
 
     //--------------------------------------------------------------------------
     // Attach Umberger2010 and Bhargava2004 muscle metabolics probes.
@@ -1062,8 +1054,7 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
     // Store column indices.
     const Storage& probeStorage = probeReporter->getProbeStorage();
     const int numProbeOutputs = probeStorage.getColumnLabels().getSize()-1;
-    ASSERT(numProbeOutputs == probeCounter+extraColumns, __FILE__, __LINE__,
-        "Incorrect number of columns in probe storage.");
+    OPENSIM_ASSERT_ALWAYS(numProbeOutputs == probeCounter+extraColumns);
 
     std::map<std::string, int> probeCol;
     probeCol["umbActMaint_rate_m1"] = probeStorage
@@ -1120,15 +1111,13 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
 
     Storage* forceStorage = muscleAnalysis->getActiveFiberForceStorage();
     const int numForceOutputs = forceStorage->getColumnLabels().getSize()-1;
-    ASSERT(numForceOutputs == 2, __FILE__, __LINE__,
-        "Incorrect number of columns in active fiber force storage.");
+    OPENSIM_ASSERT_ALWAYS(numForceOutputs == 2);
     const int idx_force_muscle1 = forceStorage
         ->getColumnIndicesForIdentifier(muscle1->getName())[0]-1;
 
     Storage* fibVelStorage = muscleAnalysis->getFiberVelocityStorage();
     const int numFibVelOutputs = fibVelStorage->getColumnLabels().getSize()-1;
-    ASSERT(numFibVelOutputs == 2, __FILE__, __LINE__,
-        "Incorrect number of columns in fiber velocity storage.");
+    OPENSIM_ASSERT_ALWAYS(numFibVelOutputs == 2);
     const int idx_fibVel_muscle1 = fibVelStorage
         ->getColumnIndicesForIdentifier(muscle1->getName())[0]-1;
 
@@ -1320,8 +1309,7 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
 
     const Storage& probeStorage2 = probeReporter2->getProbeStorage();
     const int numProbeOutputs2 = probeStorage2.getColumnLabels().getSize()-1;
-    ASSERT(numProbeOutputs2 == 4, __FILE__, __LINE__,
-        "Incorrect number of columns in probe storage.");
+    OPENSIM_ASSERT_ALWAYS(numProbeOutputs2 == 4);
 
     Array<double> probeData2_t1;
     probeData2_t1.setSize(numProbeOutputs2);
@@ -1337,16 +1325,12 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
     probeCol2["bhaTotal_m2"] = probeStorage2
       .getColumnIndicesForIdentifier("bhargavaTotal_m2_TOTAL")[0]-1;
 
-    ASSERT(probeData_t1[probeCol["umbTotal_m1"]] >
-           probeData2_t1[probeCol2["umbTotal_m1"]], __FILE__, __LINE__,
-           "Umberger2010: total energy must decrease with lower activation.");
-    ASSERT(probeData_t1[probeCol["umbTotal_m2"]] >
-           probeData2_t1[probeCol2["umbTotal_m2"]], __FILE__, __LINE__,
-           "Umberger2010: total energy must decrease with lower activation.");
-    ASSERT(probeData_t1[probeCol["bhaTotal_m1"]] >
-           probeData2_t1[probeCol2["bhaTotal_m1"]], __FILE__, __LINE__,
-           "Bhargava2004: total energy must decrease with lower activation.");
-    ASSERT(probeData_t1[probeCol["bhaTotal_m2"]] >
-           probeData2_t1[probeCol2["bhaTotal_m2"]], __FILE__, __LINE__,
-           "Bhargava2004: total energy must decrease with lower activation.");
+    OPENSIM_ASSERT_ALWAYS(probeData_t1[probeCol["umbTotal_m1"]] >
+           probeData2_t1[probeCol2["umbTotal_m1"]]);
+    OPENSIM_ASSERT_ALWAYS(probeData_t1[probeCol["umbTotal_m2"]] >
+           probeData2_t1[probeCol2["umbTotal_m2"]]);
+    OPENSIM_ASSERT_ALWAYS(probeData_t1[probeCol["bhaTotal_m1"]] >
+           probeData2_t1[probeCol2["bhaTotal_m1"]]);
+    OPENSIM_ASSERT_ALWAYS(probeData_t1[probeCol["bhaTotal_m2"]] >
+           probeData2_t1[probeCol2["bhaTotal_m2"]]);
 }
