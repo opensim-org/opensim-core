@@ -1301,9 +1301,7 @@ TEST_CASE("testScapulothoracicJoint") {
         const SimTK::Vec3& ellipsoidRadii =
                 scapulothoracicJoint->get_thoracic_ellipsoid_radii_x_y_z();
 
-        ASSERT_EQUAL(ellipsoidRadii, thoraxFactors, SimTK::Eps,
-            __FILE__, __LINE__,
-            "ScapulothoracicJoint failed to scale ellipsoid radii correctly.");
+        ASSERT_EQUAL(ellipsoidRadii, thoraxFactors, SimTK::Eps);
 
         const double& origin_X =
                 scapulothoracicJoint->get_scapula_winging_axis_origin(0);
@@ -1311,13 +1309,9 @@ TEST_CASE("testScapulothoracicJoint") {
         const double& origin_Y =
                 scapulothoracicJoint->get_scapula_winging_axis_origin(1);
 
-        ASSERT_EQUAL(origin_X, unscaled_XY[0] * scapulaFactors[0], SimTK::Eps,
-                __FILE__, __LINE__,
-                "ScapulothoracicJoint failed to scale origin X location.");
+        ASSERT_EQUAL(origin_X, unscaled_XY[0] * scapulaFactors[0], SimTK::Eps);
 
-        ASSERT_EQUAL(origin_Y, unscaled_XY[1] * scapulaFactors[1], SimTK::Eps,
-                __FILE__, __LINE__,
-                "ScapulothoracicJoint failed scale to origin Y location.");
+        ASSERT_EQUAL(origin_Y, unscaled_XY[1] * scapulaFactors[1], SimTK::Eps);
     }
 }
 
@@ -2980,11 +2974,7 @@ TEST_CASE("testNonzeroInterceptCustomJointVsPin") {
     cout << "Pin angle - CustomJoint angle = " << pin_q - cj_q
          << " vs. offset = " << offset << endl;
 
-    ASSERT_EQUAL<double>(pin_q - cj_q, offset, integ_accuracy, __FILE__,
-            __LINE__,
-            "CustomJoint's linear function intercept failed to behave as an "
-            "offset "
-            "of the coordinate value.");
+    ASSERT_EQUAL(pin_q - cj_q, offset, integ_accuracy);
 }
 
 // reproduction to exercise the bug described in issue #3532

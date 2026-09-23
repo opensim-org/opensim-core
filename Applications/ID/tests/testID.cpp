@@ -118,8 +118,7 @@ TEST_CASE("testThoracoscapularShoulderModel") {
     }
 
     // Compare results
-    ASSERT_EQUAL(idSolverVec, idToolVec, 1e-6, __FILE__, __LINE__,
-        "testThoracoscapularShoulderModel failed");
+    ASSERT_EQUAL(idSolverVec, idToolVec, 1e-6);
 }
 
 // Commented out testBallJoint due to sporadic crash in Model destructor

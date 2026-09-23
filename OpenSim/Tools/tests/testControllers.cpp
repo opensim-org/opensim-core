@@ -250,9 +250,7 @@ TEST_CASE("testPrescribedControllerOnBlock") {
     si.getQ().dump("Final position:");
 
     double expected = enabled ? 0.5*(controlForce/blockMass)*finalTime*finalTime : 0;
-    ASSERT_EQUAL(expected, coordinates[0].getValue(si), accuracy,
-        __FILE__, __LINE__, 
-        "PrescribedController failed to produce the expected motion of block.");
+    ASSERT_EQUAL(expected, coordinates[0].getValue(si), accuracy);
 
     // Save the simulation results
     Storage states(manager.getStateStorage());
