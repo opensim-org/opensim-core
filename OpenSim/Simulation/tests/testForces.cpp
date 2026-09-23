@@ -68,7 +68,8 @@ namespace {
     void testTranslationalDampingEffect(Model& osimModel, Coordinate& sliderCoord,
             double start_h, Component& componentWithDamping) {
 
-        ASSERT(componentWithDamping.hasProperty("translational_damping"));
+        OPENSIM_ASSERT_ALWAYS(
+                componentWithDamping.hasProperty("translational_damping"));
 
         AbstractProperty& aProp =
                 componentWithDamping.updPropertyByName("translational_damping");
@@ -96,7 +97,7 @@ namespace {
                     osim_state2, SimTK::Stage::Acceleration);
             double newEnergy = osimModel.calcKineticEnergy(osim_state2) +
                                osimModel.calcPotentialEnergy(osim_state2);
-            ASSERT(newEnergy < lastEnergy);
+            OPENSIM_ASSERT_ALWAYS(newEnergy < lastEnergy);
             lastEnergy = newEnergy;
         }
     }
@@ -209,7 +210,7 @@ TEST_CASE("testExpressionBasedCoordinateForce") {
     // Test copying
     ExpressionBasedCoordinateForce* copyOfSpring = spring->clone();
 
-    ASSERT(*copyOfSpring == *spring);
+    OPENSIM_ASSERT_ALWAYS(*copyOfSpring == *spring);
 
     osimModel.print("ExpressionBasedCoordinateForceModel.osim");
 
@@ -307,7 +308,7 @@ TEST_CASE("testExpressionBasedPointToPointForce") {
 
     // Before exiting lets see if copying the P2P force works
     ExpressionBasedPointToPointForce* copyOfP2pForce = p2pForce->clone();
-    ASSERT(*copyOfP2pForce == *p2pForce);
+    OPENSIM_ASSERT_ALWAYS(*copyOfP2pForce == *p2pForce);
 
     model.disownAllComponents();
 }
@@ -424,7 +425,7 @@ TEST_CASE("testPathSpring") {
 
     // Before exiting lets see if copying the spring works
     PathSpring* copyOfSpring = spring.clone();
-    ASSERT(*copyOfSpring == spring);
+    OPENSIM_ASSERT_ALWAYS(*copyOfSpring == spring);
 
     osimModel.disownAllComponents();
 }
@@ -615,7 +616,7 @@ TEST_CASE("testSpringMass") {
     // Before exiting lets see if copying the spring works
     PointToPointSpring* copyOfSpring = spring.clone();
 
-    ASSERT(*copyOfSpring == spring);
+    OPENSIM_ASSERT_ALWAYS(*copyOfSpring == spring);
 
     // Verify that the PointToPointSpring is correctly deserialized from
     // previous major version of OpenSim.
@@ -690,9 +691,7 @@ TEST_CASE("testBushingForce") {
     const BushingForce& bushingForceFromPrevious =
             previousVersionModel.getComponent<BushingForce>("forceset/bushing");
 
-    ASSERT(bushingForce == bushingForceFromPrevious, __FILE__, __LINE__,
-            "current bushing force FAILED to match bushing force from previous "
-            "model.");
+    OPENSIM_ASSERT_ALWAYS(bushingForce == bushingForceFromPrevious);
 
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter(&osimModel);
@@ -760,7 +759,7 @@ TEST_CASE("testBushingForce") {
     // Before exiting lets see if copying the spring works
     BushingForce* copyOfSpring = spring->clone();
 
-    ASSERT(*copyOfSpring == *spring);
+    OPENSIM_ASSERT_ALWAYS(*copyOfSpring == *spring);
 }
 
 // testBushingForce performs similar checks as does this test, but this test
@@ -836,9 +835,7 @@ TEST_CASE("testTwoFrameLinkerUpdateFromXMLNode") {
             previousVersionModel.getComponent<BushingForce>(
                     "./forceset/bushing");
 
-    ASSERT(bushingForce == bushingForceFromPrevious, __FILE__, __LINE__,
-            "current bushing force FAILED to match bushing force from previous "
-            "model.");
+    OPENSIM_ASSERT_ALWAYS(bushingForce == bushingForceFromPrevious);
 }
 
 TEST_CASE("testFunctionBasedBushingForce") {
@@ -945,7 +942,7 @@ TEST_CASE("testFunctionBasedBushingForce") {
     // Before exiting lets see if copying the spring works
     FunctionBasedBushingForce* copyOfSpring = spring.clone();
 
-    ASSERT(*copyOfSpring == spring);
+    OPENSIM_ASSERT_ALWAYS(*copyOfSpring == spring);
 }
 
 TEST_CASE("testExpressionBasedBushingForceTranslational") {
@@ -1083,7 +1080,7 @@ TEST_CASE("testExpressionBasedBushingForceTranslational") {
     // Before exiting lets see if copying the spring works
     ExpressionBasedBushingForce* copyOfSpring = spring.clone();
 
-    ASSERT(*copyOfSpring == spring);
+    OPENSIM_ASSERT_ALWAYS(*copyOfSpring == spring);
 }
 
 TEST_CASE("testExpressionBasedBushingForceRotational") {
@@ -1231,7 +1228,7 @@ TEST_CASE("testExpressionBasedBushingForceRotational") {
                 osim_state2, SimTK::Stage::Acceleration);
         double newEnergy = osimModel.calcKineticEnergy(osim_state2) +
                            osimModel.calcPotentialEnergy(osim_state2);
-        ASSERT(newEnergy < lastEnergy);
+        OPENSIM_ASSERT_ALWAYS(newEnergy < lastEnergy);
         lastEnergy = newEnergy;
     }
     osimModel.disownAllComponents();
@@ -1239,7 +1236,7 @@ TEST_CASE("testExpressionBasedBushingForceRotational") {
     // Before exiting lets see if copying the spring works
     ExpressionBasedBushingForce* copyOfSpring = spring.clone();
 
-    ASSERT(*copyOfSpring == spring);
+    OPENSIM_ASSERT_ALWAYS(*copyOfSpring == spring);
 }
 
 // Test our wrapping of elastic foundation in OpenSim. Simple simulation of bouncing
@@ -1319,7 +1316,7 @@ TEST_CASE("testElasticFoundation") {
         copyOfForce->print("copyOfForce.xml");
     }
 
-    ASSERT(isEqual);
+    OPENSIM_ASSERT_ALWAYS(isEqual);
 }
 
 // Test our wrapping of Hunt-Crossley force in OpenSim
@@ -1398,7 +1395,7 @@ TEST_CASE("testHuntCrossleyForce") {
         copyOfForce->print("copyOfForce.xml");
     }
 
-    ASSERT(isEqual);
+    OPENSIM_ASSERT_ALWAYS(isEqual);
 }
 
 // Test our wrapping of SimTK::SmoothSphereHalfSpaceForce.
@@ -1475,7 +1472,7 @@ TEST_CASE("testSmoothSphereHalfSpaceForce") {
         copyOfForce->print("copyOfForce.xml");
     }
 
-    ASSERT(isEqual);
+    OPENSIM_ASSERT_ALWAYS(isEqual);
 }
 
 TEST_CASE("testCoordinateLimitForce") {
@@ -1529,14 +1526,12 @@ TEST_CASE("testCoordinateLimitForce") {
     // Check serialization and deserialization
     Model loadedModel{"CoordinateLimitForceTest.osim"};
 
-    ASSERT(loadedModel == *osimModel, "Deserialized CoordinateLimitForceTest "
-                                      "failed to be equivalent to original.");
+    OPENSIM_ASSERT_ALWAYS(loadedModel == *osimModel);
 
     // check copy
     auto copyModel = std::unique_ptr<Model>{osimModel->clone()};
 
-    ASSERT(*copyModel == loadedModel, "Clone of CoordinateLimitForceTest "
-                                      "failed to be equivalent to original.");
+    OPENSIM_ASSERT_ALWAYS(*copyModel == loadedModel);
 
     copyModel->print("cloneCoordinateLimitForceTest.osim");
 
@@ -1564,7 +1559,7 @@ TEST_CASE("testCoordinateLimitForce") {
     // initial energy of the system;
     double clfPE = clf->computePotentialEnergy(osim_state);
     double constStiffnessPE = 0.5 * K_upper * dh * dh;
-    ASSERT(clfPE < constStiffnessPE);
+    OPENSIM_ASSERT_ALWAYS(clfPE < constStiffnessPE);
     double energy0 = clfPE + mass * (-gravity_vec[1]) * start_h +
                      0.5 * mass * start_v * start_v;
     // system KE + PE including strain energy in CLF
@@ -1698,7 +1693,7 @@ TEST_CASE("testCoordinateLimitForceRotational") {
     double clfPE = clf->computePotentialEnergy(osim_state);
     double constSpringPE = 0.5 * (K_upper * 2.0) * 2.0 * SimTK_DEGREE_TO_RADIAN;
     ASSERT_EQUAL(clfPE / constSpringPE, 1.0, 0.001);
-    ASSERT(clfPE < constSpringPE);
+    OPENSIM_ASSERT_ALWAYS(clfPE < constSpringPE);
 
     // Now test lower bound
     start_q = SimTK_DEGREE_TO_RADIAN * positionRange[0] - SimTK::Pi / 90;
@@ -1712,7 +1707,7 @@ TEST_CASE("testCoordinateLimitForceRotational") {
     clfPE = clf->computePotentialEnergy(osim_state);
     constSpringPE = 0.5 * (K_lower * 2.0) * 2.0 * SimTK_DEGREE_TO_RADIAN;
     ASSERT_EQUAL(clfPE / constSpringPE, 1.0, 0.001);
-    ASSERT(clfPE < constSpringPE);
+    OPENSIM_ASSERT_ALWAYS(clfPE < constSpringPE);
 
     // total system energy prior to simulation
     double eSys0 = osimModel.getMultibodySystem().calcEnergy(osim_state);
@@ -2004,14 +1999,15 @@ TEST_CASE("testSerializeDeserialize") {
     const auto& oldForceSet = oldModel.getForceSet();
     const auto& newForceSet = newModel.getForceSet();
 
-    ASSERT(oldForceSet.getSize() == newForceSet.getSize());
+    OPENSIM_ASSERT_ALWAYS(oldForceSet.getSize() == newForceSet.getSize());
     for (int i = 0; i < oldForceSet.getSize(); ++i) {
-        ASSERT(oldForceSet.get(i).get_appliesForce() ==
+        OPENSIM_ASSERT_ALWAYS(oldForceSet.get(i).get_appliesForce() ==
                 newForceSet.get(i).get_appliesForce());
 
         if (flippedMuscles.find(newForceSet.get(i).getName()) !=
                 flippedMuscles.end())
-            ASSERT(newForceSet.get(i).get_appliesForce() == false);
+            OPENSIM_ASSERT_ALWAYS(
+                    newForceSet.get(i).get_appliesForce() == false);
     }
 
     std::remove(oldModelFile.c_str());
@@ -2276,12 +2272,9 @@ TEST_CASE("testBlankevoort1991Ligament") {
     TimeSeriesTable results(ind_col,output_data,outputs);
     STOFileAdapter::write(results, "ligament_strain_test.sto");
 
-    //Check that potential energy and spring and damping forces are zero
-    //when the ligament is slack
-    ASSERT(results.getDependentColumn("strain").getElt(0, 0) < 0.0,
-            __FILE__, __LINE__,
-        "Expected Blankevoort1991Ligament to be slack at first time step of "
-        "test case.");
+    // Blankevoort1991Ligament should be slack at first time step of test case.
+    OPENSIM_ASSERT_ALWAYS(
+            results.getDependentColumn("strain").getElt(0, 0) < 0.0);
 
     // The potential energy in Blankevoort1991Ligament should be
     // equal to zero when the ligament is slack
@@ -2306,29 +2299,32 @@ TEST_CASE("testBlankevoort1991Ligament") {
 
     double transition_strain = lig->get_transition_strain();
 
-    ASSERT(results.getDependentColumn("strain").getElt(toe_index, 0) <
-        transition_strain, __FILE__, __LINE__,
-        "Expected strain at the toe_index to be less than the "
-        "transition_strain property in Blankevoort1991Ligament test.");
+    // The strain at the toe_index should be less than the transition_strain
+    // property in Blankevoort1991Ligament test.
+    OPENSIM_ASSERT_ALWAYS(
+            results.getDependentColumn("strain").getElt(toe_index, 0)
+                    < transition_strain);
 
-    ASSERT(results.getDependentColumn("strain").getElt(linear_index, 0) >
-        transition_strain, __FILE__, __LINE__,
-        "Expected strain at the linear_index to be greater than the "
-        "transition_strain property in Blankevoort1991Ligament test.");
+    // The strain at the linear_index should be greater than the
+    // transition_strain property in Blankevoort1991Ligament.
+    OPENSIM_ASSERT_ALWAYS(
+            results.getDependentColumn("strain").getElt(linear_index, 0)
+                    > transition_strain);
 
-    ASSERT(results.getDependentColumn("potential_energy")
+    // The potential_energy in the Blankevoort1991Ligament should be greater in
+    // the linear region compared to the toe region.
+    OPENSIM_ASSERT_ALWAYS(results.getDependentColumn("potential_energy")
                    .getElt(linear_index, 0) >
-                   results.getDependentColumn("potential_energy")
-                           .getElt(toe_index, 0),
-        __FILE__, __LINE__,
-        "Expexted potential_energy in the Blankevoort1991Ligament to be "
-        "greater in the linear region compared to the toe region");
+           results.getDependentColumn("potential_energy")
+                   .getElt(toe_index, 0));
 
-    ASSERT(results.getDependentColumn("spring_force").getElt(linear_index, 0) >
-        results.getDependentColumn("spring_force").getElt(toe_index, 0),
-        __FILE__, __LINE__,
-        "Expected the spring_force in the Blankevoort1991Ligament to be "
-        " greater in the linear region compared to the toe region");
+    // The spring_force in the Blankevoort1991Ligament should be greater in the
+    // linear region compared to the toe region.
+    OPENSIM_ASSERT_ALWAYS(
+            results.getDependentColumn("spring_force")
+                            .getElt(linear_index, 0)
+                    > results.getDependentColumn("spring_force")
+                              .getElt(toe_index, 0));
 
     //Check that damping is nonzero if ligament is lengthening
     slotCoord.setSpeedValue(state, 1.0);
@@ -2336,10 +2332,10 @@ TEST_CASE("testBlankevoort1991Ligament") {
     double damping_lengthening =
         lig->getOutputValue<double>(state, "damping_force");
 
-    ASSERT(damping_lengthening > 0.0, __FILE__, __LINE__,
-        "Expected the damping force in Blankevoort1991Ligament to be greater "
-        "than zero when the ligament is streched beyond the slack length "
-        "and the lengthening_speed is positive.");
+    // The damping force in Blankevoort1991Ligament should be greater than zero
+    // when the ligament is streched beyond the slack length and the
+    // lengthening_speed is positive.
+    OPENSIM_ASSERT_ALWAYS(damping_lengthening > 0.0);
 
     //Check that damping is zero if ligament is shortening
     slotCoord.setSpeedValue(state, -1.0);

@@ -60,18 +60,18 @@ TEST_CASE("DataTable") {
 
     TimeSeriesTable table{};
     {
-        ASSERT(!table.hasColumnLabels());
+        OPENSIM_ASSERT_ALWAYS(!table.hasColumnLabels());
         table.setColumnLabels({"0", "1", "2", "3"});
-        ASSERT(table.hasColumnLabels());
-        ASSERT(table.hasColumn("1"));
-        ASSERT(table.hasColumn("2"));
-        ASSERT(!table.hasColumn("column-does-not-exist"));
+        OPENSIM_ASSERT_ALWAYS(table.hasColumnLabels());
+        OPENSIM_ASSERT_ALWAYS(table.hasColumn("1"));
+        OPENSIM_ASSERT_ALWAYS(table.hasColumn("2"));
+        OPENSIM_ASSERT_ALWAYS(!table.hasColumn("column-does-not-exist"));
 
         table.setColumnLabel(0, "zero");
         table.setColumnLabel(2, "two");
 
-        ASSERT(table.getColumnLabel(0) == "zero");
-        ASSERT(table.getColumnLabel(2) == "two");
+        OPENSIM_ASSERT_ALWAYS(table.getColumnLabel(0) == "zero");
+        OPENSIM_ASSERT_ALWAYS(table.getColumnLabel(2) == "two");
 
         table.setColumnLabel(0, "0");
         table.setColumnLabel(2, "2");
@@ -130,12 +130,12 @@ TEST_CASE("DataTable") {
 
     const auto& nearRow = table.getNearestRow(0.55);
     for(int i = 0; i < nearRow.ncol(); ++i)
-        ASSERT(nearRow[i] == 2);
+        OPENSIM_ASSERT_ALWAYS(nearRow[i] == 2);
 
     table.updNearestRow(0.55) += 2;
     table.updNearestRow(0.55) -= 2;
     for(int i = 0; i < nearRow.ncol(); ++i)
-        ASSERT(nearRow[i] == 2);
+        OPENSIM_ASSERT_ALWAYS(nearRow[i] == 2);
 
     table.updMatrix() += 2;
     table.updMatrixBlock(0, 0, table.getNumRows(), table.getNumColumns()) -= 2;
@@ -144,9 +144,9 @@ TEST_CASE("DataTable") {
     table.updTableMetaData().setValueForKey("Filename",
                                             std::string{"/path/to/file"});
 
-    ASSERT(table.hasColumn(0));
-    ASSERT(table.hasColumn(2));
-    ASSERT(!table.hasColumn(100));
+    OPENSIM_ASSERT_ALWAYS(table.hasColumn(0));
+    OPENSIM_ASSERT_ALWAYS(table.hasColumn(2));
+    OPENSIM_ASSERT_ALWAYS(!table.hasColumn(100));
 
     // Print out the DataTable to console.
     std::cout << table << std::endl;
@@ -204,7 +204,8 @@ TEST_CASE("DataTable") {
     table.appendColumn("6", {0, 1, 2, 3, 4});
     table.appendColumn("7", std::vector<double>{0, 1, 2, 3, 4});
 
-    // ASSERT(table.getNumRows() == 5 && table.getNumColumns() == 7);
+    // OPENSIM_ASSERT_ALWAYS(
+            // table.getNumRows() == 5 && table.getNumColumns() == 7);
 
     const auto& tab_metadata_ref = table.getTableMetaData();
     CHECK(tab_metadata_ref.getValueForKey("DataRate").getValue<int>() == 600);
@@ -220,31 +221,31 @@ TEST_CASE("DataTable") {
         tableCopy.appendRow(table.getIndependentColumn()[row],
                             table.getRowAtIndex(row));
 
-    ASSERT(tableCopy.getNumColumns() == table.getNumColumns());
-    ASSERT(tableCopy.getNumRows()    == table.getNumRows());
+    OPENSIM_ASSERT_ALWAYS(tableCopy.getNumColumns() == table.getNumColumns());
+    OPENSIM_ASSERT_ALWAYS(tableCopy.getNumRows()    == table.getNumRows());
     for(unsigned r = 0; r < table.getNumRows(); ++r)
         for(unsigned c = 0; c < table.getNumColumns(); ++c)
-            ASSERT(tableCopy.getRowAtIndex(r)[c] ==
+            OPENSIM_ASSERT_ALWAYS(tableCopy.getRowAtIndex(r)[c] ==
                        table.getRowAtIndex(r)[c]);
     }
 
     std::cout << "Test numComponentsPerElement()." << std::endl;
-    ASSERT((static_cast<AbstractDataTable&&>
+    OPENSIM_ASSERT_ALWAYS((static_cast<AbstractDataTable&&>
             (DataTable_<double, double    >{})).
             numComponentsPerElement() == 1);
-    ASSERT((static_cast<AbstractDataTable&&>
+    OPENSIM_ASSERT_ALWAYS((static_cast<AbstractDataTable&&>
             (DataTable_<double, Vec3      >{})).
             numComponentsPerElement() == 3);
-    ASSERT((static_cast<AbstractDataTable&&>
+    OPENSIM_ASSERT_ALWAYS((static_cast<AbstractDataTable&&>
             (DataTable_<double, UnitVec3  >{})).
             numComponentsPerElement() == 3);
-    ASSERT((static_cast<AbstractDataTable&&>
+    OPENSIM_ASSERT_ALWAYS((static_cast<AbstractDataTable&&>
             (DataTable_<double, Quaternion>{})).
             numComponentsPerElement() == 4);
-    ASSERT((static_cast<AbstractDataTable&&>
+    OPENSIM_ASSERT_ALWAYS((static_cast<AbstractDataTable&&>
             (DataTable_<double, SpatialVec>{})).
             numComponentsPerElement() == 6);
-    ASSERT((static_cast<AbstractDataTable&&>
+    OPENSIM_ASSERT_ALWAYS((static_cast<AbstractDataTable&&>
             (DataTable_<double, Rotation>{})).
             numComponentsPerElement() == 9);
 
@@ -263,19 +264,19 @@ TEST_CASE("DataTable") {
         std::vector<std::string> expLabels{"col0_1", "col0_2", "col0_3",
                                            "col1_1", "col1_2", "col1_3",
                                            "col2_1", "col2_2", "col2_3"};
-        ASSERT(tableDouble.getColumnLabels()   == expLabels);
-        ASSERT(tableDouble.getNumRows()        == 3);
-        ASSERT(tableDouble.getNumColumns()     == 9);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getColumnLabels()   == expLabels);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumRows()        == 3);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumColumns()     == 9);
         {
             const auto& row0 = tableDouble.getRowAtIndex(0);
             const auto& row1 = tableDouble.getRowAtIndex(1);
             const auto& row2 = tableDouble.getRowAtIndex(2);
-            ASSERT(row0[0] == 1);
-            ASSERT(row1[0] == 3);
-            ASSERT(row2[0] == 2);
-            ASSERT(row0[8] == 3);
-            ASSERT(row1[8] == 2);
-            ASSERT(row2[8] == 1);
+            OPENSIM_ASSERT_ALWAYS(row0[0] == 1);
+            OPENSIM_ASSERT_ALWAYS(row1[0] == 3);
+            OPENSIM_ASSERT_ALWAYS(row2[0] == 2);
+            OPENSIM_ASSERT_ALWAYS(row0[8] == 3);
+            OPENSIM_ASSERT_ALWAYS(row1[8] == 2);
+            OPENSIM_ASSERT_ALWAYS(row2[8] == 1);
         }
 
         {
@@ -287,15 +288,17 @@ TEST_CASE("DataTable") {
             tableVec3Copy.appendRow(tableVec3.getIndependentColumn()[row],
                                     tableVec3.getRowAtIndex(row));
 
-        ASSERT(tableVec3Copy.getNumColumns() == tableVec3.getNumColumns());
-        ASSERT(tableVec3Copy.getNumRows()    == tableVec3.getNumRows());
+        OPENSIM_ASSERT_ALWAYS(
+                tableVec3Copy.getNumColumns() == tableVec3.getNumColumns());
+        OPENSIM_ASSERT_ALWAYS(
+                tableVec3Copy.getNumRows() == tableVec3.getNumRows());
         for(unsigned r = 0; r < tableVec3.getNumRows(); ++r) {
             for(unsigned c = 0; c < tableVec3.getNumColumns(); ++c) {
-                ASSERT(tableVec3Copy.getRowAtIndex(r)[c][0] ==
+                OPENSIM_ASSERT_ALWAYS(tableVec3Copy.getRowAtIndex(r)[c][0] ==
                            tableVec3.getRowAtIndex(r)[c][0]);
-                ASSERT(tableVec3Copy.getRowAtIndex(r)[c][1] ==
+                OPENSIM_ASSERT_ALWAYS(tableVec3Copy.getRowAtIndex(r)[c][1] ==
                            tableVec3.getRowAtIndex(r)[c][1]);
-                ASSERT(tableVec3Copy.getRowAtIndex(r)[c][2] ==
+                OPENSIM_ASSERT_ALWAYS(tableVec3Copy.getRowAtIndex(r)[c][2] ==
                            tableVec3.getRowAtIndex(r)[c][2]);
             }
         }
@@ -306,19 +309,19 @@ TEST_CASE("DataTable") {
         expLabels = {"col0_x", "col0_y", "col0_z",
                      "col1_x", "col1_y", "col1_z",
                      "col2_x", "col2_y", "col2_z"};
-        ASSERT(tableFlat.getColumnLabels()   == expLabels);
-        ASSERT(tableFlat.getNumRows()        == 3);
-        ASSERT(tableFlat.getNumColumns()     == 9);
+        OPENSIM_ASSERT_ALWAYS(tableFlat.getColumnLabels()   == expLabels);
+        OPENSIM_ASSERT_ALWAYS(tableFlat.getNumRows()        == 3);
+        OPENSIM_ASSERT_ALWAYS(tableFlat.getNumColumns()     == 9);
         {
             const auto& row0 = tableFlat.getRowAtIndex(0);
             const auto& row1 = tableFlat.getRowAtIndex(1);
             const auto& row2 = tableFlat.getRowAtIndex(2);
-            ASSERT(row0[0] == 1);
-            ASSERT(row1[0] == 3);
-            ASSERT(row2[0] == 2);
-            ASSERT(row0[8] == 3);
-            ASSERT(row1[8] == 2);
-            ASSERT(row2[8] == 1);
+            OPENSIM_ASSERT_ALWAYS(row0[0] == 1);
+            OPENSIM_ASSERT_ALWAYS(row1[0] == 3);
+            OPENSIM_ASSERT_ALWAYS(row2[0] == 2);
+            OPENSIM_ASSERT_ALWAYS(row0[8] == 3);
+            OPENSIM_ASSERT_ALWAYS(row1[8] == 2);
+            OPENSIM_ASSERT_ALWAYS(row2[8] == 1);
         }
 
         std::cout << tableFlat << std::endl;
@@ -334,9 +337,9 @@ TEST_CASE("DataTable") {
         std::cout << tableQuat << std::endl;
 
         tableDouble = tableQuat;
-        ASSERT(tableDouble.getColumnLabels().size() == 12);
-        ASSERT(tableDouble.getNumRows()             == 3);
-        ASSERT(tableDouble.getNumColumns()          == 12);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getColumnLabels().size() == 12);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumRows()             == 3);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumColumns()          == 12);
 
         std::cout << "Test DataTable flattening constructor for UnitVec3."
                   << std::endl;
@@ -349,9 +352,9 @@ TEST_CASE("DataTable") {
         std::cout << tableUnitVec3 << std::endl;
 
         tableDouble = tableUnitVec3;
-        ASSERT(tableDouble.getColumnLabels().size() == 9);
-        ASSERT(tableDouble.getNumRows()             == 3);
-        ASSERT(tableDouble.getNumColumns()          == 9);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getColumnLabels().size() == 9);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumRows()             == 3);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumColumns()          == 9);
 
         std::cout << "Test DataTable flattening constructor for SpatialVec."
                   << std::endl;
@@ -370,9 +373,9 @@ TEST_CASE("DataTable") {
         std::cout << tableSpatialVec << std::endl;
 
         tableDouble = tableSpatialVec;
-        ASSERT(tableDouble.getColumnLabels().size() == 18);
-        ASSERT(tableDouble.getNumRows()             == 3);
-        ASSERT(tableDouble.getNumColumns()          == 18);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getColumnLabels().size() == 18);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumRows()             == 3);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumColumns()          == 18);
 
         std::cout << tableDouble << std::endl;
 
@@ -390,9 +393,9 @@ TEST_CASE("DataTable") {
         std::cout << tableRotation << std::endl;
 
         tableDouble = tableRotation;
-        ASSERT(tableDouble.getColumnLabels().size() == 18);
-        ASSERT(tableDouble.getNumRows()             == 3);
-        ASSERT(tableDouble.getNumColumns()          == 18);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getColumnLabels().size() == 18);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumRows()             == 3);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumColumns()          == 18);
 
         std::cout << tableDouble << std::endl;
     }
@@ -413,11 +416,11 @@ TEST_CASE("DataTable") {
 
         const auto& nearRowVec3 = tableVec3.getNearestRow(0.29);
         for(int i = 0; i < 3; ++i)
-            ASSERT(nearRowVec3[0][i] == 2);
+            OPENSIM_ASSERT_ALWAYS(nearRowVec3[0][i] == 2);
         tableVec3.updNearestRow(0.29) += SimTK::Vec3{2};
         tableVec3.updNearestRow(0.29) -= SimTK::Vec3{2};
         for(int i = 0; i < 3; ++i)
-            ASSERT(nearRowVec3[0][i] == 2);
+            OPENSIM_ASSERT_ALWAYS(nearRowVec3[0][i] == 2);
 
         std::cout << tableVec3 << std::endl;
 
@@ -425,19 +428,19 @@ TEST_CASE("DataTable") {
         std::vector<std::string> expLabels{"col0_1", "col0_2", "col0_3",
                                            "col1_1", "col1_2", "col1_3",
                                            "col2_1", "col2_2", "col2_3"};
-        ASSERT(tableDouble.getColumnLabels() == expLabels);
-        ASSERT(tableDouble.getNumRows()      == 3);
-        ASSERT(tableDouble.getNumColumns()   == 9);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getColumnLabels() == expLabels);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumRows()      == 3);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumColumns()   == 9);
         {
             const auto& row0 = tableDouble.getRowAtIndex(0);
             const auto& row1 = tableDouble.getRowAtIndex(1);
             const auto& row2 = tableDouble.getRowAtIndex(2);
-            ASSERT(row0[0] == 1);
-            ASSERT(row1[0] == 3);
-            ASSERT(row2[0] == 2);
-            ASSERT(row0[8] == 3);
-            ASSERT(row1[8] == 2);
-            ASSERT(row2[8] == 1);
+            OPENSIM_ASSERT_ALWAYS(row0[0] == 1);
+            OPENSIM_ASSERT_ALWAYS(row1[0] == 3);
+            OPENSIM_ASSERT_ALWAYS(row2[0] == 2);
+            OPENSIM_ASSERT_ALWAYS(row0[8] == 3);
+            OPENSIM_ASSERT_ALWAYS(row1[8] == 2);
+            OPENSIM_ASSERT_ALWAYS(row2[8] == 1);
         }
 
         std::cout << tableDouble << std::endl;
@@ -447,19 +450,19 @@ TEST_CASE("DataTable") {
         expLabels = {"col0_x", "col0_y", "col0_z",
                      "col1_x", "col1_y", "col1_z",
                      "col2_x", "col2_y", "col2_z"};
-        ASSERT(tableFlat.getColumnLabels()   == expLabels);
-        ASSERT(tableFlat.getNumRows()        == 3);
-        ASSERT(tableFlat.getNumColumns()     == 9);
+        OPENSIM_ASSERT_ALWAYS(tableFlat.getColumnLabels()   == expLabels);
+        OPENSIM_ASSERT_ALWAYS(tableFlat.getNumRows()        == 3);
+        OPENSIM_ASSERT_ALWAYS(tableFlat.getNumColumns()     == 9);
         {
             const auto& row0 = tableFlat.getRowAtIndex(0);
             const auto& row1 = tableFlat.getRowAtIndex(1);
             const auto& row2 = tableFlat.getRowAtIndex(2);
-            ASSERT(row0[0] == 1);
-            ASSERT(row1[0] == 3);
-            ASSERT(row2[0] == 2);
-            ASSERT(row0[8] == 3);
-            ASSERT(row1[8] == 2);
-            ASSERT(row2[8] == 1);
+            OPENSIM_ASSERT_ALWAYS(row0[0] == 1);
+            OPENSIM_ASSERT_ALWAYS(row1[0] == 3);
+            OPENSIM_ASSERT_ALWAYS(row2[0] == 2);
+            OPENSIM_ASSERT_ALWAYS(row0[8] == 3);
+            OPENSIM_ASSERT_ALWAYS(row1[8] == 2);
+            OPENSIM_ASSERT_ALWAYS(row2[8] == 1);
         }
 
         std::cout << tableFlat << std::endl;
@@ -481,14 +484,15 @@ TEST_CASE("DataTable") {
 
         const auto& nearRowQuat = tableQuat.getNearestRow(0.29);
         for(int i = 0; i < 4; ++i)
-            ASSERT(std::abs(nearRowQuat[0][i] - 0.5) < 1e-8/*eps*/);
+            OPENSIM_ASSERT_ALWAYS(
+                    std::abs(nearRowQuat[0][i] - 0.5) < 1e-8/*eps*/);
 
         std::cout << tableQuat << std::endl;
 
         tableDouble = tableQuat;
-        ASSERT(tableDouble.getColumnLabels().size() == 12);
-        ASSERT(tableDouble.getNumRows()             == 3);
-        ASSERT(tableDouble.getNumColumns()          == 12);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getColumnLabels().size() == 12);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumRows()             == 3);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumColumns()          == 12);
 
         std::cout << tableDouble << std::endl;
 
@@ -503,9 +507,9 @@ TEST_CASE("DataTable") {
         std::cout << tableUnitVec3 << std::endl;
 
         tableDouble = tableUnitVec3;
-        ASSERT(tableDouble.getColumnLabels().size() == 9);
-        ASSERT(tableDouble.getNumRows()             == 3);
-        ASSERT(tableDouble.getNumColumns()          == 9);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getColumnLabels().size() == 9);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumRows()             == 3);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumColumns()          == 9);
 
         std::cout << tableDouble << std::endl;
 
@@ -532,21 +536,21 @@ TEST_CASE("DataTable") {
 
         const auto& nearRowSVec = tableSpatialVec.getNearestRow(0.29);
         for(int i = 0; i < 3; ++i)
-            ASSERT(nearRowSVec[0][0][i] == 2);
+            OPENSIM_ASSERT_ALWAYS(nearRowSVec[0][0][i] == 2);
 
         tableSpatialVec.updNearestRow(0.29) += SimTK::SpatialVec{{2, 2, 2},
                                                                  {2, 2, 2}};
         tableSpatialVec.updNearestRow(0.29) -= SimTK::SpatialVec{{2, 2, 2},
                                                                  {2, 2, 2}};
         for(int i = 0; i < 3; ++i)
-            ASSERT(nearRowSVec[0][0][i] == 2);
+            OPENSIM_ASSERT_ALWAYS(nearRowSVec[0][0][i] == 2);
 
         std::cout << tableSpatialVec << std::endl;
 
         tableDouble = tableSpatialVec;
-        ASSERT(tableDouble.getColumnLabels().size() == 18);
-        ASSERT(tableDouble.getNumRows()             == 3);
-        ASSERT(tableDouble.getNumColumns()          == 18);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getColumnLabels().size() == 18);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumRows()             == 3);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumColumns()          == 18);
 
         std::cout << tableDouble << std::endl;
 
@@ -571,19 +575,19 @@ TEST_CASE("DataTable") {
 
         // const auto& nearRowRot = tableRotation.getNearestRow(0.29);
         // for(int i = 0; i < 3; ++i)
-        //     ASSERT(nearRowRot[0][0][i] == 2);
+        //     OPENSIM_ASSERT_ALWAYS(nearRowRot[0][0][i] == 2);
 
         // tableRotation.updNearestRow(0.29) += Rotation(0.2, UnitVec3(0, 1, 0));
         // tableRotation.updNearestRow(0.29) -= Rotation(0.2, UnitVec3(0, 1, 0));
         // for(int i = 0; i < 3; ++i)
-        //     ASSERT(nearRowRot[0][0][i] == 2);
+        //     OPENSIM_ASSERT_ALWAYS(nearRowRot[0][0][i] == 2);
 
         std::cout << tableRotation << std::endl;
 
         tableDouble = tableRotation;
-        ASSERT(tableDouble.getColumnLabels().size() == 18);
-        ASSERT(tableDouble.getNumRows()             == 3);
-        ASSERT(tableDouble.getNumColumns()          == 18);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getColumnLabels().size() == 18);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumRows()             == 3);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumColumns()          == 18);
 
         std::cout << tableDouble << std::endl;
     }
@@ -600,9 +604,9 @@ TEST_CASE("DataTable") {
         tableDouble.addTableMetaData("string", std::string{"string"});
         tableDouble.addTableMetaData("int", 10);
 
-        ASSERT(tableDouble.getColumnLabels().size() == 12);
-        ASSERT(tableDouble.getNumRows()             == 3);
-        ASSERT(tableDouble.getNumColumns()          == 12);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getColumnLabels().size() == 12);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumRows()             == 3);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumColumns()          == 12);
 
         std::cout << tableDouble << std::endl;
 
@@ -610,30 +614,39 @@ TEST_CASE("DataTable") {
                   << std::endl;
         auto tableVec3_1 = tableDouble.pack<SimTK::Vec3>({"_x", "_y", "_z"});
         std::vector<std::string> expLabels{"col0", "col1", "col2", "col3"};
-        ASSERT(tableVec3_1.getColumnLabels() == expLabels);
-        ASSERT(tableVec3_1.getNumRows()      == 3);
-        ASSERT(tableVec3_1.getNumColumns()   == 4);
-        ASSERT(tableVec3_1.getTableMetaData<std::string>("string") == "string");
-        ASSERT(tableVec3_1.getTableMetaData<int>("int")            == 10);
+        OPENSIM_ASSERT_ALWAYS(tableVec3_1.getColumnLabels() == expLabels);
+        OPENSIM_ASSERT_ALWAYS(tableVec3_1.getNumRows()      == 3);
+        OPENSIM_ASSERT_ALWAYS(tableVec3_1.getNumColumns()   == 4);
+        OPENSIM_ASSERT_ALWAYS(
+                tableVec3_1.getTableMetaData<std::string>("string")
+                        == "string");
+        OPENSIM_ASSERT_ALWAYS(
+                tableVec3_1.getTableMetaData<int>("int") == 10);
         std::cout << tableVec3_1 << std::endl;
 
         std::cout << "Test DataTable packing for Vec3 with suffix unspecified."
                   << std::endl;
         auto tableVec3_2 = tableDouble.pack<SimTK::Vec3>();
-        ASSERT(tableVec3_2.getColumnLabels() == expLabels);
-        ASSERT(tableVec3_2.getNumRows()      == 3);
-        ASSERT(tableVec3_2.getNumColumns()   == 4);
-        ASSERT(tableVec3_2.getTableMetaData<std::string>("string") == "string");
-        ASSERT(tableVec3_2.getTableMetaData<int>("int")            == 10);
+        OPENSIM_ASSERT_ALWAYS(tableVec3_2.getColumnLabels() == expLabels);
+        OPENSIM_ASSERT_ALWAYS(tableVec3_2.getNumRows()      == 3);
+        OPENSIM_ASSERT_ALWAYS(tableVec3_2.getNumColumns()   == 4);
+        OPENSIM_ASSERT_ALWAYS(
+                tableVec3_2.getTableMetaData<std::string>("string")
+                        == "string");
+        OPENSIM_ASSERT_ALWAYS(
+                tableVec3_2.getTableMetaData<int>("int") == 10);
         std::cout << tableVec3_2 << std::endl;
 
         std::cout << "Test DataTable packing for UnitVec3." << std::endl;
         auto tableUVec3 = tableDouble.pack<SimTK::UnitVec3>();
-        ASSERT(tableUVec3.getColumnLabels() == expLabels);
-        ASSERT(tableUVec3.getNumRows()      == 3);
-        ASSERT(tableUVec3.getNumColumns()   == 4);
-        ASSERT(tableUVec3.getTableMetaData<std::string>("string") == "string");
-        ASSERT(tableUVec3.getTableMetaData<int>("int")            == 10);
+        OPENSIM_ASSERT_ALWAYS(tableUVec3.getColumnLabels() == expLabels);
+        OPENSIM_ASSERT_ALWAYS(tableUVec3.getNumRows()      == 3);
+        OPENSIM_ASSERT_ALWAYS(tableUVec3.getNumColumns()   == 4);
+        OPENSIM_ASSERT_ALWAYS(
+                tableUVec3.getTableMetaData<std::string>("string")
+                        == "string");
+        OPENSIM_ASSERT_ALWAYS(
+                tableUVec3.getTableMetaData<int>("int") == 10);
         std::cout << tableUVec3 << std::endl;
 
         std::cout << "Test DataTable packing for Quaternion." << std::endl;
@@ -642,11 +655,14 @@ TEST_CASE("DataTable") {
                                      "col2.0", "col2.1", "col2.2", "col2.3"});
         auto tableQuat = tableDouble.pack<SimTK::Quaternion>();
         expLabels = {"col0", "col1", "col2"};
-        ASSERT(tableQuat.getColumnLabels() == expLabels);
-        ASSERT(tableQuat.getNumRows()      == 3);
-        ASSERT(tableQuat.getNumColumns()   == 3);
-        ASSERT(tableQuat.getTableMetaData<std::string>("string") == "string");
-        ASSERT(tableQuat.getTableMetaData<int>("int")            == 10);
+        OPENSIM_ASSERT_ALWAYS(tableQuat.getColumnLabels() == expLabels);
+        OPENSIM_ASSERT_ALWAYS(tableQuat.getNumRows()      == 3);
+        OPENSIM_ASSERT_ALWAYS(tableQuat.getNumColumns()   == 3);
+        OPENSIM_ASSERT_ALWAYS(
+                tableQuat.getTableMetaData<std::string>("string")
+                        == "string");
+        OPENSIM_ASSERT_ALWAYS(
+                tableQuat.getTableMetaData<int>("int") == 10);
         std::cout << tableQuat << std::endl;
 
         std::cout << "Test DataTable packing for SpatialVec" << std::endl;
@@ -656,11 +672,14 @@ TEST_CASE("DataTable") {
                                      "col1.3", "col1.4", "col1.5"});
         auto tableSVec = tableDouble.pack<SimTK::SpatialVec>();
         expLabels = {"col0", "col1"};
-        ASSERT(tableSVec.getColumnLabels() == expLabels);
-        ASSERT(tableSVec.getNumRows()      == 3);
-        ASSERT(tableSVec.getNumColumns()   == 2);
-        ASSERT(tableSVec.getTableMetaData<std::string>("string") == "string");
-        ASSERT(tableSVec.getTableMetaData<int>("int")            == 10);
+        OPENSIM_ASSERT_ALWAYS(tableSVec.getColumnLabels() == expLabels);
+        OPENSIM_ASSERT_ALWAYS(tableSVec.getNumRows()      == 3);
+        OPENSIM_ASSERT_ALWAYS(tableSVec.getNumColumns()   == 2);
+        OPENSIM_ASSERT_ALWAYS(
+                tableSVec.getTableMetaData<std::string>("string")
+                        == "string");
+        OPENSIM_ASSERT_ALWAYS(
+                tableSVec.getTableMetaData<int>("int") == 10);
         std::cout << tableSVec << std::endl;
 
         std::cout << "Test DataTable packing for Rotation" << std::endl;
@@ -676,17 +695,20 @@ TEST_CASE("DataTable") {
         table.appendRow(3, RowVector(18, 3));
         table.addTableMetaData("string", std::string{"string"});
         table.addTableMetaData("int", 10);
-        ASSERT(table.getColumnLabels().size() == 18);
-        ASSERT(table.getNumRows()             == 3);
-        ASSERT(table.getNumColumns()          == 18);
+        OPENSIM_ASSERT_ALWAYS(table.getColumnLabels().size() == 18);
+        OPENSIM_ASSERT_ALWAYS(table.getNumRows()             == 3);
+        OPENSIM_ASSERT_ALWAYS(table.getNumColumns()          == 18);
 
         auto tableRot = table.pack<SimTK::Rotation>();
         expLabels = {"col0", "col1"};
-        ASSERT(tableRot.getColumnLabels() == expLabels);
-        ASSERT(tableRot.getNumRows()      == 3);
-        ASSERT(tableRot.getNumColumns()   == 2);
-        ASSERT(tableRot.getTableMetaData<std::string>("string") == "string");
-        ASSERT(tableRot.getTableMetaData<int>("int")            == 10);
+        OPENSIM_ASSERT_ALWAYS(tableRot.getColumnLabels() == expLabels);
+        OPENSIM_ASSERT_ALWAYS(tableRot.getNumRows()      == 3);
+        OPENSIM_ASSERT_ALWAYS(tableRot.getNumColumns()   == 2);
+        OPENSIM_ASSERT_ALWAYS(
+                tableRot.getTableMetaData<std::string>("string")
+                        == "string");
+        OPENSIM_ASSERT_ALWAYS(
+                tableRot.getTableMetaData<int>("int") == 10);
         std::cout << tableRot << std::endl;
     }
     {
@@ -702,9 +724,9 @@ TEST_CASE("DataTable") {
         tableDouble.addTableMetaData("string", std::string{"string"});
         tableDouble.addTableMetaData("int", 10);
 
-        ASSERT(tableDouble.getColumnLabels().size() == 12);
-        ASSERT(tableDouble.getNumRows()             == 3);
-        ASSERT(tableDouble.getNumColumns()          == 12);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getColumnLabels().size() == 12);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumRows()             == 3);
+        OPENSIM_ASSERT_ALWAYS(tableDouble.getNumColumns()          == 12);
 
         std::cout << tableDouble << std::endl;
 
@@ -723,11 +745,14 @@ TEST_CASE("DataTable") {
         TimeSeriesTable_<SimTK::Vec3> tableVec3_1 =
             tableDouble.pack<SimTK::Vec3>({"_x", "_y", "_z"});
         std::vector<std::string> expLabels{"col0", "col1", "col2", "col3"};
-        ASSERT(tableVec3_1.getColumnLabels() == expLabels);
-        ASSERT(tableVec3_1.getNumRows()      == 3);
-        ASSERT(tableVec3_1.getNumColumns()   == 4);
-        ASSERT(tableVec3_1.getTableMetaData<std::string>("string") == "string");
-        ASSERT(tableVec3_1.getTableMetaData<int>("int")            == 10);
+        OPENSIM_ASSERT_ALWAYS(tableVec3_1.getColumnLabels() == expLabels);
+        OPENSIM_ASSERT_ALWAYS(tableVec3_1.getNumRows()      == 3);
+        OPENSIM_ASSERT_ALWAYS(tableVec3_1.getNumColumns()   == 4);
+        OPENSIM_ASSERT_ALWAYS(
+                tableVec3_1.getTableMetaData<std::string>("string")
+                        == "string");
+        OPENSIM_ASSERT_ALWAYS(
+                tableVec3_1.getTableMetaData<int>("int") == 10);
         std::cout << tableVec3_1 << std::endl;
 
         std::cout << "Test TimeSeriesTable packing for Vec3 with suffix"
@@ -735,20 +760,26 @@ TEST_CASE("DataTable") {
                   << std::endl;
         TimeSeriesTable_<SimTK::Vec3> tableVec3_2 =
             tableDouble.pack<SimTK::Vec3>();
-        ASSERT(tableVec3_2.getColumnLabels() == expLabels);
-        ASSERT(tableVec3_2.getNumRows()      == 3);
-        ASSERT(tableVec3_2.getNumColumns()   == 4);
-        ASSERT(tableVec3_2.getTableMetaData<std::string>("string") == "string");
-        ASSERT(tableVec3_2.getTableMetaData<int>("int")            == 10);
+        OPENSIM_ASSERT_ALWAYS(tableVec3_2.getColumnLabels() == expLabels);
+        OPENSIM_ASSERT_ALWAYS(tableVec3_2.getNumRows()      == 3);
+        OPENSIM_ASSERT_ALWAYS(tableVec3_2.getNumColumns()   == 4);
+        OPENSIM_ASSERT_ALWAYS(
+                tableVec3_2.getTableMetaData<std::string>("string")
+                        == "string");
+        OPENSIM_ASSERT_ALWAYS(
+                tableVec3_2.getTableMetaData<int>("int") == 10);
         std::cout << tableVec3_2 << std::endl;
 
         std::cout << "Test TimeSeriesTable packing for UnitVec3." << std::endl;
         auto tableUVec3 = tableDouble.pack<SimTK::UnitVec3>();
-        ASSERT(tableUVec3.getColumnLabels() == expLabels);
-        ASSERT(tableUVec3.getNumRows()      == 3);
-        ASSERT(tableUVec3.getNumColumns()   == 4);
-        ASSERT(tableUVec3.getTableMetaData<std::string>("string") == "string");
-        ASSERT(tableUVec3.getTableMetaData<int>("int")            == 10);
+        OPENSIM_ASSERT_ALWAYS(tableUVec3.getColumnLabels() == expLabels);
+        OPENSIM_ASSERT_ALWAYS(tableUVec3.getNumRows()      == 3);
+        OPENSIM_ASSERT_ALWAYS(tableUVec3.getNumColumns()   == 4);
+        OPENSIM_ASSERT_ALWAYS(
+                tableUVec3.getTableMetaData<std::string>("string")
+                        == "string");
+        OPENSIM_ASSERT_ALWAYS(
+                tableUVec3.getTableMetaData<int>("int") == 10);
         std::cout << tableUVec3 << std::endl;
 
         std::cout << "Test TimeSeriesTable packing for Quaternion." << std::endl;
@@ -758,11 +789,14 @@ TEST_CASE("DataTable") {
         TimeSeriesTable_<SimTK::Quaternion> tableQuat =
             tableDouble.pack<SimTK::Quaternion>();
         expLabels = {"col0", "col1", "col2"};
-        ASSERT(tableQuat.getColumnLabels() == expLabels);
-        ASSERT(tableQuat.getNumRows()      == 3);
-        ASSERT(tableQuat.getNumColumns()   == 3);
-        ASSERT(tableQuat.getTableMetaData<std::string>("string") == "string");
-        ASSERT(tableQuat.getTableMetaData<int>("int")            == 10);
+        OPENSIM_ASSERT_ALWAYS(tableQuat.getColumnLabels() == expLabels);
+        OPENSIM_ASSERT_ALWAYS(tableQuat.getNumRows()      == 3);
+        OPENSIM_ASSERT_ALWAYS(tableQuat.getNumColumns()   == 3);
+        OPENSIM_ASSERT_ALWAYS(
+                tableQuat.getTableMetaData<std::string>("string")
+                        == "string");
+        OPENSIM_ASSERT_ALWAYS(
+                tableQuat.getTableMetaData<int>("int") == 10);
         std::cout << tableQuat << std::endl;
 
         std::cout << "Test TimeSeriesTable packing for SpatialVec" << std::endl;
@@ -773,11 +807,14 @@ TEST_CASE("DataTable") {
         TimeSeriesTable_<SimTK::SpatialVec> tableSVec =
             tableDouble.pack<SimTK::SpatialVec>();
         expLabels = {"col0", "col1"};
-        ASSERT(tableSVec.getColumnLabels() == expLabels);
-        ASSERT(tableSVec.getNumRows()      == 3);
-        ASSERT(tableSVec.getNumColumns()   == 2);
-        ASSERT(tableSVec.getTableMetaData<std::string>("string") == "string");
-        ASSERT(tableSVec.getTableMetaData<int>("int")            == 10);
+        OPENSIM_ASSERT_ALWAYS(tableSVec.getColumnLabels() == expLabels);
+        OPENSIM_ASSERT_ALWAYS(tableSVec.getNumRows()      == 3);
+        OPENSIM_ASSERT_ALWAYS(tableSVec.getNumColumns()   == 2);
+        OPENSIM_ASSERT_ALWAYS(
+                tableSVec.getTableMetaData<std::string>("string")
+                        == "string");
+        OPENSIM_ASSERT_ALWAYS(
+                tableSVec.getTableMetaData<int>("int") == 10);
         std::cout << tableSVec << std::endl;
 
         std::cout << "Test TimeSeriesTable packing for Rotation" << std::endl;
@@ -793,18 +830,21 @@ TEST_CASE("DataTable") {
         table.appendRow(3, RowVector(18, 3));
         table.addTableMetaData("string", std::string{"string"});
         table.addTableMetaData("int", 10);
-        ASSERT(table.getColumnLabels().size() == 18);
-        ASSERT(table.getNumRows()             == 3);
-        ASSERT(table.getNumColumns()          == 18);
+        OPENSIM_ASSERT_ALWAYS(table.getColumnLabels().size() == 18);
+        OPENSIM_ASSERT_ALWAYS(table.getNumRows()             == 3);
+        OPENSIM_ASSERT_ALWAYS(table.getNumColumns()          == 18);
 
         TimeSeriesTable_<SimTK::Rotation> tableRot = 
             table.pack<SimTK::Rotation>();
         expLabels = {"col0", "col1"};
-        ASSERT(tableRot.getColumnLabels() == expLabels);
-        ASSERT(tableRot.getNumRows()      == 3);
-        ASSERT(tableRot.getNumColumns()   == 2);
-        ASSERT(tableRot.getTableMetaData<std::string>("string") == "string");
-        ASSERT(tableRot.getTableMetaData<int>("int")            == 10);
+        OPENSIM_ASSERT_ALWAYS(tableRot.getColumnLabels() == expLabels);
+        OPENSIM_ASSERT_ALWAYS(tableRot.getNumRows()      == 3);
+        OPENSIM_ASSERT_ALWAYS(tableRot.getNumColumns()   == 2);
+        OPENSIM_ASSERT_ALWAYS(
+                tableRot.getTableMetaData<std::string>("string")
+                        == "string");
+        OPENSIM_ASSERT_ALWAYS(
+                tableRot.getTableMetaData<int>("int") == 10);
         std::cout << tableRot << std::endl;
     }
 
@@ -813,22 +853,22 @@ TEST_CASE("DataTable") {
                   << std::endl;
         TimeSeriesTable table(std::vector<double>{1.5, 2.5, 3.5});
         std::vector<std::string> expLabels = {};
-        ASSERT(table.getColumnLabels() == expLabels);
-        ASSERT(table.getNumRows()      == 3);
-        ASSERT(table.getNumColumns()   == 0);
+        OPENSIM_ASSERT_ALWAYS(table.getColumnLabels() == expLabels);
+        OPENSIM_ASSERT_ALWAYS(table.getNumRows()      == 3);
+        OPENSIM_ASSERT_ALWAYS(table.getNumColumns()   == 0);
 
         // Can append an empty row.
         table.appendRow(4.5, {});
-        ASSERT(table.getNumRows()      == 4);
-        ASSERT(table.getNumColumns()   == 0);
+        OPENSIM_ASSERT_ALWAYS(table.getNumRows()      == 4);
+        OPENSIM_ASSERT_ALWAYS(table.getNumColumns()   == 0);
 
         table.removeRowAtIndex(3);
-        ASSERT(table.getNumRows()      == 3);
-        ASSERT(table.getNumColumns()   == 0);
+        OPENSIM_ASSERT_ALWAYS(table.getNumRows()      == 3);
+        OPENSIM_ASSERT_ALWAYS(table.getNumColumns()   == 0);
 
         table.appendRow(4.5, {});
-        ASSERT(table.getNumRows()      == 4);
-        ASSERT(table.getNumColumns()   == 0);
+        OPENSIM_ASSERT_ALWAYS(table.getNumRows()      == 4);
+        OPENSIM_ASSERT_ALWAYS(table.getNumColumns()   == 0);
 
         // Cannot append a non-empty row.
         SimTK_TEST_MUST_THROW_EXC(table.appendRow(5.5, {6.1}),
@@ -836,8 +876,8 @@ TEST_CASE("DataTable") {
 
         // Can append a column to a table that has no columns yet.
         table.appendColumn("col1", {5.4, 5.3, 5.6, 5.8});
-        ASSERT(table.getNumRows()      == 4);
-        ASSERT(table.getNumColumns()   == 1);
+        OPENSIM_ASSERT_ALWAYS(table.getNumRows()      == 4);
+        OPENSIM_ASSERT_ALWAYS(table.getNumColumns()   == 1);
 
         // Appending a column with an incorrect number of rows.
         SimTK_TEST_MUST_THROW_EXC(table.appendColumn("col2", {5.4, 5.3, 5.6}),
@@ -845,8 +885,8 @@ TEST_CASE("DataTable") {
 
         // Can appendRow after appendColumn.
         table.appendRow(5.5, {1.3});
-        ASSERT(table.getNumRows()      == 5);
-        ASSERT(table.getNumColumns()   == 1);
+        OPENSIM_ASSERT_ALWAYS(table.getNumRows()      == 5);
+        OPENSIM_ASSERT_ALWAYS(table.getNumColumns()   == 1);
 
         // Can create an empty table by providing an empty indVec.
         TimeSeriesTable emptyTable(std::vector<double>{});

@@ -38,8 +38,8 @@ TEST_CASE("testPendulum") {
     ForwardTool forward("pendulum_Setup_Forward.xml");
     forward.run();
     Storage storage("Results/pendulum_states.sto");
-    ASSERT(storage.getFirstTime() == 0.0);
-    ASSERT(storage.getLastTime() == 1.0);
+    OPENSIM_ASSERT_ALWAYS(storage.getFirstTime() == 0.0);
+    OPENSIM_ASSERT_ALWAYS(storage.getLastTime() == 1.0);
 
     // Since the pendulum is only swinging through small angles, it should be very
     // close to a simple harmonic oscillator.
@@ -49,20 +49,20 @@ TEST_CASE("testPendulum") {
     for (int j = 0; j < storage.getSize(); ++j) {
         StateVector* state = storage.getStateVector(j);
         double time = state->getTime();
-        ASSERT(time > previousTime);
+        OPENSIM_ASSERT_ALWAYS(time > previousTime);
         previousTime = time;
         ASSERT_EQUAL(-amp*cos(k*time), state->getData()[0], 1.0e-2);
         ASSERT_EQUAL(amp*k*sin(k*time), state->getData()[1],1.0e-2);
     }
-    ASSERT(previousTime == 1.0);
+    OPENSIM_ASSERT_ALWAYS(previousTime == 1.0);
 }
 
 TEST_CASE("testPendulumExternalLoad") {
     ForwardTool forward("pendulum_ext_gravity_Setup_Forward.xml");
     forward.run();
     Storage results("Results/pendulum_ext_gravity_states.sto");
-    ASSERT(results.getFirstTime() == 0.0);
-    ASSERT(results.getLastTime() == 1.0);
+    OPENSIM_ASSERT_ALWAYS(results.getFirstTime() == 0.0);
+    OPENSIM_ASSERT_ALWAYS(results.getLastTime() == 1.0);
 
     Storage standard("Results/pendulum_states.sto");
 
@@ -91,8 +91,8 @@ TEST_CASE("testPendulumExternalLoadWithPointInGround") {
     forward.run();
 
     Storage results("Results/pendulum_ext_gravity_point_in_ground_states.sto");
-    ASSERT(results.getFirstTime() == 0.0);
-    ASSERT(results.getLastTime() == 1.0);
+    OPENSIM_ASSERT_ALWAYS(results.getFirstTime() == 0.0);
+    OPENSIM_ASSERT_ALWAYS(results.getLastTime() == 1.0);
 
     Storage standard("Results/pendulum_states.sto");
     Array<double> data;

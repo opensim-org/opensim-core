@@ -229,11 +229,8 @@ void compareSimulationStates(SimTK::Vector q_sb, SimTK::Vector u_sb,
     //q_err.dump("Diff q's:");
     //u_err.dump("Diff u's:");
 
-    stringstream errorMessage1, errorMessage2;
-    errorMessage1 << "testConstraints compareSimulationStates failed q_err.norm = " << q_err.norm();
-    errorMessage2 << "testConstraints compareSimulationStates failed u_err.norm = " << u_err.norm();
-    ASSERT(q_err.norm() <= 10*integ_accuracy, __FILE__, __LINE__, errorMessagePrefix + errorMessage1.str());
-    ASSERT(u_err.norm() <= 20*integ_accuracy, __FILE__, __LINE__, errorMessagePrefix + errorMessage2.str());
+    OPENSIM_ASSERT_ALWAYS(q_err.norm() <= 10*integ_accuracy);
+    OPENSIM_ASSERT_ALWAYS(u_err.norm() <= 20*integ_accuracy);
 }
 
 void compareSimulations(SimTK::MultibodySystem &system, SimTK::State &state, Model *osimModel, SimTK::State &osim_state, string errorMessagePrefix = "")
@@ -531,9 +528,7 @@ TEST_CASE("testCoordinateLocking")
     qf.dump("Final q's"); // pendulum positions
     si2.getU().dump("Final u's"); // pendulum velocities
 
-    stringstream errorMessage;
-    errorMessage << "testCoordinateLocking FAILED\ntestCoordinateLocking: q_err = " << qf[1]-qi[1];
-    ASSERT(fabs(qf[1]-fixedKneeAngle) <= integ_accuracy, __FILE__, __LINE__, errorMessage.str());
+    OPENSIM_ASSERT_ALWAYS(fabs(qf[1]-fixedKneeAngle) <= integ_accuracy);
 }
 
 TEST_CASE("testWeldConstraint")
@@ -1099,14 +1094,16 @@ TEST_CASE("testSerializeDeserialize")
     const auto& oldConstraintSet = oldModel.getConstraintSet();
     const auto& newConstraintSet = newModel.getConstraintSet();
 
-    ASSERT(oldConstraintSet.getSize() == newConstraintSet.getSize());
+    OPENSIM_ASSERT_ALWAYS(
+            oldConstraintSet.getSize() == newConstraintSet.getSize());
     for(int i = 0; i < oldConstraintSet.getSize(); ++i) {
-        ASSERT(oldConstraintSet.get(i).get_isEnforced() ==
+        OPENSIM_ASSERT_ALWAYS(oldConstraintSet.get(i).get_isEnforced() ==
                newConstraintSet.get(i).get_isEnforced());
 
         if(flippedConstraints.find(newConstraintSet.get(i).getName()) !=
            flippedConstraints.end())
-            ASSERT(newConstraintSet.get(i).get_isEnforced() == false);
+            OPENSIM_ASSERT_ALWAYS(
+                    newConstraintSet.get(i).get_isEnforced() == false);
     }
 
     std::remove(oldModelFile.c_str());

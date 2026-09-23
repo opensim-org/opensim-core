@@ -501,7 +501,7 @@ void simulateMuscle(
         realTimeMultiplier);
 
     /*
-    ASSERT(comp_time <= (finalTime-initialTime));
+    OPENSIM_ASSERT_ALWAYS(comp_time <= (finalTime-initialTime));
     printf("testMuscles: PASSED Realtime test\n"
            "             %s simulation time: %f with accuracy %f\n\n",
                          actuatorType.c_str(), comp_time , accuracy);

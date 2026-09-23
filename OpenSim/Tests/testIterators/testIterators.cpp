@@ -143,11 +143,13 @@ TEST_CASE("testNestedComponentListConsistency") {
     }
 
     // Joints list should be a unique set.
-    ASSERT(std::set<const Joint*>{joints1.begin(), joints1.end()}.size() == 4);
+    OPENSIM_ASSERT_ALWAYS(
+            (std::set<const Joint*>{joints1.begin(), joints1.end()}.size()
+                    == 4));
     // Joints1 and Joints2 must be identical.
-    ASSERT(joints1 == joints2);
+    OPENSIM_ASSERT_ALWAYS(joints1 == joints2);
     // Expected number of unique coordinates.
-    ASSERT(coords.size() == 4);
+    OPENSIM_ASSERT_ALWAYS(coords.size() == 4);
 }
 
 TEST_CASE("testComponentListConst") {
@@ -240,8 +242,8 @@ TEST_CASE("testComponentListConst") {
             ++numCoords;
         }
     }
-    ASSERT(numJoints == 2);
-    ASSERT(numCoords == 2);
+    OPENSIM_ASSERT_ALWAYS(numJoints == 2);
+    OPENSIM_ASSERT_ALWAYS(numCoords == 2);
 
     int numJointsWithStateVariables = 0;
     ComponentList<const Joint> jointsWithStates =
@@ -278,21 +280,16 @@ TEST_CASE("testComponentListConst") {
         countSkipFrames++;
     }
 
-    ASSERT(numComponents == expectedNumComponents,
-            "", 0, "Number of Components mismatch");
-    ASSERT(numBodies == model.getNumBodies(), "", 0, "Number of Bodies mismatch");
-    ASSERT(numBodiesPost == numBodies, "", 0, "Number of Bodies post mismatch");
-    ASSERT(numMuscles == model.getMuscles().getSize(), "", 0,
-        "Number of Muscles mismatch");
-    ASSERT(numJointsWithStateVariables == expectedNumJointsWithStateVariables,
-            "", 0, "Number of Joints with StateVariables mismatch");
-    ASSERT(numModelComponentsWithStateVariables ==
-           expectedNumModelComponentsWithStateVariables, "", 0,
-        "Number of Components with StateVariables mismatch");
-    ASSERT(numJntComponents == expectedNumJntComponents, "", 0,
-        "Number of Components within Joints mismatch");
-    ASSERT(countSkipFrames == expectedNumCountSkipFrames, "", 0,
-        "Number of Frames skipping every other one, mismatch");
+    OPENSIM_ASSERT_ALWAYS(numComponents == expectedNumComponents);
+    OPENSIM_ASSERT_ALWAYS(numBodies == model.getNumBodies());
+    OPENSIM_ASSERT_ALWAYS(numBodiesPost == numBodies);
+    OPENSIM_ASSERT_ALWAYS(numMuscles == model.getMuscles().getSize());
+    OPENSIM_ASSERT_ALWAYS(
+            numJointsWithStateVariables == expectedNumJointsWithStateVariables);
+    OPENSIM_ASSERT_ALWAYS(numModelComponentsWithStateVariables ==
+           expectedNumModelComponentsWithStateVariables);
+    OPENSIM_ASSERT_ALWAYS(numJntComponents == expectedNumJntComponents);
+    OPENSIM_ASSERT_ALWAYS(countSkipFrames == expectedNumCountSkipFrames);
 }
 
 // This test repeats the same tests as testComponentListConst(), but using
@@ -415,15 +412,16 @@ TEST_CASE("testComponentListNonConstWithConstIterator") {
         countSkipFrames++;
     }
 
-    ASSERT(numComponents == expectedNumComponents);
-    ASSERT(numBodies == model.getNumBodies());
-    ASSERT(numBodiesPost == numBodies);
-    ASSERT(numMuscles == model.getMuscles().getSize());
-    ASSERT(numJointsWithStateVariables == expectedNumJointsWithStateVariables);
-    ASSERT(numModelComponentsWithStateVariables ==
+    OPENSIM_ASSERT_ALWAYS(numComponents == expectedNumComponents);
+    OPENSIM_ASSERT_ALWAYS(numBodies == model.getNumBodies());
+    OPENSIM_ASSERT_ALWAYS(numBodiesPost == numBodies);
+    OPENSIM_ASSERT_ALWAYS(numMuscles == model.getMuscles().getSize());
+    OPENSIM_ASSERT_ALWAYS(
+            numJointsWithStateVariables == expectedNumJointsWithStateVariables);
+    OPENSIM_ASSERT_ALWAYS(numModelComponentsWithStateVariables ==
            expectedNumModelComponentsWithStateVariables);
-    ASSERT(numJntComponents == expectedNumJntComponents);
-    ASSERT(countSkipFrames == expectedNumCountSkipFrames);
+    OPENSIM_ASSERT_ALWAYS(numJntComponents == expectedNumJntComponents);
+    OPENSIM_ASSERT_ALWAYS(countSkipFrames == expectedNumCountSkipFrames);
 
 
     // It is not possible to convert const_iterator to (non-const) iterator.
@@ -538,19 +536,20 @@ TEST_CASE("testComponentListNonConstWithNonConstIterator") {
         countSkipFrames++;
     }
 
-    ASSERT(numComponents == expectedNumComponents);
-    ASSERT(numBodies == model.getNumBodies());
-    ASSERT(numBodiesPost == numBodies);
-    ASSERT(numMuscles == model.getMuscles().getSize());
-    ASSERT(numJointsWithStateVariables == expectedNumJointsWithStateVariables);
+    OPENSIM_ASSERT_ALWAYS(numComponents == expectedNumComponents);
+    OPENSIM_ASSERT_ALWAYS(numBodies == model.getNumBodies());
+    OPENSIM_ASSERT_ALWAYS(numBodiesPost == numBodies);
+    OPENSIM_ASSERT_ALWAYS(numMuscles == model.getMuscles().getSize());
+    OPENSIM_ASSERT_ALWAYS(
+            numJointsWithStateVariables == expectedNumJointsWithStateVariables);
 
     cout << "numModelComponentsWithStateVariables ="
         << numModelComponentsWithStateVariables << endl;
 
-    ASSERT(numModelComponentsWithStateVariables ==
+    OPENSIM_ASSERT_ALWAYS(numModelComponentsWithStateVariables ==
            expectedNumModelComponentsWithStateVariables);
-    ASSERT(numJntComponents == expectedNumJntComponents);
-    ASSERT(countSkipFrames == expectedNumCountSkipFrames);
+    OPENSIM_ASSERT_ALWAYS(numJntComponents == expectedNumJntComponents);
+    OPENSIM_ASSERT_ALWAYS(countSkipFrames == expectedNumCountSkipFrames);
 }
 
 // Ensure that we can compare const_iterator and (non-const) iterator.

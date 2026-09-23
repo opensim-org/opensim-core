@@ -45,24 +45,25 @@ TEST_CASE("Component Path Behaves as Expected")
     using std::string;
 
     // Absolute paths
-    ASSERT(CP{"/a/b/c/d"}.toString() == "/a/b/c/d");
-    ASSERT(CP{"/a/b/e/f/g/h"}.toString() == "/a/b/e/f/g/h");
-    ASSERT(CP{"/a/b"}.toString() == "/a/b");
+    OPENSIM_ASSERT_ALWAYS(CP{"/a/b/c/d"}.toString() == "/a/b/c/d");
+    OPENSIM_ASSERT_ALWAYS(CP{"/a/b/e/f/g/h"}.toString() == "/a/b/e/f/g/h");
+    OPENSIM_ASSERT_ALWAYS(CP{"/a/b"}.toString() == "/a/b");
 
     // Relative paths
     //     note: relative path can start with ".."
-    ASSERT(CP{"c/d"}.toString() == "c/d");
-    ASSERT(CP{"e/f/g/h"}.toString() == "e/f/g/h");
-    ASSERT(CP{"../../../../c/d"}.toString() == "../../../../c/d");
+    OPENSIM_ASSERT_ALWAYS(CP{"c/d"}.toString() == "c/d");
+    OPENSIM_ASSERT_ALWAYS(CP{"e/f/g/h"}.toString() == "e/f/g/h");
+    OPENSIM_ASSERT_ALWAYS(
+            CP{"../../../../c/d"}.toString() == "../../../../c/d");
 
     // Empty paths
-    ASSERT(CP{""}.toString() == "");
-    ASSERT(CP{"/"}.toString() == "/");
+    OPENSIM_ASSERT_ALWAYS(CP{""}.toString() == "");
+    OPENSIM_ASSERT_ALWAYS(CP{"/"}.toString() == "/");
 
     /* Test the equality operator */
-    ASSERT(CP{"/a/b"} == CP{"/a/b"});
-    ASSERT(CP{"/a/b"} != CP{"/a/b/c/d"});
-    ASSERT(CP{"/c/d"} != CP{"c/d"});
+    OPENSIM_ASSERT_ALWAYS(CP{"/a/b"} == CP{"/a/b"});
+    OPENSIM_ASSERT_ALWAYS(CP{"/a/b"} != CP{"/a/b/c/d"});
+    OPENSIM_ASSERT_ALWAYS(CP{"/c/d"} != CP{"c/d"});
 
     // test vector ctor
     ASSERT_THROW(Exception, CP(std::vector<std::string>{"in+valid"}, true));
@@ -73,14 +74,22 @@ TEST_CASE("Component Path Behaves as Expected")
     /* Test formAbsolutePath(). Test a variety of paths. The argument 
      * in formAbsolutePath() must be an absolute path itself. */
     // Test without any ".."
-    ASSERT(CP{"c/d"}.formAbsolutePath(CP{"/a/b"}).toString() == "/a/b/c/d");
-    ASSERT(CP{"e/f/g/h"}.formAbsolutePath(CP{"/a/b"}).toString() == "/a/b/e/f/g/h");
+    OPENSIM_ASSERT_ALWAYS(
+            CP{"c/d"}.formAbsolutePath(CP{"/a/b"}).toString() == "/a/b/c/d");
+    OPENSIM_ASSERT_ALWAYS(
+            CP{"e/f/g/h"}.formAbsolutePath(CP{"/a/b"}).toString()
+            == "/a/b/e/f/g/h");
     // Any absolute path should return itself
-    ASSERT(CP{"/a/b/c/d"}.formAbsolutePath(CP{"/a/b/e/f/g/h"}) == CP{"/a/b/c/d"});
+    OPENSIM_ASSERT_ALWAYS(
+            CP{"/a/b/c/d"}.formAbsolutePath(CP{"/a/b/e/f/g/h"})
+            == CP{"/a/b/c/d"});
     // Test if this works from root.
-    ASSERT(CP{"c/d"}.formAbsolutePath(CP{"/"}).toString() == "/c/d");
+    OPENSIM_ASSERT_ALWAYS(
+            CP{"c/d"}.formAbsolutePath(CP{"/"}).toString() == "/c/d");
     // Test with lots of ".."
-    ASSERT(CP{"../../../../c/d"}.formAbsolutePath(CP{"/a/b/e/f/g/h"}) == CP{"/a/b/c/d"});
+    OPENSIM_ASSERT_ALWAYS(
+            CP{"../../../../c/d"}.formAbsolutePath(CP{"/a/b/e/f/g/h"})
+            == CP{"/a/b/c/d"});
     // argument can't be a relative path
     ASSERT_THROW(Exception, CP{"c/d"}.formAbsolutePath(CP{"e/f/g/h"}));
 
@@ -135,9 +144,10 @@ TEST_CASE("Component Path Behaves as Expected")
 
     /* Test paths with "." and ".." */
     // Remove all ".", clean up ".." and ignore "/" at the end
-    ASSERT(CP{"/a/././b/c/..//d/.././"}.toString() == CP{"/a/b"}.toString());
+    OPENSIM_ASSERT_ALWAYS(
+            CP{"/a/././b/c/..//d/.././"}.toString() == CP{"/a/b"}.toString());
     // Test ".." at the end of a path
-    ASSERT(CP{"/a/b/c/d/../.."} == CP{"/a/b"});
+    OPENSIM_ASSERT_ALWAYS(CP{"/a/b/c/d/../.."} == CP{"/a/b"});
     // Test ".." at the beginning of an absolute path (should throw exception)
     ASSERT_THROW(Exception, CP{"/../b/c/d"});
     // Test if there are so many ".." that it will end up at the front of
@@ -161,7 +171,7 @@ TEST_CASE("Component Path Behaves as Expected")
         // add the levels separately
         path1.pushBack("c");
         path1.pushBack("d");
-        ASSERT(path1 == CP{"/a/b/c/d"});
+        OPENSIM_ASSERT_ALWAYS(path1 == CP{"/a/b/c/d"});
 
         /* Test invalid characters in pushBack(). Unlike the invalid
          * character test above, "/" should be considered invalid since
@@ -175,11 +185,11 @@ TEST_CASE("Component Path Behaves as Expected")
 
         CP cp2{""};
         cp2.pushBack("a");
-        ASSERT(cp2.toString() == "a");
+        OPENSIM_ASSERT_ALWAYS(cp2.toString() == "a");
 
         CP cp3{"/"};
         cp3.pushBack("a");
-        ASSERT(cp3.toString() == "/a");
+        OPENSIM_ASSERT_ALWAYS(cp3.toString() == "/a");
     }
 
     /* Test functions for getting certain parts of ComponentPath. */
@@ -190,9 +200,11 @@ TEST_CASE("Component Path Behaves as Expected")
     std::string numberedAbsPathParentStr = "/zero/one/two/three";
     ComponentPath numberedAbsPathParent(numberedAbsPathParentStr);
     // Test if getParentPath() returns correct ComponentPath object
-    ASSERT(numberedAbsPath.getParentPath() == numberedAbsPathParent);
+    OPENSIM_ASSERT_ALWAYS(
+            numberedAbsPath.getParentPath() == numberedAbsPathParent);
     // Test if getParentPathStr() returns correct string
-    ASSERT(numberedAbsPath.getParentPathString() == numberedAbsPathParentStr);
+    OPENSIM_ASSERT_ALWAYS(
+            numberedAbsPath.getParentPathString() == numberedAbsPathParentStr);
 
     // test number of path levels behaves sanely
     {
@@ -212,32 +224,41 @@ TEST_CASE("Component Path Behaves as Expected")
         };
 
         for (auto p : expectedNumPathLevels) {
-            ASSERT(CP{p.first}.getNumPathLevels() == p.second);
+            OPENSIM_ASSERT_ALWAYS(CP{p.first}.getNumPathLevels() == p.second);
         }
     }
 
     // Loop through all levels of the subtree and see if names match
     for (size_t ind = 0; ind < levels.size(); ++ind) {
-        ASSERT(numberedAbsPath.getSubcomponentNameAtLevel(ind) == levels[ind]);
+        OPENSIM_ASSERT_ALWAYS(
+                numberedAbsPath.getSubcomponentNameAtLevel(ind) == levels[ind]);
     }
     // Test getComponentName()
-    ASSERT(numberedAbsPath.getComponentName() == levels[levels.size()-1]);
-    ASSERT(CP{""}.getComponentName() == ""); // empty ComponentPath should return empty string
+    OPENSIM_ASSERT_ALWAYS(
+            numberedAbsPath.getComponentName() == levels[levels.size()-1]);
+    // empty ComponentPath should return empty string
+    OPENSIM_ASSERT_ALWAYS(
+            CP{""}.getComponentName() == "");
 
     // Do the same as above but with a relative path instead
     ComponentPath numberedRelPath(levels, false);
     std::string numberedRelPathParentStr = "zero/one/two/three";
     ComponentPath numberedRelPathParent(numberedRelPathParentStr);
-    ASSERT(numberedRelPath.getParentPath() == numberedRelPathParent);
-    ASSERT(numberedRelPath.getParentPathString() == numberedRelPathParentStr);
+    OPENSIM_ASSERT_ALWAYS(
+            numberedRelPath.getParentPath() == numberedRelPathParent);
+    OPENSIM_ASSERT_ALWAYS(
+            numberedRelPath.getParentPathString() == numberedRelPathParentStr);
     for (size_t ind = 0; ind < levels.size(); ++ind) {
-        ASSERT(numberedRelPath.getSubcomponentNameAtLevel(ind) == levels[ind]);
+        OPENSIM_ASSERT_ALWAYS(
+                numberedRelPath.getSubcomponentNameAtLevel(ind) == levels[ind]);
     }
 
     // ensure isAbsolute is sane for vector inputs
-    ASSERT(CP{std::vector<std::string>{}, true}.isAbsolute());
-    ASSERT(CP{std::vector<std::string>{""}, true}.isAbsolute());
-    ASSERT(CP{std::vector<std::string>{"a", "b"}, true}.isAbsolute());
+    OPENSIM_ASSERT_ALWAYS((CP{std::vector<std::string>{}, true}.isAbsolute()));
+    OPENSIM_ASSERT_ALWAYS(
+            (CP{std::vector<std::string>{""}, true}.isAbsolute()));
+    OPENSIM_ASSERT_ALWAYS(
+            (CP{std::vector<std::string>{"a", "b"}, true}.isAbsolute()));
 
     // general tests to ensure it normalizes a variety of paths correctly
     {

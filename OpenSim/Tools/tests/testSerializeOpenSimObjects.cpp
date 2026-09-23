@@ -164,21 +164,18 @@ TEST_CASE("Serialize OpenSim objects") {
     nc = deserializedModel.getMiscModelComponentSet().getSize();
     cout << nc << " model components were deserialized from file." << endl;
 
-    ASSERT(testModel == deserializedModel,
-        "deserializedModel FAILED to match original model.");
+    OPENSIM_ASSERT_ALWAYS(testModel == deserializedModel);
 
     //Might as well test cloning and assignment
     Model* cloneModel = testModel.clone();
 
-    ASSERT(testModel == *cloneModel,
-        "cloneModel FAILED to match original model.");
+    OPENSIM_ASSERT_ALWAYS(testModel == *cloneModel);
 
     Model assignedModel = *cloneModel;
 
     delete cloneModel;
 
-    ASSERT(testModel == assignedModel,
-        "assignedModel FAILED to match original model.");
+    OPENSIM_ASSERT_ALWAYS(testModel == assignedModel);
 }
 
 TEST_CASE("Test unrecognized types") {

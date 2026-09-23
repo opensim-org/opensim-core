@@ -125,8 +125,9 @@ namespace {
 
     void compareMotionTables(const TimeSeriesTable& report,
                 const TimeSeriesTable& standard) {
-        ASSERT(report.getNumRows() == standard.getNumRows());
-        ASSERT(report.getNumColumns() == standard.getNumColumns());
+        OPENSIM_ASSERT_ALWAYS(report.getNumRows() == standard.getNumRows());
+        OPENSIM_ASSERT_ALWAYS(
+                report.getNumColumns() == standard.getNumColumns());
 
         auto reportLabels = report.getColumnLabels();
         auto stdLabels = standard.getColumnLabels();

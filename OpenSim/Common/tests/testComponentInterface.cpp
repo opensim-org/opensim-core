@@ -597,11 +597,11 @@ TEST_CASE("Component Interface Misc.")
 
     // The clone and copy intern Sub components should be different
     // allocation (address) from original internal Sub
-    ASSERT(&theSub != &cloneSub);
-    ASSERT(&theSub != &copySub);
+    OPENSIM_ASSERT_ALWAYS(&theSub != &cloneSub);
+    OPENSIM_ASSERT_ALWAYS(&theSub != &copySub);
     // But their contents/values should be identical
-    ASSERT(theSub == cloneSub);
-    ASSERT(theSub == copySub);
+    OPENSIM_ASSERT_ALWAYS(theSub == cloneSub);
+    OPENSIM_ASSERT_ALWAYS(theSub == copySub);
 
     // let component add its stuff to the system
     Foo& foo = *new Foo();
@@ -619,7 +619,7 @@ TEST_CASE("Component Interface Misc.")
     theWorld.add(&bar);
 
     Bar barEqual(bar);
-    ASSERT(barEqual == bar);
+    OPENSIM_ASSERT_ALWAYS(barEqual == bar);
 
     //Configure the socket to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
@@ -696,7 +696,7 @@ TEST_CASE("Component Interface Misc.")
     theWorld.buildUpSystem(system);
 
     const Foo& foo2found = theWorld.getComponent<Foo>("Foo2");
-    ASSERT(foo2 == foo2found);
+    OPENSIM_ASSERT_ALWAYS(foo2 == foo2found);
 
     // check how this model serializes
     string modelFile("testComponentInterfaceModel.osim");
@@ -780,15 +780,17 @@ TEST_CASE("Component Interface Misc.")
     //     OpenSim::Exception
     // );
 
-    ASSERT(theWorld == *world2, __FILE__, __LINE__,
-        "Model serialization->deserialization FAILED");
+    OPENSIM_ASSERT_ALWAYS(theWorld == *world2);
 
     world2->setName("InternalWorld");
     world2->connect();
 
     world2->updComponent("Bar").getSocket<Foo>("childFoo");
-    ASSERT("Foo2" ==
-            world2->updComponent("Bar").getConnectee<Foo>("childFoo").getName());
+    OPENSIM_ASSERT_ALWAYS(
+            "Foo2"
+            == world2->updComponent("Bar")
+                       .getConnectee<Foo>("childFoo")
+                       .getName());
 
     world2->buildUpSystem(system2);
     s = system2.realizeTopology();
@@ -799,21 +801,17 @@ TEST_CASE("Component Interface Misc.")
     TheWorld world3;
     world3 = *world2;
 
-    ASSERT(&world3 != world2, __FILE__, __LINE__,
-        "Model copy assignment FAILED: A copy was not made.");
+    OPENSIM_ASSERT_ALWAYS(&world3 != world2);
 
     world3.finalizeFromProperties();
 
-    ASSERT(world3 == *world2, __FILE__, __LINE__,
-        "Model copy assignment FAILED: Property values are not identical.");
+    OPENSIM_ASSERT_ALWAYS(world3 == *world2);
 
     world3.getComponent("Bar").getSocket<Foo>("parentFoo");
 
     auto& barInWorld3 = world3.getComponent<Bar>("Bar");
     auto& barInWorld2 = world2->getComponent<Bar>("Bar");
-    ASSERT(&barInWorld3 != &barInWorld2, __FILE__, __LINE__,
-        "Model copy assignment FAILED: property was not copied but "
-        "assigned the same memory");
+    OPENSIM_ASSERT_ALWAYS(&barInWorld3 != &barInWorld2);
 
     world3.setName("World3");
 
@@ -903,16 +901,14 @@ TEST_CASE("Component Interface Misc.")
 
     // Get the results of integrating the system forward
     const TimeSeriesTable_<Real>& results = reporter->getTable();
-    ASSERT(results.getNumRows() == 11, __FILE__, __LINE__,
-        "Number of rows in Reporter results not equal to number of time intervals.");
+    OPENSIM_ASSERT_ALWAYS(results.getNumRows() == 11);
     cout << "************** Contents of Table of Results ****************" << endl;
     cout << results << endl;
     cout << "***************** Qs Output at Final state *****************" << endl;
     auto& finalVal = foo.getOutputValue<Vector>(s, "Qs");
     (~finalVal).dump();
     size_t ncols = results.getNumColumns();
-    ASSERT(ncols == static_cast<size_t>(finalVal.size()), __FILE__, __LINE__,
-        "Number of cols in Reporter results not equal to size of Output'Qs' size.");
+    OPENSIM_ASSERT_ALWAYS(ncols == static_cast<size_t>(finalVal.size()));
 
     // Check the result of the integration on our state variables.
     ASSERT_EQUAL(3.5, bar.getOutputValue<double>(s, "fiberLength"), 1e-10);
@@ -1051,7 +1047,7 @@ TEST_CASE("Component Interface List Inputs")
     cout << tabReporter->getTable() << endl;
 
     tabReporter->clearTable();
-    ASSERT(tabReporter->getTable().getNumRows() == 0);
+    OPENSIM_ASSERT_ALWAYS(tabReporter->getTable().getNumRows() == 0);
 }
 
 TEST_CASE("Component Interface Sockets")
@@ -1253,27 +1249,27 @@ TEST_CASE("Component Interface Component Path Names")
     top.printOutputInfo();
 
     std::string absPathC = C->getAbsolutePathString();
-    ASSERT(absPathC == "/A/B/C");
+    OPENSIM_ASSERT_ALWAYS(absPathC == "/A/B/C");
 
     std::string absPathE = E->getAbsolutePathString();
-    ASSERT(absPathE == "/A/D/E");
+    OPENSIM_ASSERT_ALWAYS(absPathE == "/A/D/E");
 
     // Specific tests to relative path name facilities
     std::string EWrtB = E->getRelativePathString(*B);
-    ASSERT(EWrtB == "../D/E"); // "/A/B/" as common
+    OPENSIM_ASSERT_ALWAYS(EWrtB == "../D/E"); // "/A/B/" as common
 
     std::string BWrtE = B->getRelativePathString(*E);
-    ASSERT(BWrtE == "../../B"); // "/A/" as common
+    OPENSIM_ASSERT_ALWAYS(BWrtE == "../../B"); // "/A/" as common
 
     // null case component wrt itself
     std::string fooWrtFoo = D->getRelativePathString(*D);
-    ASSERT(fooWrtFoo == "");
+    OPENSIM_ASSERT_ALWAYS(fooWrtFoo == "");
 
     std::string CWrtOtherTop = C->getRelativePathString(otherTop);
-    ASSERT(CWrtOtherTop == "A/B/C");
+    OPENSIM_ASSERT_ALWAYS(CWrtOtherTop == "A/B/C");
 
     std::string OtherTopWrtC = otherTop.getRelativePathString(*C);
-    ASSERT(OtherTopWrtC == "../../..");
+    OPENSIM_ASSERT_ALWAYS(OtherTopWrtC == "../../..");
 
     // Must specify a unique path to E
     ASSERT_THROW(OpenSim::ComponentNotFoundOnSpecifiedPath,
@@ -1283,14 +1279,14 @@ TEST_CASE("Component Interface Component Path Names")
     auto& eref = top.getComponent(absPathE);
 
     auto cFromE = cref.getRelativePathString(eref);
-    ASSERT(cFromE == "../../B/C");
+    OPENSIM_ASSERT_ALWAYS(cFromE == "../../B/C");
 
     auto eFromC = eref.getRelativePathString(cref);
-    ASSERT(eFromC == "../../D/E");
+    OPENSIM_ASSERT_ALWAYS(eFromC == "../../D/E");
 
     // verify that we can also navigate relative paths properly
     auto& eref2 = cref.getComponent(eFromC);
-    ASSERT(eref2 == eref);
+    OPENSIM_ASSERT_ALWAYS(eref2 == eref);
 
     Foo* foo1 = new Foo();
     foo1->setName("Foo1");
@@ -1320,10 +1316,10 @@ TEST_CASE("Component Interface Component Path Names")
     // Verify deep copy of subcomponents
     const Foo& foo1inA = top.getComponent<Foo>("/A/Foo1");
     const Foo& foo1inF = top.getComponent<Foo>("/F/Foo1");
-    ASSERT(&foo1inA != &foo1inF);
+    OPENSIM_ASSERT_ALWAYS(&foo1inA != &foo1inF);
 
     // double check that we have the original Foo foo1 in A
-    ASSERT(&foo1inA == foo1);
+    OPENSIM_ASSERT_ALWAYS(&foo1inA == foo1);
 
     // This bar2 that belongs to A and connects the two foo2s
     bar2->connectSocket_parentFoo(*foo2);
@@ -1334,7 +1330,7 @@ TEST_CASE("Component Interface Component Path Names")
     // now wire up bar2 that belongs to F and connect the
     // two foo1s one in A and other F
     auto& fbar2 = F->updComponent<Bar>("Bar2");
-    ASSERT(&fbar2 != bar2);
+    OPENSIM_ASSERT_ALWAYS(&fbar2 != bar2);
 
     fbar2.connectSocket_parentFoo(*foo1);
     fbar2.updSocket<Foo>("childFoo")
@@ -2577,8 +2573,8 @@ TEST_CASE("Component Interface Throws Exceptions if Output Name Exists Already")
 
 template<typename RowVec>
 void assertEqual(const RowVec& a, const RowVec& b) {
-    ASSERT(a.nrow() == b.nrow());
-    ASSERT(a.ncol() == b.ncol());
+    OPENSIM_ASSERT_ALWAYS(a.nrow() == b.nrow());
+    OPENSIM_ASSERT_ALWAYS(a.ncol() == b.ncol());
     for(int i = 0; i < a.ncol(); ++i)
         ASSERT_EQUAL(a[i], b[i], 1e-10);
 }
@@ -3266,37 +3262,37 @@ TEST_CASE("Component Interface CacheVariable<T> Behavior")
         SimTK::State s = sys.realizeTopology();  // note: this initializes the value in SimTK
 
         c.markCacheVariableValid(s, k);
-        ASSERT(c.isCacheVariableValid(s, c.cv) == true);
+        OPENSIM_ASSERT_ALWAYS(c.isCacheVariableValid(s, c.cv) == true);
         c.markCacheVariableInvalid(s, k);
-        ASSERT(c.isCacheVariableValid(s, c.cv) == false);
+        OPENSIM_ASSERT_ALWAYS(c.isCacheVariableValid(s, c.cv) == false);
 
         c.markCacheVariableValid(s, c.cv);
-        ASSERT(c.isCacheVariableValid(s, c.cv) == true);
+        OPENSIM_ASSERT_ALWAYS(c.isCacheVariableValid(s, c.cv) == true);
         c.markCacheVariableInvalid(s, c.cv);
-        ASSERT(c.isCacheVariableValid(s, c.cv) == false);
+        OPENSIM_ASSERT_ALWAYS(c.isCacheVariableValid(s, c.cv) == false);
 
         // tests assume cv is valid from now on
         c.markCacheVariableValid(s, c.cv);
 
         c.getCacheVariableIndex(k);  // shouldn't throw
-        ASSERT(c.getCacheVariableValue<double>(s, k) == v);
-        ASSERT(c.getCacheVariableValue(s, c.cv) == v);
+        OPENSIM_ASSERT_ALWAYS(c.getCacheVariableValue<double>(s, k) == v);
+        OPENSIM_ASSERT_ALWAYS(c.getCacheVariableValue(s, c.cv) == v);
 
         // Setting the value via key causes subsequent `get` methods
         // (both string key + CacheVariable ones) to return the new value.
         {
             double v2 = generate_random_double();
             c.setCacheVariableValue<double>(s, k, v2);
-            ASSERT(c.getCacheVariableValue<double>(s, k) == v2);
-            ASSERT(c.getCacheVariableValue(s, c.cv) == v2);
+            OPENSIM_ASSERT_ALWAYS(c.getCacheVariableValue<double>(s, k) == v2);
+            OPENSIM_ASSERT_ALWAYS(c.getCacheVariableValue(s, c.cv) == v2);
         }
 
         // Same as above, but setting via a CacheVariable<T>.
         {
             double v2 = generate_random_double();
             c.setCacheVariableValue<double>(s, c.cv, v2);
-            ASSERT(c.getCacheVariableValue<double>(s, k) == v2);
-            ASSERT(c.getCacheVariableValue(s, c.cv) == v2);
+            OPENSIM_ASSERT_ALWAYS(c.getCacheVariableValue<double>(s, k) == v2);
+            OPENSIM_ASSERT_ALWAYS(c.getCacheVariableValue(s, c.cv) == v2);
         }
 
         // Updating a value via an `upd` reference, retrieved via a key, causes
@@ -3306,8 +3302,8 @@ TEST_CASE("Component Interface CacheVariable<T> Behavior")
             double v2 = generate_random_double();
             double& v = c.updCacheVariableValue<double>(s, k);
             v = v2;
-            ASSERT(c.getCacheVariableValue<double>(s, k) == v2);
-            ASSERT(c.getCacheVariableValue(s, c.cv) == v2);
+            OPENSIM_ASSERT_ALWAYS(c.getCacheVariableValue<double>(s, k) == v2);
+            OPENSIM_ASSERT_ALWAYS(c.getCacheVariableValue(s, c.cv) == v2);
         }
 
         // Same as above, but getting the `upd` reference via a CacheVariable<T>
@@ -3315,8 +3311,8 @@ TEST_CASE("Component Interface CacheVariable<T> Behavior")
             double v2 = generate_random_double();
             double& v = c.updCacheVariableValue(s, c.cv);
             v = v2;
-            ASSERT(c.getCacheVariableValue<double>(s, k) == v2);
-            ASSERT(c.getCacheVariableValue(s, c.cv) == v2);
+            OPENSIM_ASSERT_ALWAYS(c.getCacheVariableValue<double>(s, k) == v2);
+            OPENSIM_ASSERT_ALWAYS(c.getCacheVariableValue(s, c.cv) == v2);
         }
     }
 
@@ -3342,7 +3338,7 @@ TEST_CASE("Component Interface CacheVariable<T> Behavior")
 
         // Normal usage with no copies works as expected
         c1.markCacheVariableValid(s, c1.cv);
-        ASSERT(c1.getCacheVariableValue(s, c1.cv) == v);
+        OPENSIM_ASSERT_ALWAYS(c1.getCacheVariableValue(s, c1.cv) == v);
 
         // create a copy via standard C++ semantics
         ComponentWithCacheVariable c2 = c1;
@@ -3375,7 +3371,7 @@ TEST_CASE("Component Interface CacheVariable<T> Behavior")
         c2.markCacheVariableValid(s2, c2.cv);
 
         // works without throwing
-        ASSERT(c2.getCacheVariableValue(s2, c2.cv) == v);
+        OPENSIM_ASSERT_ALWAYS(c2.getCacheVariableValue(s2, c2.cv) == v);
     }
 
     // Component::addCacheVariable cannot be called with the same name twice because

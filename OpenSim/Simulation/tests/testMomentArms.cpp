@@ -418,7 +418,7 @@ namespace {
 
         // Minimum requirement to pass is that calculated moment-arm satisfies either
         // dL/dTheta definition or is at least dynamically consistent, in which dL/dTheta is not
-        ASSERT(passesDefinition || passesDynamicConsistency, __FILE__, __LINE__, errorMessage);
+        OPENSIM_ASSERT_ALWAYS(passesDefinition || passesDynamicConsistency);
     }
 
 }

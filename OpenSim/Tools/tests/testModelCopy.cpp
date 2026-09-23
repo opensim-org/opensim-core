@@ -55,8 +55,8 @@ void testCopyModel(const string& fileName, const int nbod,
     Model* modelCopy = new Model(*model);
     modelCopy->finalizeFromProperties();
     // At this point properties should all match. assert that
-    ASSERT(*model==*modelCopy);
-    ASSERT(model->getActuators().getSize() ==
+    OPENSIM_ASSERT_ALWAYS(*model==*modelCopy);
+    OPENSIM_ASSERT_ALWAYS(model->getActuators().getSize() ==
            modelCopy->getActuators().getSize());
 
     //SimTK::State& defaultStateOfCopy = modelCopy->initSystem();
@@ -67,8 +67,8 @@ void testCopyModel(const string& fileName, const int nbod,
     //  Now delete original model and make sure copy can stand
     Model *cloneModel = modelCopy->clone();
 
-    ASSERT(*model == *cloneModel);
-    ASSERT(model->getActuators().getSize() ==
+    OPENSIM_ASSERT_ALWAYS(*model == *cloneModel);
+    OPENSIM_ASSERT_ALWAYS(model->getActuators().getSize() ==
            cloneModel->getActuators().getSize());
 
     // Compare state again
@@ -84,8 +84,8 @@ void testCopyModel(const string& fileName, const int nbod,
 
     Model* modelSerialized = new Model(latestFile);
 
-    ASSERT(*model == *modelSerialized);
-    ASSERT(*modelSerialized == *modelCopy);
+    OPENSIM_ASSERT_ALWAYS(*model == *modelSerialized);
+    OPENSIM_ASSERT_ALWAYS(*modelSerialized == *modelCopy);
 
     int nb = modelSerialized->getNumBodies();
 
@@ -94,8 +94,8 @@ void testCopyModel(const string& fileName, const int nbod,
 
     int ng = physFrame.getProperty_attached_geometry().size();
 
-    ASSERT(nb == nbod);
-    ASSERT(ng == ngeom);
+    OPENSIM_ASSERT_ALWAYS(nb == nbod);
+    OPENSIM_ASSERT_ALWAYS(ng == ngeom);
 
     delete model;
     delete modelCopy;
@@ -114,7 +114,7 @@ TEST_CASE("Copy a simple property") {
     b->setValue(10.0);
     b->assign(*a);
 
-    ASSERT(*a == *b);
+    OPENSIM_ASSERT_ALWAYS(*a == *b);
 }
 
 TEST_CASE("Copy an object property") {
@@ -128,10 +128,10 @@ TEST_CASE("Copy an object property") {
     b->setValue(B);
     b->assign(*a);
 
-    ASSERT(*a == *b);
+    OPENSIM_ASSERT_ALWAYS(*a == *b);
 
     B = A;
-    ASSERT(B == A);
+    OPENSIM_ASSERT_ALWAYS(B == A);
 }
 
 TEST_CASE("Copy a model") {
@@ -147,7 +147,7 @@ TEST_CASE("Copy a model") {
         Model arm("arm26.osim");
         Model armAssigned;
         armAssigned = arm;
-        ASSERT(armAssigned == arm);
+        OPENSIM_ASSERT_ALWAYS(armAssigned == arm);
 
         testCopyModel("arm26.osim", 2, "ground", 6);
     }
