@@ -37,10 +37,7 @@ TEST_CASE("testControllerExample") {
     Storage result1(result1FilenameV1),
             standard1("std_tugOfWar_controls.sto");
     CHECK_STORAGE_AGAINST_STANDARD(result1, standard1,
-                                    std::vector<double>(2, 0.01),
-                                    __FILE__,
-                                    __LINE__,
-                                    "tugOfWar controls failed");
+                                    std::vector<double>(2, 0.01));
     cout << "tugOfWar controls passed\n" << endl;
 
     std::vector<double> tols(16, 0.01);
@@ -56,9 +53,6 @@ TEST_CASE("testControllerExample") {
     Storage result2(result2FilenameV1),
             standard2("std_tugOfWar_states.sto");
     CHECK_STORAGE_AGAINST_STANDARD(result2, standard2,
-                                    tols,
-                                    __FILE__,
-                                    __LINE__,
-                                    "tugOfWar states failed");
+                                    tols);
     cout << "tugOfWar states passed\n" << endl;
 }

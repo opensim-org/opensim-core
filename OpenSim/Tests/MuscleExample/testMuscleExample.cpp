@@ -39,10 +39,7 @@ TEST_CASE("testMuscleExample") {
             standard1("std_tugOfWar_fatigue_states.sto");
     int ncols = result1.getColumnLabels().getSize();
     CHECK_STORAGE_AGAINST_STANDARD(result1, standard1,
-                                    std::vector<double>(ncols, 0.01),
-                                    __FILE__,
-                                    __LINE__,
-                                    "tugOfWar fatigue states failed");
+                                    std::vector<double>(ncols, 0.01));
     cout << "tugOfWar fatigue states passed\n";
 
     const std::string result2Filename{"tugOfWar_fatigue_forces.sto"};
@@ -52,9 +49,6 @@ TEST_CASE("testMuscleExample") {
             standard2("std_tugOfWar_forces.mot");
     ncols = result2.getColumnLabels().getSize();
     CHECK_STORAGE_AGAINST_STANDARD(result2, standard2,
-                                    std::vector<double>(ncols, 20.0),
-                                    __FILE__,
-                                    __LINE__,
-                                    "tugOfWar forces failed");
+                                    std::vector<double>(ncols, 20.0));
     cout << "tugOfWar forces passed\n";
 }

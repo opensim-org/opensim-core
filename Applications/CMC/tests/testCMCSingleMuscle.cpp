@@ -61,14 +61,11 @@ namespace {
         std::vector<double> force_tols(1, 1.0e-1);   // 0.1 N
         std::vector<double> state_tols(4, 1.0e-3);   // errors: q<1mm, u<1mm/s, a<0.001, fl<1mm
 
-        CHECK_STORAGE_AGAINST_STANDARD(cmc_controls, fwd_controls, control_tols,
-            __FILE__, __LINE__, base + " controls failed");
+        CHECK_STORAGE_AGAINST_STANDARD(cmc_controls, fwd_controls, control_tols);
 
-        CHECK_STORAGE_AGAINST_STANDARD(cmc_force, fwd_force, force_tols,
-            __FILE__, __LINE__, base + " forces failed");
+        CHECK_STORAGE_AGAINST_STANDARD(cmc_force, fwd_force, force_tols);
 
-        CHECK_STORAGE_AGAINST_STANDARD(fwd_states, cmc_states, state_tols,
-            __FILE__, __LINE__, base+" states failed");
+        CHECK_STORAGE_AGAINST_STANDARD(fwd_states, cmc_states, state_tols);
     }
 
 }

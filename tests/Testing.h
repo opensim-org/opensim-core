@@ -41,6 +41,19 @@
 namespace OpenSim::Testing {
 
 /**
+ * Compare a Storage against a standard Storage using the specified per-column
+ * tolerances. Returns false if there are no common columns, or if the RMS
+ * error for any column is outside its tolerance; the per-column errors and
+ * tolerances are written to stdout either way.
+ *
+ * Prefer the CHECK_STORAGE_AGAINST_STANDARD macro, which wraps this in an
+ * assertion so that a failure is reported against the caller's file and line.
+ */
+bool storageMatchesStandard(const OpenSim::Storage& result,
+        const OpenSim::Storage& standard,
+        const std::vector<double>& tolerances);
+
+/**
  * Randomize the property values of an `OpenSim::Object`.
  */
 OpenSim::Object* randomize(OpenSim::Object* obj);
@@ -163,20 +176,11 @@ void reportTendonAndFiberForcesAcrossFiberLengths(const T& muscle,
 
 } // namespace OpenSim::Testing
 
-/**
- * Check this storage object against a standard storage object using the
- * specified tolerances. If RMS error for any column is outside the
- * tolerance, throw an Exception.
- */
-void CHECK_STORAGE_AGAINST_STANDARD(const OpenSim::Storage& result,
-        const OpenSim::Storage& standard,
-        const std::vector<double>& tolerances,
-        const std::string& testFile, const int testFileLine,
-        const std::string& errorMessage);
-
-
 // Assertion macros
 // ----------------
+
+#define CHECK_STORAGE_AGAINST_STANDARD(...) \
+    OPENSIM_ASSERT_ALWAYS(OpenSim::Testing::storageMatchesStandard(__VA_ARGS__))
 
  /**
  * ASSERT_EQUAL is a general utility for comparing two values and throwing

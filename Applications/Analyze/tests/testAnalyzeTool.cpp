@@ -200,8 +200,7 @@ TEST_CASE("testTutorialOne") {
     Storage resultFiberLength("testPlotterTool/BothLegs__FiberLength.sto");
     Storage standardFiberLength("std_BothLegs_fiberLength.sto");
     CHECK_STORAGE_AGAINST_STANDARD(resultFiberLength, standardFiberLength,
-        std::vector<double>(100, 0.0001), __FILE__, __LINE__,
-        "testAnalyzeTutorialOne failed");
+        std::vector<double>(100, 0.0001));
     // const Model& mdl = analyze1.getModel();
     //mdl.updMultibodySystem()
     analyze1.setStatesFileName("plotterGeneratedStatesHip45.sto");
@@ -211,8 +210,7 @@ TEST_CASE("testTutorialOne") {
     Storage resultFiberLengthHip45("testPlotterTool/BothLegsHip45__FiberLength.sto");
     Storage standardFiberLength45("std_BothLegsHip45__FiberLength.sto");
     CHECK_STORAGE_AGAINST_STANDARD(resultFiberLengthHip45,
-        standardFiberLength45, std::vector<double>(100, 0.0001),
-        __FILE__, __LINE__, "testAnalyzeTutorialOne at Hip45 failed");
+        standardFiberLength45, std::vector<double>(100, 0.0001));
     cout << "testAnalyzeTutorialOne passed" << endl;
 }
 

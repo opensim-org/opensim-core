@@ -54,8 +54,7 @@ TEST_CASE("testLeg6Dof9MuscSwing") {
     // and activations to within 5%
     std::vector<double> rms_tols(nstates, 0.05);
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__,
-            __LINE__, "testLeg6Dof9Musc Swing failed");
+    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols);
 }
 
 TEST_CASE("testLeg6Dof9MuscStance") {
@@ -76,8 +75,7 @@ TEST_CASE("testLeg6Dof9MuscStance") {
     // and activations to within 10%
     std::vector<double> rms_tols(nstates, 0.1);
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__,
-            __LINE__, "testLeg6Dof9Musc Stance failed");
+    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols);
 }
 
 
