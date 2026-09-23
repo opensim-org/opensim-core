@@ -12,7 +12,7 @@ add_executable(${EXAMPLE_TARGET} ${SOURCE_FILES})
 add_executable(${TEST_TARGET} ${TEST_TARGET}.cpp)
 
 target_link_libraries(${EXAMPLE_TARGET} osimTools)
-target_link_libraries(${TEST_TARGET} osimTools Catch2::Catch2WithMain)
+target_link_libraries(${TEST_TARGET} osimTools Catch2::Catch2WithMain osimTesting)
 
 file(GLOB TEST_FILES 
     ${EXAMPLE_DIR}/*.vtp
