@@ -48,7 +48,7 @@ TEST_CASE("testRRA") {
     CAPTURE(body, com, standardCOM, tolerances);
 
     for (int i = 0; i < 3; ++i)
-        ASSERT_EQUAL(standardCOM[i], com[i], tolerances[i]);
+        OpenSim_CHECK_EQUAL(standardCOM[i], com[i], tolerances[i]);
 
     auto loadsList = adjusted_model.getComponentList<ExternalLoads>();
     OPENSIM_THROW_IF(loadsList.begin() != loadsList.end(), Exception,

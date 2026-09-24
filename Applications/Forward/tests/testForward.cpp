@@ -51,8 +51,8 @@ TEST_CASE("testPendulum") {
         double time = state->getTime();
         OPENSIM_ASSERT_ALWAYS(time > previousTime);
         previousTime = time;
-        ASSERT_EQUAL(-amp*cos(k*time), state->getData()[0], 1.0e-2);
-        ASSERT_EQUAL(amp*k*sin(k*time), state->getData()[1],1.0e-2);
+        OpenSim_CHECK_EQUAL(-amp*cos(k*time), state->getData()[0], 1.0e-2);
+        OpenSim_CHECK_EQUAL(amp*k*sin(k*time), state->getData()[1],1.0e-2);
     }
     OPENSIM_ASSERT_ALWAYS(previousTime == 1.0);
 }
@@ -75,14 +75,9 @@ TEST_CASE("testPendulumExternalLoad") {
     standard.getDataAtTime(time, state->getSize(), data);
     int nc = forward.getModel().getNumCoordinates();
     for (int j = 0; j < nc; ++j) {
-        stringstream message;
-        message << "t=" << time <<" state# "<< j << " "
-            << standard.getColumnLabels()[j+1] << " std=" << data[j]
-            <<"  computed=" << state->getData()[j];
         CAPTURE(time, j, standard.getColumnLabels()[j+1], data[j],
                 state->getData()[j]);
-        ASSERT_EQUAL(data[j], state->getData()[j], 1e-2);
-        cout << "ASSERT_EQUAL PASSED " << message.str() << endl;
+        OpenSim_CHECK_EQUAL(data[j], state->getData()[j], 1e-2);
     }
 }
 
@@ -103,14 +98,9 @@ TEST_CASE("testPendulumExternalLoadWithPointInGround") {
     standard.getDataAtTime(time, state->getSize(), data);
     int nc = forward.getModel().getNumCoordinates();
     for (int j = 0; j < nc; ++j) {
-        stringstream message;
-        message << "t=" << time <<" state# "<< j << " " << standard.getColumnLabels()[j+1]
-            << " std=" << data[j] <<"  computed=" << state->getData()[j];
-        cout << message.str() << endl;
         CAPTURE(time, j, standard.getColumnLabels()[j+1], data[j],
                 state->getData()[j]);
-        ASSERT_EQUAL(data[j], state->getData()[j], 1e-2);
-        cout << "ASSERT_EQUAL PASSED " << endl;
+        OpenSim_CHECK_EQUAL(data[j], state->getData()[j], 1e-2);
     }
 }
 
@@ -131,12 +121,9 @@ TEST_CASE("testArm26") {
     standard->getDataAtTime(time, state->getSize(), data);
 
     for (int j = 0; j < state->getSize(); ++j) {
-        stringstream message;
-        message << "t=" << time <<" state# "<< j << " " << standard->getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j] << endl;
         CAPTURE(time, j, standard->getColumnLabels()[j+1], data[j],
                 state->getData()[j]);
-        ASSERT_EQUAL(data[j], state->getData()[j], 5.0e-3);
-        cout << "ASSERT_EQUAL PASSED " << message.str();
+        OpenSim_CHECK_EQUAL(data[j], state->getData()[j], 5.0e-3);
     }
 
     int i = results.getSize()-1;
@@ -145,12 +132,9 @@ TEST_CASE("testArm26") {
     data.setSize(state->getSize());
     standard->getDataAtTime(time, state->getSize(), data);
     for (int j = 0; j < state->getSize(); ++j) {
-        stringstream message;
-        message << "t=" << time <<" state# "<< j << " " << standard->getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j] << endl;
         CAPTURE(time, j, standard->getColumnLabels()[j+1], data[j],
                 state->getData()[j]);
-        ASSERT_EQUAL(data[j], state->getData()[j], 5.0e-3);
-        cout << "ASSERT_EQUAL PASSED " << message.str();
+        OpenSim_CHECK_EQUAL(data[j], state->getData()[j], 5.0e-3);
     }
 }
 

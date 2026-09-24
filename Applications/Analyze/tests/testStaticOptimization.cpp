@@ -175,13 +175,13 @@ TEST_CASE("testArm26DisabledMuscles") {
     model.updComponent<Actuator>("/forceset/TRImed").set_appliesForce(false);
     analyze.run();
     Storage activations(analyze.getResultsDir() + "/arm26_StaticOptimization_activation.sto");
-    ASSERT_EQUAL(activations.getColumnLabels().size(), 5);
-    ASSERT_EQUAL(activations.getColumnLabels().findIndex("TRIlat"), -1);
-    ASSERT_EQUAL(activations.getColumnLabels().findIndex("TRImed"), -1);
+    OpenSim_CHECK_EQUAL(activations.getColumnLabels().size(), 5);
+    OpenSim_CHECK_EQUAL(activations.getColumnLabels().findIndex("TRIlat"), -1);
+    OpenSim_CHECK_EQUAL(activations.getColumnLabels().findIndex("TRImed"), -1);
     Storage forces(analyze.getResultsDir() + "/arm26_StaticOptimization_force.sto");
-    ASSERT_EQUAL(forces.getColumnLabels().size(), 5);
-    ASSERT_EQUAL(forces.getColumnLabels().findIndex("TRIlat"), -1);
-    ASSERT_EQUAL(forces.getColumnLabels().findIndex("TRImed"), -1);
+    OpenSim_CHECK_EQUAL(forces.getColumnLabels().size(), 5);
+    OpenSim_CHECK_EQUAL(forces.getColumnLabels().findIndex("TRIlat"), -1);
+    OpenSim_CHECK_EQUAL(forces.getColumnLabels().findIndex("TRImed"), -1);
 
     // Ensure time values in the stored state derivatives match the times in the state
     StaticOptimization& statOpt =(StaticOptimization&)model.getAnalysisSet().get("StaticOptimization");
@@ -191,6 +191,6 @@ TEST_CASE("testArm26DisabledMuscles") {
     Array<double> time_d;
     int nt = statesStore->getTimeColumn(time);
     int nt_d = statesDerivativeStore->getTimeColumn(time_d);
-    ASSERT_EQUAL(nt, nt_d);
-    ASSERT_EQUAL(time, time_d, std::numeric_limits<double>::epsilon());
+    OpenSim_CHECK_EQUAL(nt, nt_d);
+    OpenSim_CHECK_EQUAL(time, time_d, std::numeric_limits<double>::epsilon());
 }
