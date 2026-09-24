@@ -653,29 +653,34 @@ TEST_CASE("Object Serialization")
 
     // Now compare object properties to make sure we're not reading and writing the file as just text!
     int numProperties1 = obj1.getPropertySet().getSize();
-    OPENSIM_ASSERT_ALWAYS(numProperties1 == obj2.getPropertySet().getSize());
+    OPENSIM_ASSERT_ALWAYS(numProperties1 == obj2.getPropertySet().getSize() &&
+        "num properties");
 
-    OPENSIM_ASSERT_ALWAYS(obj1 == obj2);
+    OPENSIM_ASSERT_ALWAYS(obj1 == obj2 && "equality");
 
     PropertySet &propSet1 = obj1.getPropertySet();
     PropertySet &propSet2 = obj2.getPropertySet();
     for (int i=0; i < numProperties1; i++){
         Property_Deprecated *prop1 = propSet1.get(i);
         Property_Deprecated *prop2 = propSet2.get(i);
-        OPENSIM_ASSERT_ALWAYS(prop1->getName() == prop2->getName());
+        OPENSIM_ASSERT_ALWAYS(prop1->getName() == prop2->getName() &&
+                "property names");
     }
 
     OPENSIM_ASSERT_ALWAYS(
             ((PropertyBool*) propSet1.get(0))->getValueBool()
-            == ((PropertyBool*) propSet2.get(0))->getValueBool());
+            == ((PropertyBool*) propSet2.get(0))->getValueBool()
+            && "bool property");
 
     OPENSIM_ASSERT_ALWAYS(
             ((PropertyInt*) propSet1.get(1))->getValueInt()
-            == ((PropertyInt*) propSet2.get(1))->getValueInt());
+            == ((PropertyInt*) propSet2.get(1))->getValueInt()
+            && "int property");
 
     OPENSIM_ASSERT_ALWAYS(
             ((PropertyDbl*) propSet1.get(2))->getValueDbl()
-            == ((PropertyDbl*) propSet2.get(2))->getValueDbl());
+            == ((PropertyDbl*) propSet2.get(2))->getValueDbl()
+            && "double property");
 
     /* The following actually fails due to extra spaces when we read back from file!.*/
     string& str1 = ((PropertyStr*) propSet1.get(6))->getValueStr();

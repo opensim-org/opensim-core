@@ -280,16 +280,25 @@ TEST_CASE("testComponentListConst") {
         countSkipFrames++;
     }
 
-    OPENSIM_ASSERT_ALWAYS(numComponents == expectedNumComponents);
-    OPENSIM_ASSERT_ALWAYS(numBodies == model.getNumBodies());
-    OPENSIM_ASSERT_ALWAYS(numBodiesPost == numBodies);
-    OPENSIM_ASSERT_ALWAYS(numMuscles == model.getMuscles().getSize());
+    OPENSIM_ASSERT_ALWAYS(numComponents == expectedNumComponents &&
+            "Number of Components mismatch");
+    OPENSIM_ASSERT_ALWAYS(numBodies == model.getNumBodies() &&
+            "Number of Bodies mismatch");
+    OPENSIM_ASSERT_ALWAYS(numBodiesPost == numBodies &&
+            "Number of Bodies post mismatch");
+    OPENSIM_ASSERT_ALWAYS(numMuscles == model.getMuscles().getSize() &&
+            "Number of Muscles mismatch");
     OPENSIM_ASSERT_ALWAYS(
-            numJointsWithStateVariables == expectedNumJointsWithStateVariables);
+            numJointsWithStateVariables ==
+                            expectedNumJointsWithStateVariables &&
+            "Number of Joints with StateVariables mismatch");
     OPENSIM_ASSERT_ALWAYS(numModelComponentsWithStateVariables ==
-           expectedNumModelComponentsWithStateVariables);
-    OPENSIM_ASSERT_ALWAYS(numJntComponents == expectedNumJntComponents);
-    OPENSIM_ASSERT_ALWAYS(countSkipFrames == expectedNumCountSkipFrames);
+           expectedNumModelComponentsWithStateVariables &&
+            "Number of Components with StateVariables mismatch");
+    OPENSIM_ASSERT_ALWAYS(numJntComponents == expectedNumJntComponents &&
+            "Number of Components within Joints mismatch");
+    OPENSIM_ASSERT_ALWAYS(countSkipFrames == expectedNumCountSkipFrames &&
+            "Number of Frames skipping every other one, mismatch");
 }
 
 // This test repeats the same tests as testComponentListConst(), but using

@@ -780,7 +780,8 @@ TEST_CASE("Component Interface Misc.")
     //     OpenSim::Exception
     // );
 
-    OPENSIM_ASSERT_ALWAYS(theWorld == *world2);
+    OPENSIM_ASSERT_ALWAYS(theWorld == *world2 &&
+        "Model serialization->deserialization FAILED");
 
     world2->setName("InternalWorld");
     world2->connect();
@@ -801,17 +802,21 @@ TEST_CASE("Component Interface Misc.")
     TheWorld world3;
     world3 = *world2;
 
-    OPENSIM_ASSERT_ALWAYS(&world3 != world2);
+    OPENSIM_ASSERT_ALWAYS(&world3 != world2 &&
+        "Model copy assignment FAILED: A copy was not made.");
 
     world3.finalizeFromProperties();
 
-    OPENSIM_ASSERT_ALWAYS(world3 == *world2);
+    OPENSIM_ASSERT_ALWAYS(world3 == *world2 &&
+        "Model copy assignment FAILED: Property values are not identical.");
 
     world3.getComponent("Bar").getSocket<Foo>("parentFoo");
 
     auto& barInWorld3 = world3.getComponent<Bar>("Bar");
     auto& barInWorld2 = world2->getComponent<Bar>("Bar");
-    OPENSIM_ASSERT_ALWAYS(&barInWorld3 != &barInWorld2);
+    OPENSIM_ASSERT_ALWAYS(&barInWorld3 != &barInWorld2 &&
+        "Model copy assignment FAILED: property was not copied but "
+        "assigned the same memory");
 
     world3.setName("World3");
 
@@ -901,14 +906,18 @@ TEST_CASE("Component Interface Misc.")
 
     // Get the results of integrating the system forward
     const TimeSeriesTable_<Real>& results = reporter->getTable();
-    OPENSIM_ASSERT_ALWAYS(results.getNumRows() == 11);
+    OPENSIM_ASSERT_ALWAYS(results.getNumRows() == 11 &&
+        "Number of rows in Reporter results not equal to number of time "
+        "intervals.");
     cout << "************** Contents of Table of Results ****************" << endl;
     cout << results << endl;
     cout << "***************** Qs Output at Final state *****************" << endl;
     auto& finalVal = foo.getOutputValue<Vector>(s, "Qs");
     (~finalVal).dump();
     size_t ncols = results.getNumColumns();
-    OPENSIM_ASSERT_ALWAYS(ncols == static_cast<size_t>(finalVal.size()));
+    OPENSIM_ASSERT_ALWAYS(ncols == static_cast<size_t>(finalVal.size()) &&
+        "Number of cols in Reporter results not equal to size of Output'Qs' "
+        "size.");
 
     // Check the result of the integration on our state variables.
     double tol = 1e-10;

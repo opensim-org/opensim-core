@@ -133,7 +133,8 @@ TEST_CASE("PhysicalOffsetFrameOnBody")
     // same MobilizedBody as Body rod1
     OPENSIM_ASSERT_ALWAYS(
             rod1.getMobilizedBodyIndex()
-                    == offsetFrame->getMobilizedBodyIndex());
+                    == offsetFrame->getMobilizedBodyIndex() &&
+            "testPhysicalOffsetFrameOnBody(): incorrect MobilizedBodyIndex");
 
     Transform X_RO_3 = offsetFrame->findTransformBetween(s, rod1);
     SimTK::Vec3 angles3 = X_RO_3.R().convertRotationToBodyFixedXYZ();
@@ -253,13 +254,19 @@ TEST_CASE("PhysicalOffsetFrameOnPhysicalOffsetFrame")
     // same MobilizedBody as Body rod1
     OPENSIM_ASSERT_ALWAYS(
             rod1.getMobilizedBodyIndex()
-                    == secondFrame->getMobilizedBodyIndex());
+                    == secondFrame->getMobilizedBodyIndex() &&
+            "testPhysicalOffsetFrameOnPhysicalOffsetFrame(): incorrect "
+            "MobilizedBodyIndex");
 
     // test base Frames are identical
     const Frame& baseRod = rod1.findBaseFrame();
-    OPENSIM_ASSERT_ALWAYS(base == baseRod);
+    OPENSIM_ASSERT_ALWAYS(base == baseRod &&
+            "testPhysicalOffsetFrameOnPhysicalOffsetFrame(): incorrect base "
+            "frame for PhysicalOffsetFrame");
     const Frame& base1 = offsetFrame->findBaseFrame();
-    OPENSIM_ASSERT_ALWAYS(base1 == base);
+    OPENSIM_ASSERT_ALWAYS(base1 == base &&
+            "testPhysicalOffsetFrameOnPhysicalOffsetFrame(): incorrect base "
+            "frames for PhysicalOffsetFrame");
 }
 
 TEST_CASE("PhysicalOffsetFrameOnBodySerialize")
@@ -296,7 +303,9 @@ TEST_CASE("PhysicalOffsetFrameOnBodySerialize")
     // verify that PhysicalOffsetFrame shares the same underlying MobilizedBody as rod1
     OPENSIM_ASSERT_ALWAYS(
             rod1.getMobilizedBodyIndex()
-                    == myExtraFrame.getMobilizedBodyIndex());
+                    == myExtraFrame.getMobilizedBodyIndex() &&
+            "testPhysicalOffsetFrameOnBodySerialize(): incorrect "
+            "MobilizedBodyIndex");
 }
 
 TEST_CASE("PhysicalOffsetFrameOnPhysicalOffsetFrameOrder")
@@ -338,7 +347,9 @@ TEST_CASE("PhysicalOffsetFrameOnPhysicalOffsetFrameOrder")
     // make sure that this offsetFrameDistal knows that it is rigidly fixed 
     // to the same MobilizedBody as the rod2 Body
     OPENSIM_ASSERT_ALWAYS(rod2.getMobilizedBodyIndex() ==
-           offsetFrameDistal->getMobilizedBodyIndex());
+           offsetFrameDistal->getMobilizedBodyIndex() &&
+            "testPhysicalOffsetFrameOnPhysicalOffsetFrame(): "
+            "incorrect MobilizedBodyIndex");
 
     // Verify that a direct loop throws an exception
     // Re-wire the PhysicalOffsetFrames to form a loop
