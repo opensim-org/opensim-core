@@ -453,7 +453,7 @@ void simulateMuscle(
     double length = muscle.getLength(si);
     double trueLength = startX + xSinG - anchorWidth / 2;
 
-    ASSERT_EQUAL(length / trueLength, 1.0, testTolerance);
+    OpenSim_CHECK_EQUAL(length / trueLength, 1.0, testTolerance);
 
     model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
 
@@ -526,7 +526,7 @@ void simulateMuscle(
     muscWorkProbe->reset(si);
     muscleWork = muscWorkProbe->getProbeOutputs(si)(0);
     cout << "Muscle work = " << muscleWork << endl;
-    ASSERT_EQUAL(muscleWork, ic1(0), 1e-4);
+    OpenSim_CHECK_EQUAL(muscleWork, ic1(0), 1e-4);
 
 
 
@@ -536,15 +536,21 @@ void simulateMuscle(
     // 6. SIMULATION Tests
     //==========================================================================
     model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
-    ASSERT_EQUAL(forceSquaredProbeTwiceScaled->getProbeOutputs(si)(0), gain1*forceSquaredProbeTwice->getProbeOutputs(si)(0), 1e-4);
-    ASSERT_EQUAL(forceProbeScale->getProbeOutputs(si)(0), gain2*forceProbe->getProbeOutputs(si)(0), 1e-4);
-    ASSERT_EQUAL(forceSquaredProbe->getProbeOutputs(si)(0), forceSquaredProbeTwiceScaled->getProbeOutputs(si)(0), 1e-4);
-    ASSERT_EQUAL(forceSquaredProbe->getProbeOutputs(si)(0), pow(forceProbe->getProbeOutputs(si)(0), 2), 1e-4);
-    ASSERT_EQUAL(forceSquaredProbeTwice->getProbeOutputs(si)(0), 2 * pow(forceProbe->getProbeOutputs(si)(0), 2), 1e-4);
+    OpenSim_CHECK_EQUAL(forceSquaredProbeTwiceScaled->getProbeOutputs(si)(0),
+            gain1*forceSquaredProbeTwice->getProbeOutputs(si)(0), 1e-4);
+    OpenSim_CHECK_EQUAL(forceProbeScale->getProbeOutputs(si)(0),
+            gain2*forceProbe->getProbeOutputs(si)(0), 1e-4);
+    OpenSim_CHECK_EQUAL(forceSquaredProbe->getProbeOutputs(si)(0),
+            forceSquaredProbeTwiceScaled->getProbeOutputs(si)(0), 1e-4);
+    OpenSim_CHECK_EQUAL(forceSquaredProbe->getProbeOutputs(si)(0),
+            pow(forceProbe->getProbeOutputs(si)(0), 2), 1e-4);
+    OpenSim_CHECK_EQUAL(forceSquaredProbeTwice->getProbeOutputs(si)(0),
+            2 * pow(forceProbe->getProbeOutputs(si)(0), 2), 1e-4);
     for (int i = 0; i<initCondVec.size(); ++i)  {
         stringstream myError;
         //myError << "Initial condition[" << i << "] for vector integration is not being correctly applied." << endl;
-        //ASSERT_EQUAL(testRealInitConditions(i), initCondVec(i), 1e-4, __FILE__, __LINE__, myError.str());
+        //OpenSim_CHECK_EQUAL(testRealInitConditions(i), initCondVec(i),
+        //        1e-4, __FILE__, __LINE__, myError.str());
         //if (testRealInitConditions(i) != initCondVec(i))
         //    cout << "WARNING: Initial condition[" << i << "] for vector integration is not being correctly applied.\nThis is actually an error, but I have made it into a warning for now so that the test passes..." << endl;
     }

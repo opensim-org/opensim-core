@@ -143,5 +143,5 @@ TEST_CASE("testSimpleOptimizationExample") {
     // Optimize it!
     f = opt.optimize(controls);
 
-    ASSERT_EQUAL(f, -0.049390, 1e-5);
+    OpenSim_CHECK_EQUAL(f, -0.049390, 1e-5);
 }

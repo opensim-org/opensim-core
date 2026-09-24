@@ -54,46 +54,46 @@ TEST_CASE("APDMDataReader Behaves as Expected")
     SimTK::Vec3 fromTable = accelTableTyped.getRowAtIndex(0)[0];
     SimTK::Vec3 fromFile = SimTK::Vec3{ 0.102542184,0.048829611,9.804986382 };
     double tolerance = SimTK::Eps;
-    ASSERT_EQUAL(fromTable, fromFile, tolerance);
+    OpenSim_CHECK_EQUAL(fromTable, fromFile, tolerance);
     // test last row as well to make sure all data is read correctly,
     // size is as expected
     size_t numRows = accelTableTyped.getIndependentColumn().size();
     OPENSIM_ASSERT_ALWAYS(numRows==1024);
     fromTable = accelTableTyped.getRowAtIndex(numRows - 1)[0];
     fromFile = SimTK::Vec3{ 0.158696249,0.298471016,9.723807335 };
-    ASSERT_EQUAL(fromTable, fromFile, tolerance);
+    OpenSim_CHECK_EQUAL(fromTable, fromFile, tolerance);
     // Magnetometer
     const TimeSeriesTableVec3& magTableTyped =
         reader.getMagneticHeadingTable(tables);
     STOFileAdapterVec3::write(magTableTyped, "magnetometers.sto");
     fromTable = magTableTyped.getRowAtIndex(0)[0];
     fromFile = SimTK::Vec3{ 31.27780876,13.46964874,-62.79244003 };
-    ASSERT_EQUAL(fromTable, fromFile, tolerance);
+    OpenSim_CHECK_EQUAL(fromTable, fromFile, tolerance);
     // test last row as well
     fromTable = magTableTyped.getRowAtIndex(numRows - 1)[0];
     fromFile = SimTK::Vec3{ 31.1386445,13.62834516,-62.70943031 };
-    ASSERT_EQUAL(fromTable, fromFile, tolerance);
+    OpenSim_CHECK_EQUAL(fromTable, fromFile, tolerance);
     // Gyro
     const TimeSeriesTableVec3& gyroTableTyped =
         reader.getAngularVelocityTable(tables);
     STOFileAdapterVec3::write(gyroTableTyped, "gyros.sto");
     fromTable = gyroTableTyped.getRowAtIndex(0)[0];
     fromFile = SimTK::Vec3{ 0.002136296, 0.008331553,-0.008972442 };
-    ASSERT_EQUAL(fromTable, fromFile, tolerance);
+    OpenSim_CHECK_EQUAL(fromTable, fromFile, tolerance);
     fromTable = gyroTableTyped.getRowAtIndex(numRows - 1)[0];
     fromFile = SimTK::Vec3{ 0.008545183,0.007797479,-0.012817774 };
-    ASSERT_EQUAL(fromTable, fromFile, tolerance);
+    OpenSim_CHECK_EQUAL(fromTable, fromFile, tolerance);
     // Orientation
     const TimeSeriesTableQuaternion& quatTableTyped =
         reader.getOrientationsTable(tables);
     STOFileAdapterQuaternion::write(quatTableTyped, "quaternions.sto");
     SimTK::Quaternion quatFromTable = quatTableTyped.getRowAtIndex(0)[0];
     SimTK::Quaternion quatFromFile = SimTK::Quaternion(0.979286375, 0.000865605, -0.005158994, -0.202412525);
-    ASSERT_EQUAL(quatFromTable, quatFromFile, tolerance);
+    OpenSim_CHECK_EQUAL(quatFromTable, quatFromFile, tolerance);
     // last row
     quatFromTable = quatTableTyped.getRowAtIndex(numRows - 1)[0];
     quatFromFile = SimTK::Quaternion(0.979175344,0.00110321,-0.005109196,-0.202949069);
-    ASSERT_EQUAL(quatFromTable, quatFromFile, tolerance);
+    OpenSim_CHECK_EQUAL(quatFromTable, quatFromFile, tolerance);
 }
 
 TEST_CASE("APDMDataReader Behaves as Expected with Format=7")
@@ -113,12 +113,12 @@ TEST_CASE("APDMDataReader Behaves as Expected with Format=7")
     const SimTK::Vec3 refAccel{ -9.982604,-2.450636,0.515763 };
     const SimTK::Vec3 fromFile = accelTable.getRowAtIndex(0)[0];
     double tolerance = SimTK::Eps;
-    ASSERT_EQUAL(refAccel, fromFile, tolerance);
+    OpenSim_CHECK_EQUAL(refAccel, fromFile, tolerance);
     const SimTK::Vec3 refGyro{ -0.928487, -0.085719, -0.059549 };
     const SimTK::Vec3 fromFileGyro = reader.getAngularVelocityTable(tables).getRowAtIndex(0)[0];
-    ASSERT_EQUAL(refGyro, fromFileGyro, tolerance);
+    OpenSim_CHECK_EQUAL(refGyro, fromFileGyro, tolerance);
     // Magnetometer data on a different imu from the last row
     const SimTK::Vec3 refMagneto{ -55.436261,-1.704153,16.382336 };
     const SimTK::Vec3 fromFileMagneto = reader.getMagneticHeadingTable(tables).getRowAtIndex(2)[1]; 
-    ASSERT_EQUAL(refMagneto, fromFileMagneto, tolerance);
+    OpenSim_CHECK_EQUAL(refMagneto, fromFileMagneto, tolerance);
 }

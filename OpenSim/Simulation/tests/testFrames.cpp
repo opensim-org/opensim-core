@@ -91,19 +91,17 @@ TEST_CASE("Body")
 
         // The transform should give a translation of .353553, .353553, 0.0
         SimTK::Vec3 p_known(0.5*sin(radAngle), -0.5*cos(radAngle), 0.0);
-        ASSERT_EQUAL(p_known, xform.p(), SimTK::Vec3(SimTK::Eps));
+        OpenSim_CHECK_EQUAL(p_known, xform.p(), SimTK::Eps);
         // The rotation part is a pure body-fixed Z-rotation by radAngle.
         SimTK::Vec3 angles = xform.R().convertRotationToBodyFixedXYZ();
         SimTK::Vec3 angs_known(0, 0, radAngle);
-        ASSERT_EQUAL(angs_known, angles, SimTK::Vec3(SimTK::Eps));
+        OpenSim_CHECK_EQUAL(angs_known, angles, SimTK::Eps);
     }
     cout << "get transform access time = " << 1e3*lookup_time << "ms" << endl;
 }
 
 TEST_CASE("PhysicalOffsetFrameOnBody")
 {
-    SimTK::Vec3 tolerance(SimTK::Eps);
-
     cout << "\nRunning testOffsetFrameOnBody" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
 
@@ -129,8 +127,8 @@ TEST_CASE("PhysicalOffsetFrameOnBody")
     SimTK::Vec3 angles = X_RO_2.R().convertRotationToBodyFixedXYZ();
 
     // Offsets should be identical expressed in ground or in the Body
-    ASSERT_EQUAL(X_RO.p(), X_RO_2.p(), tolerance);
-    ASSERT_EQUAL(angs_known, angles, tolerance);
+    OpenSim_CHECK_EQUAL(X_RO.p(), X_RO_2.p(), SimTK::Eps);
+    OpenSim_CHECK_EQUAL(angs_known, angles, SimTK::Eps);
     // make sure that this PhysicalOffsetFrame knows that it is rigidly fixed to the
     // same MobilizedBody as Body rod1
     OPENSIM_ASSERT_ALWAYS(
@@ -140,17 +138,17 @@ TEST_CASE("PhysicalOffsetFrameOnBody")
     Transform X_RO_3 = offsetFrame->findTransformBetween(s, rod1);
     SimTK::Vec3 angles3 = X_RO_3.R().convertRotationToBodyFixedXYZ();
     // Transform should be identical to the original offset 
-    ASSERT_EQUAL(X_RO.p(), X_RO_3.p(), tolerance);
-    ASSERT_EQUAL(angs_known, angles3, tolerance);
+    OpenSim_CHECK_EQUAL(X_RO.p(), X_RO_3.p(), SimTK::Eps);
+    OpenSim_CHECK_EQUAL(angs_known, angles3, SimTK::Eps);
 
     SimTK::Vec3 f_R(10.1, 20.2, 30.3);
     SimTK::Vec3 f_RG = rod1.expressVectorInAnotherFrame(s, f_R, 
                                                     pendulum->getGround());
 
-    ASSERT_EQUAL(f_R.norm(), f_RG.norm(), tolerance(0));
+    OpenSim_CHECK_EQUAL(f_R.norm(), f_RG.norm(), SimTK::Eps);
 
     SimTK::Vec3 f_RO = rod1.expressVectorInAnotherFrame(s, f_R, *offsetFrame);
-    ASSERT_EQUAL(f_R.norm(), f_RO.norm(), tolerance(0));
+    OpenSim_CHECK_EQUAL(f_R.norm(), f_RO.norm(), SimTK::Eps);
 
     SimTK::Vec3 p_R(0.333, 0.222, 0.111);
     SimTK::Vec3 p_G = 
@@ -158,7 +156,7 @@ TEST_CASE("PhysicalOffsetFrameOnBody")
     SimTK::Vec3 p_G_2 = 
         rod1.getMobilizedBody().findStationLocationInGround(s, p_R);
 
-    ASSERT_EQUAL(p_G_2, p_G, tolerance);
+    OpenSim_CHECK_EQUAL(p_G_2, p_G, SimTK::Eps);
 }
 
 TEST_CASE("PhysicalOffsetFrameOnPhysicalOffsetFrameAsJointParent")
@@ -209,8 +207,6 @@ TEST_CASE("PhysicalOffsetFrameOnPhysicalOffsetFrameAsJointChild")
 
 TEST_CASE("PhysicalOffsetFrameOnPhysicalOffsetFrame")
 {
-    SimTK::Vec3 tolerance(SimTK::Eps);
-
     cout << "\nRunning testPhysicalOffsetFrameOnPhysicalOffsetFrame" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
 
@@ -250,8 +246,8 @@ TEST_CASE("PhysicalOffsetFrameOnPhysicalOffsetFrame")
     SimTK::Vec3 angles = X_RO_2.R().convertRotationToBodyFixedXYZ();
 
     // Offsets should be identical expressed in ground or in the Body
-    ASSERT_EQUAL(XinBase.p(), X_RO_2.p(), tolerance);
-    ASSERT_EQUAL(angs_known, angles, tolerance);
+    OpenSim_CHECK_EQUAL(XinBase.p(), X_RO_2.p());
+    OpenSim_CHECK_EQUAL(angs_known, angles);
 
     // make sure that this PhysicalOffsetFrame knows that it is rigidly fixed to the
     // same MobilizedBody as Body rod1
@@ -268,8 +264,6 @@ TEST_CASE("PhysicalOffsetFrameOnPhysicalOffsetFrame")
 
 TEST_CASE("PhysicalOffsetFrameOnBodySerialize")
 {
-    SimTK::Vec3 tolerance(SimTK::Eps);
-
     cout << "\nRunning testPhysicalOffsetFrameOnBodySerialize" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
 
@@ -296,9 +290,9 @@ TEST_CASE("PhysicalOffsetFrameOnBodySerialize")
     OPENSIM_ASSERT_ALWAYS(*offsetFrame == myExtraFrame);
 
     const SimTK::Transform& X_GO_2 = myExtraFrame.getTransformInGround(s2);
-    ASSERT_EQUAL(X_GO_2.p(), X_GO_1.p(), tolerance);
-    ASSERT_EQUAL(X_GO_2.R().convertRotationToBodyFixedXYZ(),
-                 X_GO_1.R().convertRotationToBodyFixedXYZ(), tolerance);
+    OpenSim_CHECK_EQUAL(X_GO_2.p(), X_GO_1.p(), SimTK::Eps);
+    OpenSim_CHECK_EQUAL(X_GO_2.R().convertRotationToBodyFixedXYZ(),
+                 X_GO_1.R().convertRotationToBodyFixedXYZ(), SimTK::Eps);
     // verify that PhysicalOffsetFrame shares the same underlying MobilizedBody as rod1
     OPENSIM_ASSERT_ALWAYS(
             rod1.getMobilizedBodyIndex()
@@ -396,7 +390,7 @@ TEST_CASE("FilterByFrameType")
             << " of type " << typeid(component).name() << std::endl;
     }
 
-    ASSERT_EQUAL(11, i);
+    OpenSim_CHECK_EQUAL(11, i);
 
     i = 0;
     std::cout << "\nList all PhysicalFrames in the model." << std::endl;
@@ -404,7 +398,7 @@ TEST_CASE("FilterByFrameType")
         std::cout << "frame[" << ++i << "] is " << component.getName()
             << " of type " << typeid(component).name() << std::endl;
     }
-    ASSERT_EQUAL(10, i);
+    OpenSim_CHECK_EQUAL(10, i);
 
     i = 0;
     std::cout << "\nList all Bodies in the model." << std::endl;
@@ -413,7 +407,7 @@ TEST_CASE("FilterByFrameType")
             << " of type " << typeid(component).name() << std::endl;
     }
 
-    ASSERT_EQUAL(2, i);
+    OpenSim_CHECK_EQUAL(2, i);
 
     i = 0;
     std::cout << "\nList the PhyscicalOffsetFrame in the model." << std::endl;
@@ -422,7 +416,7 @@ TEST_CASE("FilterByFrameType")
         std::cout << "frame[" << ++i << "] is " << component.getName()
             << " of type " << typeid(component).name() << std::endl;
     }
-    ASSERT_EQUAL(7, i);
+    OpenSim_CHECK_EQUAL(7, i);
 }
 
 TEST_CASE("VelocityAndAccelerationMethods")

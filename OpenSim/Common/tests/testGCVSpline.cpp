@@ -46,13 +46,13 @@ TEST_CASE("GCVSpline Behaves as Expected")
     // Should obtain the input samples exactly
     for (int i = 0; i < size; ++i) {
         t[0] = x[i];
-        ASSERT_EQUAL(y[i], spline.calcValue(t), SimTK::SignificantReal);
+        OpenSim_CHECK_EQUAL(y[i], spline.calcValue(t), SimTK::SignificantReal);
     }
     cout << "GCVSpline successfully reproduced input data points." << endl;
 
     for (int i = 0; i < (2*size-1); ++i) {
         t[0] = dt / 2 * i;
-        ASSERT_EQUAL(sin(omega*t[0]), spline.calcValue(t), dt*dt);
+        OpenSim_CHECK_EQUAL(sin(omega*t[0]), spline.calcValue(t), dt*dt);
     }
     cout << "GCVSpline successfully interpolated within accuracy." << endl;
 
@@ -61,7 +61,7 @@ TEST_CASE("GCVSpline Behaves as Expected")
         t[0] = x[i];
         double dy = omega*cos(omega*t[0]);
         double dS = spline.calcDerivative(derivComponents, t);
-        ASSERT_EQUAL(dy, dS, omega*dt*dt);
+        OpenSim_CHECK_EQUAL(dy, dS, omega*dt*dt);
     }
     cout << "GCVSpline successfully produced first derivatives." << endl;
 
@@ -70,6 +70,6 @@ TEST_CASE("GCVSpline Behaves as Expected")
         t[0] = x[i];
         double dS = spline.calcDerivative(derivComponents, t);
         double dS2 = spline2.calcDerivative(derivComponents, t);
-        ASSERT_EQUAL(dS, dS, SimTK::Eps);
+        OpenSim_CHECK_EQUAL(dS, dS, SimTK::Eps);
     }
 }
