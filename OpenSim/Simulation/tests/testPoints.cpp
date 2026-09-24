@@ -60,8 +60,6 @@ public:
 
 TEST_CASE("testStationOnBody") {
 
-    SimTK::Vec3 tolerance(SimTK::Eps);
-
     cout << "Running testStationOnFrame" << endl;
 
     Model* pendulum = new Model("double_pendulum.osim");
@@ -84,17 +82,17 @@ TEST_CASE("testStationOnBody") {
         SimTK::Vec3 comInGround =  myStation->getLocationInGround(s);
         SimTK::Vec3 comBySimbody =
             rod1.getMobilizedBody().findStationLocationInGround(s, com);
-        ASSERT_EQUAL(comInGround, comBySimbody, tolerance);
+        OpenSim_CHECK_EQUAL(comInGround, comBySimbody, SimTK::Eps);
 
         SimTK::Vec3 comVInGround = myStation->getVelocityInGround(s);
         SimTK::Vec3 comVBySimbody =
             rod1.getMobilizedBody().findStationVelocityInGround(s, com);
-        ASSERT_EQUAL(comVInGround, comVBySimbody, tolerance);
+        OpenSim_CHECK_EQUAL(comVInGround, comVBySimbody, SimTK::Eps);
 
         SimTK::Vec3 comAInGround = myStation->getAccelerationInGround(s);
         SimTK::Vec3 comABySimbody =
             rod1.getMobilizedBody().findStationAccelerationInGround(s, com);
-        ASSERT_EQUAL(comAInGround, comABySimbody, tolerance);
+        OpenSim_CHECK_EQUAL(comAInGround, comABySimbody, SimTK::Eps);
     }
 }
 

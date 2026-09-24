@@ -249,14 +249,8 @@ namespace {
             q_err = q_sb - q_osim;
         }
 
-        double qerrnorm = q_err.norm();
-        double uerrnorm = u_err.norm();
-
-        cout << "\nSimbody - OpenSim:  |q_err| = " << qerrnorm
-             << "  |u_err| =" << uerrnorm << endl;
-
-        OPENSIM_ASSERT_ALWAYS(qerrnorm <= 10 * integ_accuracy);
-        OPENSIM_ASSERT_ALWAYS(uerrnorm <= 100 * integ_accuracy);
+        CHECK(q_err.norm() <= 10 * integ_accuracy);
+        CHECK(u_err.norm() <= 100 * integ_accuracy);
     }
 
     void compareSimulations(SimTK::MultibodySystem& system, SimTK::State& state,
@@ -1291,7 +1285,7 @@ TEST_CASE("testScapulothoracicJoint") {
         const SimTK::Vec3& ellipsoidRadii =
                 scapulothoracicJoint->get_thoracic_ellipsoid_radii_x_y_z();
 
-        ASSERT_EQUAL(ellipsoidRadii, thoraxFactors, SimTK::Eps);
+        OpenSim_CHECK_EQUAL(ellipsoidRadii, thoraxFactors, SimTK::Eps);
 
         const double& origin_X =
                 scapulothoracicJoint->get_scapula_winging_axis_origin(0);
@@ -1299,9 +1293,11 @@ TEST_CASE("testScapulothoracicJoint") {
         const double& origin_Y =
                 scapulothoracicJoint->get_scapula_winging_axis_origin(1);
 
-        ASSERT_EQUAL(origin_X, unscaled_XY[0] * scapulaFactors[0], SimTK::Eps);
+        OpenSim_CHECK_EQUAL(origin_X, unscaled_XY[0] * scapulaFactors[0],
+                SimTK::Eps);
 
-        ASSERT_EQUAL(origin_Y, unscaled_XY[1] * scapulaFactors[1], SimTK::Eps);
+        OpenSim_CHECK_EQUAL(origin_Y, unscaled_XY[1] * scapulaFactors[1],
+                SimTK::Eps);
     }
 }
 
@@ -2272,7 +2268,7 @@ TEST_CASE("testAddedFreeJointForBodyWithoutJoint") {
 
     model.initSystem();
 
-    ASSERT_EQUAL(6, model.getNumCoordinates());
+    OpenSim_CHECK_EQUAL(6, model.getNumCoordinates());
     model.printBasicInfo();
 }
 
@@ -2461,16 +2457,16 @@ TEST_CASE("testAutomaticJointReversal") {
     SimTK::Vec3 com = model.calcMassCenterPosition(s);
     SimTK::Vec3 comc = modelConstrained.calcMassCenterPosition(sc);
 
-    ASSERT_EQUAL(qknee, qkneec, 10 * integ_accuracy);
+    OpenSim_CHECK_EQUAL(qknee, qkneec, 10 * integ_accuracy);
 
     double distErr = (com - comc).norm();
-    ASSERT_EQUAL(distErr, 0.0, 10 * integ_accuracy);
+    OpenSim_CHECK_EQUAL(distErr, 0.0, 10 * integ_accuracy);
 
     SimTK::Vec3 acom = model.calcMassCenterAcceleration(s);
     SimTK::Vec3 acomc = modelConstrained.calcMassCenterAcceleration(sc);
 
     double accErr = ((acom - acomc).norm()) / (acom.norm() + SimTK::Eps);
-    ASSERT_EQUAL(accErr, 0.0, sqrt(integ_accuracy));
+    OpenSim_CHECK_EQUAL(accErr, 0.0, sqrt(integ_accuracy));
 }
 
 /// The parent and child frames should be swapped if the "reverse" element
@@ -2618,7 +2614,7 @@ TEST_CASE("testAutomaticLoopJointBreaker") {
 
     SimTK::Vec3 acc2 = model.calcMassCenterAcceleration(s2);
 
-    ASSERT_EQUAL(acc2, acc, SimTK::Vec3(SimTK::Eps));
+    OpenSim_CHECK_EQUAL(acc2, acc, SimTK::Eps);
 }
 
 // Test accessors.
@@ -2777,25 +2773,29 @@ TEST_CASE("testMotionTypesForCustomJointCoordinates") {
         // hip_rx is the first coordinate and pure rotational about X
         auto coordName = hip->getCoordinate(0).getName();
         auto mt = hip->getCoordinate(0).getMotionType();
-        OPENSIM_ASSERT_ALWAYS(mt == Coordinate::MotionType::Rotational);
+        INFO("coordinate: " << coordName);
+        CHECK(mt == Coordinate::MotionType::Rotational);
 
         // hip_qx is the second coordinate that influences Z rotation but is
         // pure translational along X
         coordName = hip->getCoordinate(1).getName();
         mt = hip->getCoordinate(1).getMotionType();
-        OPENSIM_ASSERT_ALWAYS(mt == Coordinate::MotionType::Translational);
+        INFO("coordinate: " << coordName);
+        CHECK(mt == Coordinate::MotionType::Translational);
 
         // hip_qy is the third coordinate that also influences Z rotation but is
         // scaled to translate along Y and therefore NOT a pure translational
         // coordinate either
         coordName = hip->getCoordinate(2).getName();
         mt = hip->getCoordinate(2).getMotionType();
-        OPENSIM_ASSERT_ALWAYS(mt == Coordinate::MotionType::Coupled);
+        INFO("coordinate: " << coordName);
+        CHECK(mt == Coordinate::MotionType::Coupled);
 
         // hip_tz is the fourth coordinate, which is pure translational along Z
         coordName = hip->getCoordinate(3).getName();
         mt = hip->getCoordinate(3).getMotionType();
-        OPENSIM_ASSERT_ALWAYS(mt == Coordinate::MotionType::Translational);
+        INFO("coordinate: " << coordName);
+        CHECK(mt == Coordinate::MotionType::Translational);
     }
     {
         // Specifying a linear function with slope of -1 should still yield a
@@ -2833,10 +2833,13 @@ TEST_CASE("testMotionTypesForCustomJointCoordinates") {
 
         // hip_rx is the first coordinate and pure rotational about X
         auto mt = hip->getCoordinate(0).getMotionType();
-        OPENSIM_ASSERT_ALWAYS(mt == Coordinate::MotionType::Rotational);
+        INFO("coordinate name: " << coordNameRX);
+        CHECK(mt == Coordinate::MotionType::Rotational);
+
         // hip_ry is the second coordinate and pure rotational about Y
         mt = hip->getCoordinate(1).getMotionType();
-        OPENSIM_ASSERT_ALWAYS(mt == Coordinate::MotionType::Rotational);
+        INFO("coordinate name: " << coordNameRY);
+        CHECK(mt == Coordinate::MotionType::Rotational);
     }
 }
 
@@ -2932,7 +2935,7 @@ TEST_CASE("testNonzeroInterceptCustomJointVsPin") {
     cout << "Pin angle - CustomJoint angle = " << pin_q - cj_q
          << " vs. offset = " << offset << endl;
 
-    ASSERT_EQUAL(pin_q - cj_q, offset, integ_accuracy);
+    OpenSim_CHECK_EQUAL(pin_q - cj_q, offset, integ_accuracy);
 }
 
 // reproduction to exercise the bug described in issue #3532

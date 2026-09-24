@@ -146,8 +146,9 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY,
             SimTK::Vec3(0));
         SimTK::Vec3 angularAccel = body.getAccelerationInGround(osim_state)[0];
 
-        ASSERT_EQUAL(accelerations[i], accel, integ_accuracy);
-        ASSERT_EQUAL(angularAccelerations[i], angularAccel, integ_accuracy);
+        OpenSim_CHECK_EQUAL(accelerations[i], accel, integ_accuracy);
+        OpenSim_CHECK_EQUAL(angularAccelerations[i], angularAccel,
+                integ_accuracy);
     }
 }
 

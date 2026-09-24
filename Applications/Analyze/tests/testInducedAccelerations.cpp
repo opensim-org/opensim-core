@@ -111,22 +111,22 @@ TEST_CASE("testDoublePendulumWithSolver") {
         // Compute total acceleration due to all force contributors
         Vector udot_tot = iaaSolver.solve(s, "total");
         Vector udot = calcDoublePendulumUdot(pendulum, s, torq1, torq2, true, true);
-        ASSERT_EQUAL(udot[0], udot_tot[0], 1e-5);
-        ASSERT_EQUAL(udot[1], udot_tot[1], 1e-5);
+        OpenSim_CHECK_EQUAL(udot[0], udot_tot[0], 1e-5);
+        OpenSim_CHECK_EQUAL(udot[1], udot_tot[1], 1e-5);
 
         // Compute velocity contribution
         Vector udot_vel = iaaSolver.solve(s, "velocity");
         // velocity first, since other contributors set u's to zero and the state is not restored until next iteration.
          udot = calcDoublePendulumUdot(pendulum, s, 0, 0, false, true);
 
-        ASSERT_EQUAL(udot[0], udot_vel[0], 1e-5);
-        ASSERT_EQUAL(udot[1], udot_vel[1], 1e-5);
+        OpenSim_CHECK_EQUAL(udot[0], udot_vel[0], 1e-5);
+        OpenSim_CHECK_EQUAL(udot[1], udot_vel[1], 1e-5);
 
         double q1ddot = iaaSolver.getInducedCoordinateAcceleration(s, "q1");
         double q2ddot = iaaSolver.getInducedCoordinateAcceleration(s, "q2");
 
-        ASSERT_EQUAL(udot[0], q1ddot, 1e-5);
-        ASSERT_EQUAL(udot[1], q2ddot, 1e-5);
+        OpenSim_CHECK_EQUAL(udot[0], q1ddot, 1e-5);
+        OpenSim_CHECK_EQUAL(udot[1], q2ddot, 1e-5);
 
         const SimTK::SpatialVec& rod1Acc =
             iaaSolver.getInducedBodyAcceleration(s, "rod1");
@@ -135,16 +135,16 @@ TEST_CASE("testDoublePendulumWithSolver") {
 
         // The z-component of the angular acc of the body should be equivalent
         // to the generalized coordinate of the rod connected to ground.
-        ASSERT_EQUAL(udot[0], rod1Acc[0][2], 1e-5);
+        OpenSim_CHECK_EQUAL(udot[0], rod1Acc[0][2], 1e-5);
         // The angular acceleration of rod2 should be sum the of coord accs.
-        ASSERT_EQUAL(udot[0]+udot[1], rod2Acc[0][2], 1e-5);
+        OpenSim_CHECK_EQUAL(udot[0]+udot[1], rod2Acc[0][2], 1e-5);
 
         // Compute gravity contribution
         Vector udot_grav = iaaSolver.solve(s, "gravity");
         udot = calcDoublePendulumUdot(pendulum, s, 0, 0, true, false);
 
-        ASSERT_EQUAL(udot[0], udot_grav[0], 1e-5);
-        ASSERT_EQUAL(udot[1], udot_grav[1], 1e-5);
+        OpenSim_CHECK_EQUAL(udot[0], udot_grav[0], 1e-5);
+        OpenSim_CHECK_EQUAL(udot[1], udot_grav[1], 1e-5);
 
         // Vec3 comAcc = iaaSolver.getInducedMassCenterAcceleration(s);
         //cout << "CoM Acceleration due to gravity: " << comAcc << endl;
@@ -153,15 +153,15 @@ TEST_CASE("testDoublePendulumWithSolver") {
         Vector udot_torq1 = iaaSolver.solve(s, "Torq1");
         udot = calcDoublePendulumUdot(pendulum, s, torq1, 0, false, false);
 
-        ASSERT_EQUAL(udot[0], udot_torq1[0], 1e-5);
-        ASSERT_EQUAL(udot[1], udot_torq1[1], 1e-5);
+        OpenSim_CHECK_EQUAL(udot[0], udot_torq1[0], 1e-5);
+        OpenSim_CHECK_EQUAL(udot[1], udot_torq1[1], 1e-5);
 
         // Compute Torq2 contribution
         Vector udot_torq2 = iaaSolver.solve(s, "Torq2");
         udot = calcDoublePendulumUdot(pendulum, s, 0, torq2, false, false);
 
-        ASSERT_EQUAL(udot[0], udot_torq2[0], 1e-5);
-        ASSERT_EQUAL(udot[1], udot_torq2[1], 1e-5);
+        OpenSim_CHECK_EQUAL(udot[0], udot_torq2[0], 1e-5);
+        OpenSim_CHECK_EQUAL(udot[1], udot_torq2[1], 1e-5);
     }
 }
 
@@ -205,22 +205,22 @@ TEST_CASE("testDoublePendulum") {
         // Compute velocity contribution
         // velocity first, since other contributors set u's to zero and the state is not restored until next iteration.
         Vector udot = calcDoublePendulumUdot(pendulum, s, 0, 0, false, true);
-        ASSERT_EQUAL(udot[0], u1dot_vel[i], 1e-5);
-        ASSERT_EQUAL(udot[1], u2dot_vel[i], 1e-5);
+        OpenSim_CHECK_EQUAL(udot[0], u1dot_vel[i], 1e-5);
+        OpenSim_CHECK_EQUAL(udot[1], u2dot_vel[i], 1e-5);
 
         // Compute gravity contribution
         udot = calcDoublePendulumUdot(pendulum, s, 0, 0, true, false);
-        ASSERT_EQUAL(udot[0], u1dot_grav[i], 1e-5);
-        ASSERT_EQUAL(udot[1], u2dot_grav[i], 1e-5);
+        OpenSim_CHECK_EQUAL(udot[0], u1dot_grav[i], 1e-5);
+        OpenSim_CHECK_EQUAL(udot[1], u2dot_grav[i], 1e-5);
 
         // Compute Torq1 contribution
         udot = calcDoublePendulumUdot(pendulum, s, 0.75, 0, false, false);
-        ASSERT_EQUAL(udot[0], u1dot_torq1[i], 1e-5);
-        ASSERT_EQUAL(udot[1], u2dot_torq1[i], 1e-5);
+        OpenSim_CHECK_EQUAL(udot[0], u1dot_torq1[i], 1e-5);
+        OpenSim_CHECK_EQUAL(udot[1], u2dot_torq1[i], 1e-5);
 
         // Compute Torq1 contribution
         udot = calcDoublePendulumUdot(pendulum, s, 0, 0.50, false, false);
-        ASSERT_EQUAL(udot[0], u1dot_torq2[i], 1e-5);
-        ASSERT_EQUAL(udot[1], u2dot_torq2[i], 1e-5);
+        OpenSim_CHECK_EQUAL(udot[0], u1dot_torq2[i], 1e-5);
+        OpenSim_CHECK_EQUAL(udot[1], u2dot_torq2[i], 1e-5);
     }
 }

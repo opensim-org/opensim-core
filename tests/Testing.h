@@ -32,6 +32,9 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
+
 #include <fstream>
 #include <iostream>
 #include <regex>
@@ -43,58 +46,61 @@ namespace OpenSim::Testing {
 /** Floating-point values are equal if within a tolerance of the same type. */
 template <typename T,
     typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr >
-bool isEqual(T expected, T found, T tolerance) {
-
+void checkEqual(T expected, T found, T tolerance) {
     if (SimTK::isNaN(found) && SimTK::isNaN(expected)) {
-        return true;
+        return;
     }
-
-    return !(found < expected - tolerance || found > expected + tolerance);
+    const T scale = std::max(std::max(expected, std::abs(found)), T(1));
+    CHECK_THAT(found, Catch::Matchers::WithinAbs(expected, scale*tolerance));
 }
 
 /** Integral values are equal if exactly equal. */
 template <typename T,
     typename std::enable_if<std::is_integral<T>::value>::type* = nullptr >
-bool isEqual(T expected, T found) {
-
-    return found == expected;
+void checkEqual(T expected, T found) {
+    CHECK(found == expected);
 }
 
 /** Non-arithmetic values are equal if within a tolerance of the same type. */
 template <typename T,
     typename std::enable_if<!std::is_arithmetic<T>::value>::type* = nullptr >
-bool isEqual(T expected, T found, T tolerance) {
-
-    if (found.isNaN() && expected.isNaN()) {
-        return true;
+void checkEqual(T expected, T found, T tolerance) {
+    if (SimTK::isNaN(found) && SimTK::isNaN(expected)) {
+        return;
     }
-
-    return !(found < expected - tolerance || found > expected + tolerance);
-}
-
-/** Two SimTK::Vecs are equal if equal elementwise at the default tolerance. */
-template<int M, typename ELT, int STRIDE>
-bool isEqual(const SimTK::Vec<M, ELT, STRIDE>& vecA,
-             const SimTK::Vec<M, ELT, STRIDE>& vecB) {
-
-    if (vecA.isNaN() && vecB.isNaN()) {
-        return true;
-    }
-
-    return SimTK::Test::numericallyEqual(vecA, vecB, 1);
+    const T scale = std::max(std::max(expected, std::abs(found)), T(1));
+    CHECK_THAT(found, Catch::Matchers::WithinAbs(expected, scale*tolerance));
 }
 
 /** Two SimTK::Vecs are equal if equal elementwise within a tolerance. */
 template<int M, typename ELT, int STRIDE>
-bool isEqual(const SimTK::Vec<M, ELT, STRIDE>& vecA,
-             const SimTK::Vec<M, ELT, STRIDE>& vecB,
-             double tolerance) {
-
-    if (vecA.isNaN() && vecB.isNaN()) {
-        return true;
+void checkEqual(const SimTK::Vec<M, ELT, STRIDE>& vecA,
+                const SimTK::Vec<M, ELT, STRIDE>& vecB,
+                double tolerance) {
+    for (int i = 0; i < M; ++i) {
+        checkEqual(vecA[i], vecB[i], tolerance);
     }
+}
 
-    return SimTK::Test::numericallyEqual(vecA, vecB, 1, tolerance);
+/** Two SimTK::Vecs are equal if equal elementwise at the default tolerance. */
+template<int M, typename ELT, int STRIDE>
+void checkEqual(const SimTK::Vec<M, ELT, STRIDE>& vecA,
+                const SimTK::Vec<M, ELT, STRIDE>& vecB) {
+    double tol = SimTK::Test::defTol<ELT>();
+    checkEqual(vecA, vecB, tol);
+}
+
+/**
+ * Two SimTK::Vecs are equal if equal elementwise within elementwise
+ * tolerances.
+ */
+template<int M, typename ELT, int STRIDE>
+void checkEqual(const SimTK::Vec<M, ELT, STRIDE>& vecA,
+                const SimTK::Vec<M, ELT, STRIDE>& vecB,
+                const SimTK::Vec<M, ELT, STRIDE>& tolerance) {
+    for (int i = 0; i < M; ++i) {
+        checkEqual(vecA[i], vecB[i], tolerance[i]);
+    }
 }
 
 /**
@@ -102,23 +108,11 @@ bool isEqual(const SimTK::Vec<M, ELT, STRIDE>& vecA,
  * tolerance.
  */
 template<typename Container, typename T>
-bool isEqual(const Container& vecA, const Container& vecB, T tolerance) {
-
-    if (vecA.size() != vecB.size()) {
-        return false;
-    }
-
+void checkEqual(const Container& vecA, const Container& vecB, T tolerance) {
+    CHECK(vecA.size() == vecB.size());
     for (int i = 0; i < (int)vecA.size(); ++i) {
-        if (SimTK::isNaN(vecA[i]) && SimTK::isNaN(vecB[i])) {
-            continue;
-        }
-
-        if (vecA[i] < vecB[i] - tolerance || vecA[i] > vecB[i] + tolerance) {
-            return false;
-        }
+        checkEqual(vecA[i], vecB[i], tolerance);
     }
-
-    return true;
 }
 
 /**
@@ -263,9 +257,6 @@ void reportTendonAndFiberForcesAcrossFiberLengths(const T& muscle,
 #define CHECK_STORAGE_AGAINST_STANDARD(...) \
     OPENSIM_ASSERT_ALWAYS(OpenSim::Testing::storageMatchesStandard(__VA_ARGS__))
 
-#define ASSERT_EQUAL(...) \
-    OPENSIM_ASSERT_ALWAYS(OpenSim::Testing::isEqual(__VA_ARGS__))
-
 #define ASSERT_THROW(EXPECTED_EXCEPTION, STATEMENT) \
 do { \
     bool caughtExpectedException = false; \
@@ -317,6 +308,9 @@ do { \
 
 // Catch2 helper macros
 // --------------------
+
+#define OpenSim_CHECK_EQUAL(...) \
+    OpenSim::Testing::checkEqual(__VA_ARGS__)
 
 #define OpenSim_CATCH_MATRIX_INTERNAL(testtype, actual, expected, tol, toltype)\
 do {                                                                         \

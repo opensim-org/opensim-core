@@ -94,7 +94,7 @@ TEST_CASE("XsensDataReader") {
             REQUIRE_THAT(fromTable[i],
                     Catch::Matchers::WithinAbs(fromFile[i], tolerance));
         }
-        // ASSERT_EQUAL(fromTable, fromFile, tolerance);
+        // OpenSim_CHECK_EQUAL(fromTable, fromFile, tolerance);
         // Gyro
         const TimeSeriesTableVec3& gyroTableTyped =
                 reconstructFromXML.getAngularVelocityTable(tables);

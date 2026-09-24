@@ -118,7 +118,7 @@ namespace {
         double qErr0 = (q0_1 - q0).norm();
 
         cout << "Norm change in q after initial assembly 0: " << qErr0 << endl;
-        ASSERT_EQUAL(0.0, qErr0/q0.norm(), accuracy);
+        OpenSim_CHECK_EQUAL(0.0, qErr0/q0.norm(), accuracy);
 
         //For debugging the assembled pose
         if (model.hasVisualizer()){
@@ -175,7 +175,8 @@ namespace {
 
         double inertial = mass*comAcc[1];
 
-        ASSERT_EQUAL((totalYforce - bw - inertial) / bw, 0.0, SimTK::SqrtEps);
+        OpenSim_CHECK_EQUAL((totalYforce - bw - inertial) / bw, 0.0,
+                SimTK::SqrtEps);
 
         //const CoordinateSet &coords = model.getCoordinateSet();
         double q_error = 0;
@@ -220,7 +221,7 @@ namespace {
         double q1Err = q1ErrVec.norm();
 
         cout << "Norm change in q after simulation assembly: " << q1Err << endl;
-        ASSERT_EQUAL(0.0, q1Err/q1.norm(), accuracy);
+        OpenSim_CHECK_EQUAL(0.0, q1Err/q1.norm(), accuracy);
 
         // recreate system with states from initial defaults
         State state0 = model.initSystem();
@@ -244,13 +245,13 @@ namespace {
         //cout << "******************* Init System Initial State *******************" << endl;
         for (int i = 0; i < q0_1.size(); i++) {
             cout << "Pre-simulation:" << i << " q0_1 = " << q0_1[i] << ", q0_2 = " << q0_2[i] << endl;
-            ASSERT_EQUAL(q0_1[i], q0_2[i], 10*accuracy);
+            OpenSim_CHECK_EQUAL(q0_1[i], q0_2[i], 10*accuracy);
         }
 
         cout << "******************* Init System Final State *******************" << endl;
         for (int i = 0; i < q1_1.size(); i++) {
             cout << "Post-simulation:" << i << " q1_1 = " << q1_1[i] << ", q1_2 = " << q1_2[i] << endl;
-            ASSERT_EQUAL(q1_1[i], q1_2[i], 10 * accuracy);
+            OpenSim_CHECK_EQUAL(q1_1[i], q1_2[i], 10 * accuracy);
         }
         OPENSIM_ASSERT_ALWAYS(max(abs(q1_1 - q0_1)) > 1e-2);
     }
@@ -335,7 +336,7 @@ namespace {
             // qerr = coords[0].getValue(state)-kneeAngle;
             //        cout << "Assembly errors:: cerr = " << cerr << " m,  qerr = "
             //          << convertRadiansToDegrees(qerr) << " degrees" << endl;
-            ASSERT_EQUAL(0.0, cerr, model.get_assembly_accuracy());
+            OpenSim_CHECK_EQUAL(0.0, cerr, model.get_assembly_accuracy());
         }
     }
 }
@@ -406,7 +407,7 @@ TEST_CASE("CoordinateCouplerCompoundFunction") {
         // Compute the constraint error.
         const auto& q = state.getQ();
         auto error = q[2] - (coeffs[0]*q[0] + coeffs[1]*q[1] + coeffs[2]);
-        ASSERT_EQUAL(0.0, error, 1e-10);
+        OpenSim_CHECK_EQUAL(0.0, error, 1e-10);
     }
 
     // Multi-variate polynomial function.
@@ -431,6 +432,6 @@ TEST_CASE("CoordinateCouplerCompoundFunction") {
         auto polyValue = coeffs[0] + coeffs[1]*q[1] + coeffs[2]*q[1]*q[1] +
             coeffs[3]*q[0] + coeffs[4]*q[0]*q[1] + coeffs[5]*q[0]*q[0];
         auto error = q[2] - polyValue;
-        ASSERT_EQUAL(0.0, error, 1e-10);
+        OpenSim_CHECK_EQUAL(0.0, error, 1e-10);
     }
 }
