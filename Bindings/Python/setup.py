@@ -36,7 +36,11 @@ class BinaryDistribution(Distribution):
 
 setup(name='opensim',
       version=__version__,
-      options={"bdist_wheel": {"build_number": "1"}},
+      # The build number is used to differentiate between different builds of the same 
+      # version. Typically on testpypi. py_limited_api is used to specify the Python version 
+      # compatibility for the wheel. If upgrading the Python 3.11, change this to cp311 for example.
+      options={"bdist_wheel": {"build_number": "1", 
+                               "py_limited_api": "cp310"}},
       description='OpenSim Simulation Framework',
       long_description=long_description,
       long_description_content_type='text/markdown',

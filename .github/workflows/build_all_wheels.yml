@@ -14,7 +14,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ['3.11', '3.12', '3.13']
+        python-version: ['3.11']
 
     outputs:
       version: ${{ steps.configure.outputs.version }}
@@ -91,7 +91,7 @@ jobs:
     runs-on: macos-15
     strategy:
       matrix:
-        python-version: ['3.11', '3.12', '3.13']
+        python-version: ['3.11']
 
     outputs:
       version: ${{ steps.configure.outputs.version }}
@@ -173,7 +173,7 @@ jobs:
 
     strategy:
       matrix:
-        python: ["cp311", "cp312", "cp313"]
+        python: ["cp311"]
 
     steps:
     - uses: actions/checkout@v4
