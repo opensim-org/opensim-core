@@ -214,7 +214,8 @@ TEST_CASE("testTorqueActuator") {
     
     // Check that de/serialization works
     Model modelFromFile("TestTorqueActuatorModel.osim");
-    OPENSIM_ASSERT_ALWAYS(modelFromFile == *model);
+    OPENSIM_ASSERT_ALWAYS(modelFromFile == *model &&
+            "Model from file failed to match model in memory.");
 
     std::cout << " ********** Test TorqueActuator time =  ********** " << 
         1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
@@ -647,7 +648,8 @@ TEST_CASE("testBodyActuator") {
 
     // Check that de/serialization works
     Model modelFromFile("TestBodyActuatorModel.osim");
-    OPENSIM_ASSERT_ALWAYS(modelFromFile == *model);
+    OPENSIM_ASSERT_ALWAYS(modelFromFile == *model &&
+            "Model from file failed to match model in memory.");
 
     std::cout << " ********** Test BodyActuator time = ********** " <<
         1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC << "ms\n" << endl;

@@ -253,7 +253,8 @@ namespace {
             cout << "Post-simulation:" << i << " q1_1 = " << q1_1[i] << ", q1_2 = " << q1_2[i] << endl;
             OpenSim_CHECK_EQUAL(q1_1[i], q1_2[i], 10 * accuracy);
         }
-        OPENSIM_ASSERT_ALWAYS(max(abs(q1_1 - q0_1)) > 1e-2);
+        OPENSIM_ASSERT_ALWAYS(max(abs(q1_1 - q0_1)) > 1e-2 &&
+                "Check that state changed after simulation FAILED");
     }
 
     double calcLigamentLengthError(const SimTK::State &s, const Model &model)

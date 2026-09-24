@@ -320,7 +320,8 @@ TEST_CASE("scaleModelWithLigament") {
     }
 
     //Finally make sure we didn't incorrectly scale anything else in the model
-    OPENSIM_ASSERT_ALWAYS(std == comp);
+    OPENSIM_ASSERT_ALWAYS(std == comp &&
+            "Standard model failed to match scaled.");
 
     compareModelToStandard("comp_toyLigamentModelScaled_latest.osim",
                            std_scaledModelFile, 1.0e-6);

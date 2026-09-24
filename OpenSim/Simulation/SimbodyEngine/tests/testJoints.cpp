@@ -392,8 +392,11 @@ namespace {
                 "**************"
              << endl;
 
-        OPENSIM_ASSERT_ALWAYS(!SimTK::isNaN(norm_rel_error));
-        OPENSIM_ASSERT_ALWAYS(norm_rel_error <= SimTK::SignificantReal);
+        OPENSIM_ASSERT_ALWAYS(!SimTK::isNaN(norm_rel_error) &&
+                "testEquivalentBodyForceForGenForces FAILED, udot_error = NaN");
+        OPENSIM_ASSERT_ALWAYS(norm_rel_error <= SimTK::SignificantReal &&
+                "testEquivalentBodyForceForGenForces FAILED, udot_error > "
+                "SimTK::SignificantReal");
     }
 
     void testWeldJoint(bool randomizeBodyOrder) {
@@ -1070,18 +1073,22 @@ TEST_CASE("testEllipsoidJoint") {
 
         OPENSIM_ASSERT_ALWAYS(
                 myEllipsoidJt.getCoordinate(EllipsoidJoint::Coord::Rotation1X)
-                == myEllipsoidJt.get_coordinates(0));
+                == myEllipsoidJt.get_coordinates(0) &&
+                "Coordinate accessor failed");
         OPENSIM_ASSERT_ALWAYS(
                 myEllipsoidJt.getCoordinate(EllipsoidJoint::Coord::Rotation2Y)
-                == myEllipsoidJt.get_coordinates(1));
+                == myEllipsoidJt.get_coordinates(1) &&
+                "Coordinate accessor failed");
         OPENSIM_ASSERT_ALWAYS(
                 myEllipsoidJt.getCoordinate(EllipsoidJoint::Coord::Rotation3Z)
-                == myEllipsoidJt.get_coordinates(2));
+                == myEllipsoidJt.get_coordinates(2) &&
+                "Coordinate accessor failed");
         ASSERT_THROW(OpenSim::InvalidCall, myEllipsoidJt.getCoordinate());
 
         OPENSIM_ASSERT_ALWAYS(
                 myEllipsoidJt.updCoordinate(EllipsoidJoint::Coord::Rotation1X)
-                == myEllipsoidJt.upd_coordinates(0));
+                == myEllipsoidJt.upd_coordinates(0) &&
+                "Coordinate accessor failed");
         ASSERT_THROW(OpenSim::InvalidCall, myEllipsoidJt.updCoordinate());
     }
 
@@ -1205,27 +1212,34 @@ TEST_CASE("testFreeJoint") {
 
         OPENSIM_ASSERT_ALWAYS(
                 myFreeJoint.getCoordinate(FreeJoint::Coord::Rotation1X)
-                == myFreeJoint.get_coordinates(0));
+                == myFreeJoint.get_coordinates(0) &&
+                "Coordinate accessor failed");
         OPENSIM_ASSERT_ALWAYS(
                 myFreeJoint.getCoordinate(FreeJoint::Coord::Rotation2Y)
-                == myFreeJoint.get_coordinates(1));
+                == myFreeJoint.get_coordinates(1) &&
+                "Coordinate accessor failed");
         OPENSIM_ASSERT_ALWAYS(
                 myFreeJoint.getCoordinate(FreeJoint::Coord::Rotation3Z)
-                == myFreeJoint.get_coordinates(2));
+                == myFreeJoint.get_coordinates(2) &&
+                "Coordinate accessor failed");
         OPENSIM_ASSERT_ALWAYS(
                 myFreeJoint.getCoordinate(FreeJoint::Coord::TranslationX)
-                == myFreeJoint.get_coordinates(3));
+                == myFreeJoint.get_coordinates(3) &&
+                "Coordinate accessor failed");
         OPENSIM_ASSERT_ALWAYS(
                 myFreeJoint.getCoordinate(FreeJoint::Coord::TranslationY)
-                == myFreeJoint.get_coordinates(4));
+                == myFreeJoint.get_coordinates(4) &&
+                "Coordinate accessor failed");
         OPENSIM_ASSERT_ALWAYS(
                 myFreeJoint.getCoordinate(FreeJoint::Coord::TranslationZ)
-                == myFreeJoint.get_coordinates(5));
+                == myFreeJoint.get_coordinates(5) &&
+                "Coordinate accessor failed");
         ASSERT_THROW(OpenSim::InvalidCall, myFreeJoint.getCoordinate());
 
         OPENSIM_ASSERT_ALWAYS(
                 myFreeJoint.updCoordinate(FreeJoint::Coord::Rotation1X)
-                == myFreeJoint.upd_coordinates(0));
+                == myFreeJoint.upd_coordinates(0) &&
+                "Coordinate accessor failed");
         ASSERT_THROW(OpenSim::InvalidCall, myFreeJoint.updCoordinate());
     }
 
@@ -1408,18 +1422,22 @@ TEST_CASE("testBallJoint") {
 
         OPENSIM_ASSERT_ALWAYS(
                 myBallJoint.getCoordinate(BallJoint::Coord::Rotation1X)
-                == myBallJoint.get_coordinates(0));
+                == myBallJoint.get_coordinates(0) &&
+                "Coordinate accessor failed");
         OPENSIM_ASSERT_ALWAYS(
                 myBallJoint.getCoordinate(BallJoint::Coord::Rotation2Y)
-                == myBallJoint.get_coordinates(1));
+                == myBallJoint.get_coordinates(1) &&
+                "Coordinate accessor failed");
         OPENSIM_ASSERT_ALWAYS(
                 myBallJoint.getCoordinate(BallJoint::Coord::Rotation3Z)
-                == myBallJoint.get_coordinates(2));
+                == myBallJoint.get_coordinates(2) &&
+                "Coordinate accessor failed");
         ASSERT_THROW(OpenSim::InvalidCall, myBallJoint.getCoordinate());
 
         OPENSIM_ASSERT_ALWAYS(
                 myBallJoint.updCoordinate(BallJoint::Coord::Rotation1X)
-                == myBallJoint.upd_coordinates(0));
+                == myBallJoint.upd_coordinates(0) &&
+                "Coordinate accessor failed");
         ASSERT_THROW(OpenSim::InvalidCall, myBallJoint.updCoordinate());
     }
 
@@ -1574,14 +1592,18 @@ TEST_CASE("testPinJoint") {
 
         OPENSIM_ASSERT_ALWAYS(
                 myPinJoint.getCoordinate(PinJoint::Coord::RotationZ)
-                == myPinJoint.get_coordinates(0));
+                == myPinJoint.get_coordinates(0) &&
+                "Coordinate accessor failed");
         OPENSIM_ASSERT_ALWAYS(myPinJoint.getCoordinate() ==
-               myPinJoint.get_coordinates(0));
+               myPinJoint.get_coordinates(0) &&
+                "Coordinate accessor failed");
         OPENSIM_ASSERT_ALWAYS(
                 myPinJoint.updCoordinate(PinJoint::Coord::RotationZ)
-                == myPinJoint.upd_coordinates(0));
+                == myPinJoint.upd_coordinates(0) &&
+                "Coordinate accessor failed");
         OPENSIM_ASSERT_ALWAYS(
-                myPinJoint.updCoordinate() == myPinJoint.upd_coordinates(0));
+                myPinJoint.updCoordinate() == myPinJoint.upd_coordinates(0) &&
+                "Coordinate accessor failed");
     }
 
 } // end testPinJoint
@@ -1694,14 +1716,18 @@ TEST_CASE("testSliderJoint") {
 
         OPENSIM_ASSERT_ALWAYS(
                 mySliderJoint.getCoordinate(SliderJoint::Coord::TranslationX)
-                == mySliderJoint.get_coordinates(0));
+                == mySliderJoint.get_coordinates(0) &&
+                "Coordinate accessor failed");
         OPENSIM_ASSERT_ALWAYS(mySliderJoint.getCoordinate() ==
-               mySliderJoint.get_coordinates(0));
+               mySliderJoint.get_coordinates(0) &&
+                "Coordinate accessor failed");
         OPENSIM_ASSERT_ALWAYS(
                 mySliderJoint.updCoordinate(SliderJoint::Coord::TranslationX)
-                == mySliderJoint.upd_coordinates(0));
+                == mySliderJoint.upd_coordinates(0) &&
+                "Coordinate accessor failed");
         OPENSIM_ASSERT_ALWAYS(mySliderJoint.updCoordinate() ==
-               mySliderJoint.upd_coordinates(0));
+               mySliderJoint.upd_coordinates(0) &&
+                "Coordinate accessor failed");
     }
 
 } // end testSliderJoint
@@ -1814,18 +1840,22 @@ TEST_CASE("testPlanarJoint") {
 
         OPENSIM_ASSERT_ALWAYS(
                 myPlanarJoint.getCoordinate(PlanarJoint::Coord::RotationZ)
-                == myPlanarJoint.get_coordinates(0));
+                == myPlanarJoint.get_coordinates(0) &&
+                "Coordinate accessor failed");
         OPENSIM_ASSERT_ALWAYS(
                 myPlanarJoint.getCoordinate(PlanarJoint::Coord::TranslationX)
-                == myPlanarJoint.get_coordinates(1));
+                == myPlanarJoint.get_coordinates(1) &&
+                "Coordinate accessor failed");
         OPENSIM_ASSERT_ALWAYS(
                 myPlanarJoint.getCoordinate(PlanarJoint::Coord::TranslationY)
-                == myPlanarJoint.get_coordinates(2));
+                == myPlanarJoint.get_coordinates(2) &&
+                "Coordinate accessor failed");
         ASSERT_THROW(OpenSim::InvalidCall, myPlanarJoint.getCoordinate());
 
         OPENSIM_ASSERT_ALWAYS(
                 myPlanarJoint.updCoordinate(PlanarJoint::Coord::RotationZ)
-                == myPlanarJoint.upd_coordinates(0));
+                == myPlanarJoint.upd_coordinates(0) &&
+                "Coordinate accessor failed");
         ASSERT_THROW(OpenSim::InvalidCall, myPlanarJoint.updCoordinate());
     }
 
@@ -2501,15 +2531,19 @@ TEST_CASE("testUserJointReversal") {
     // - pin2's parent is rod2 and child is rod1 (parent and child are swapped)
     auto& pin1 = model.getComponent<Joint>("./jointset/pin1");
     OPENSIM_ASSERT_ALWAYS(
-            pin1.getParentFrame().findBaseFrame().getName() == "ground");
+            pin1.getParentFrame().findBaseFrame().getName() == "ground" &&
+            "Incorrect parent frame when 'reverse' element is set to 'false'");
     OPENSIM_ASSERT_ALWAYS(
-            pin1.getChildFrame().findBaseFrame().getName() == "rod1");
+            pin1.getChildFrame().findBaseFrame().getName() == "rod1" &&
+            "Incorrect child frame when 'reverse' element is set to 'false'");
 
     auto& pin2 = model.getComponent<Joint>("./jointset/pin2");
     OPENSIM_ASSERT_ALWAYS(
-            pin2.getParentFrame().findBaseFrame().getName() == "rod2");
+            pin2.getParentFrame().findBaseFrame().getName() == "rod2" &&
+            "Incorrect parent frame when 'reverse' element is set to 'true'");
     OPENSIM_ASSERT_ALWAYS(
-            pin2.getChildFrame().findBaseFrame().getName() == "rod1");
+            pin2.getChildFrame().findBaseFrame().getName() == "rod1" &&
+            "Incorrect child frame when 'reverse' element is set to 'true'");
 }
 
 /// test that kinematic loops are broken to form a tree with constraints
@@ -2597,7 +2631,8 @@ TEST_CASE("testAutomaticLoopJointBreaker") {
     int nu = model.getMatterSubsystem().getNumMobilities();
 
     // User should get the dofs they requested
-    OPENSIM_ASSERT_ALWAYS(ncoords == nu);
+    OPENSIM_ASSERT_ALWAYS(ncoords == nu &&
+            "Multibody tree failed to preserve user-specified coordinates.");
 
     SimTK::Vec3 acc = model.calcMassCenterAcceleration(s);
     // number of active constraints
@@ -2606,7 +2641,8 @@ TEST_CASE("testAutomaticLoopJointBreaker") {
     cout << "Number of model constraints:" << nconstraints
          << "  Number of system constraints: " << nc << endl;
 
-    OPENSIM_ASSERT_ALWAYS(nc == 6);
+    OPENSIM_ASSERT_ALWAYS(nc == 6 &&
+            "Loop closure failed to adequately constrain tree.");
 
     std::string file("testModelWithLoopJoint.osim");
     model.print(file);
@@ -2658,15 +2694,19 @@ TEST_CASE("testCustomJointAccessors") {
         myModel.addJoint(myCustomJoint1);
 
         OPENSIM_ASSERT_ALWAYS(myCustomJoint1->getCoordinate() ==
-               myCustomJoint1->get_coordinates(0));
+               myCustomJoint1->get_coordinates(0) &&
+                "Coordinate accessor failed");
         OPENSIM_ASSERT_ALWAYS(myCustomJoint1->getCoordinate(0) ==
-               myCustomJoint1->get_coordinates(0));
+               myCustomJoint1->get_coordinates(0) &&
+                "Coordinate accessor failed");
         ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint1->getCoordinate(1));
 
         OPENSIM_ASSERT_ALWAYS(myCustomJoint1->updCoordinate() ==
-               myCustomJoint1->upd_coordinates(0));
+               myCustomJoint1->upd_coordinates(0) &&
+                "Coordinate accessor failed");
         OPENSIM_ASSERT_ALWAYS(myCustomJoint1->updCoordinate(0) ==
-               myCustomJoint1->upd_coordinates(0));
+               myCustomJoint1->upd_coordinates(0) &&
+                "Coordinate accessor failed");
         ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint1->updCoordinate(1));
     }
     {
@@ -2683,16 +2723,20 @@ TEST_CASE("testCustomJointAccessors") {
         myModel.addJoint(myCustomJoint2);
 
         OPENSIM_ASSERT_ALWAYS(myCustomJoint2->getCoordinate(0) ==
-               myCustomJoint2->get_coordinates(0));
+               myCustomJoint2->get_coordinates(0) &&
+                "Coordinate accessor failed");
         OPENSIM_ASSERT_ALWAYS(myCustomJoint2->getCoordinate(1) ==
-               myCustomJoint2->get_coordinates(1));
+               myCustomJoint2->get_coordinates(1) &&
+                "Coordinate accessor failed");
         ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint2->getCoordinate());
         ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint2->getCoordinate(2));
 
         OPENSIM_ASSERT_ALWAYS(myCustomJoint2->updCoordinate(0) ==
-               myCustomJoint2->upd_coordinates(0));
+               myCustomJoint2->upd_coordinates(0) &&
+                "Coordinate accessor failed");
         OPENSIM_ASSERT_ALWAYS(myCustomJoint2->updCoordinate(1) ==
-               myCustomJoint2->upd_coordinates(1));
+               myCustomJoint2->upd_coordinates(1) &&
+                "Coordinate accessor failed");
         ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint2->updCoordinate());
         ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint2->updCoordinate(2));
     }
@@ -2703,18 +2747,22 @@ TEST_CASE("testGimbalJointAccessors") {
 
     OPENSIM_ASSERT_ALWAYS(
             myGimbalJoint.getCoordinate(GimbalJoint::Coord::Rotation1X)
-            == myGimbalJoint.get_coordinates(0));
+            == myGimbalJoint.get_coordinates(0) &&
+            "Coordinate accessor failed");
     OPENSIM_ASSERT_ALWAYS(
             myGimbalJoint.getCoordinate(GimbalJoint::Coord::Rotation2Y)
-            == myGimbalJoint.get_coordinates(1));
+            == myGimbalJoint.get_coordinates(1) &&
+            "Coordinate accessor failed");
     OPENSIM_ASSERT_ALWAYS(
             myGimbalJoint.getCoordinate(GimbalJoint::Coord::Rotation3Z)
-            == myGimbalJoint.get_coordinates(2));
+            == myGimbalJoint.get_coordinates(2) &&
+            "Coordinate accessor failed");
     ASSERT_THROW(OpenSim::InvalidCall, myGimbalJoint.getCoordinate());
 
     OPENSIM_ASSERT_ALWAYS(
             myGimbalJoint.updCoordinate(GimbalJoint::Coord::Rotation1X)
-            == myGimbalJoint.upd_coordinates(0));
+            == myGimbalJoint.upd_coordinates(0) &&
+            "Coordinate accessor failed");
     ASSERT_THROW(OpenSim::InvalidCall, myGimbalJoint.updCoordinate());
 }
 
@@ -2723,15 +2771,18 @@ TEST_CASE("testUniversalJointAccessors") {
 
     OPENSIM_ASSERT_ALWAYS(
             myUniversalJoint.getCoordinate(UniversalJoint::Coord::Rotation1X)
-            == myUniversalJoint.get_coordinates(0));
+            == myUniversalJoint.get_coordinates(0) &&
+            "Coordinate accessor failed");
     OPENSIM_ASSERT_ALWAYS(
             myUniversalJoint.getCoordinate(UniversalJoint::Coord::Rotation2Y)
-            == myUniversalJoint.get_coordinates(1));
+            == myUniversalJoint.get_coordinates(1) &&
+            "Coordinate accessor failed");
     ASSERT_THROW(OpenSim::InvalidCall, myUniversalJoint.getCoordinate());
 
     OPENSIM_ASSERT_ALWAYS(
             myUniversalJoint.updCoordinate(UniversalJoint::Coord::Rotation1X)
-            == myUniversalJoint.upd_coordinates(0));
+            == myUniversalJoint.upd_coordinates(0) &&
+            "Coordinate accessor failed");
     ASSERT_THROW(OpenSim::InvalidCall, myUniversalJoint.updCoordinate());
 }
 
@@ -2928,8 +2979,10 @@ TEST_CASE("testNonzeroInterceptCustomJointVsPin") {
     // Verify the MotionType for both Joints are the same (Rotational)
     auto mt1 = hip1->getCoordinate().getMotionType();
     auto mt2 = hip2->getCoordinate().getMotionType();
-    OPENSIM_ASSERT_ALWAYS(mt1 == Coordinate::MotionType::Rotational);
-    OPENSIM_ASSERT_ALWAYS(mt2 == mt1);
+    OPENSIM_ASSERT_ALWAYS(mt1 == Coordinate::MotionType::Rotational &&
+            "PinJoint's Coordinate failed to have MotionType::Rotational");
+    OPENSIM_ASSERT_ALWAYS(mt2 == mt1 &&
+            "CustomJoint's Coordinate MotionType failed to match PinJoint's");
 
     // Set initial conditions of both pendulum models
     hip1->getCoordinate().setValue(s1, Pi / 3);

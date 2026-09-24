@@ -89,7 +89,8 @@ void testJacobians1() {
     Mat63 J = ConstantCurvatureJoint::getConstantCurveJacobian(q, d);
 
     Mat63 diffJ = J - expectedJacobian;
-    OPENSIM_ASSERT_ALWAYS(diffJ.norm() < 1e-9);
+    OPENSIM_ASSERT_ALWAYS(diffJ.norm() < 1e-9 &&
+            "Jacobian didn't match expected value");
 
     ////////////////////////////////////////////////////////
     // Test the time derivative of the Jacobian
@@ -127,7 +128,8 @@ void testJacobians1() {
             q, qDot, d);
 
     Mat63 diffJdot = Jdot - expectedJacobianTimeDeriv;
-    OPENSIM_ASSERT_ALWAYS(diffJdot.norm() < 1e-9);
+    OPENSIM_ASSERT_ALWAYS(diffJdot.norm() < 1e-9 &&
+            "Jacobian time deriv didn't match expected value");
 }
 
 void testJacobians2() {
@@ -172,7 +174,8 @@ void testJacobians2() {
     Mat63 J = ConstantCurvatureJoint::getConstantCurveJacobian(q, d);
 
     Mat63 diffJ = J - expectedJacobian;
-    OPENSIM_ASSERT_ALWAYS(diffJ.norm() < 1e-9);
+    OPENSIM_ASSERT_ALWAYS(diffJ.norm() < 1e-9 &&
+            "Jacobian didn't match expected value");
 
     ////////////////////////////////////////////////////////
     // Test the time derivative of the Jacobian
@@ -210,7 +213,8 @@ void testJacobians2() {
             q, qDot, d);
 
     Mat63 diffJdot = Jdot - expectedJacobianTimeDeriv;
-    OPENSIM_ASSERT_ALWAYS(diffJdot.norm() < 1e-9);
+    OPENSIM_ASSERT_ALWAYS(diffJdot.norm() < 1e-9 &&
+            "Jacobian time deriv didn't match expected value");
 }
 
 void testJacobians3() {

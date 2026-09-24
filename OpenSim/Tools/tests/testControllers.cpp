@@ -155,7 +155,9 @@ TEST_CASE("testControlSetControllerOnBlock") {
 
     si.getQ().dump("Final position:");
     double x_err = fabs(coordinates[0].getValue(si) - 0.5*(controlForce[0]/blockMass)*finalTime*finalTime);
-    OPENSIM_ASSERT_ALWAYS(x_err <= accuracy);
+    OPENSIM_ASSERT_ALWAYS(x_err <= accuracy &&
+            "ControlSetControllerOnBlock failed to produce the expected "
+            "motion.");
 
     // Save the simulation results
     Storage states(manager.getStateStorage());
