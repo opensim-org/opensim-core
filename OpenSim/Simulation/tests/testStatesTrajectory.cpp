@@ -238,7 +238,7 @@ void testPopulateTrajectoryAndStatesTrajectoryReporter() {
         std::vector<double> times { 0, 0.01, 0.02, 0.03, 0.04, 0.05 };
         int i = 0;
         for (const auto& s : statesColInterval->getStates()) {
-            ASSERT_EQUAL(s.getTime(), times[i], 1e-5);
+            OpenSim_CHECK_EQUAL(s.getTime(), times[i], 1e-5);
             ++i;
         }
     }

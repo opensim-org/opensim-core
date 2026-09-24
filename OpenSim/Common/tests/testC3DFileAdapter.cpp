@@ -48,7 +48,7 @@ void compare_tables(const OpenSim::TimeSeriesTable_<ETY>& table1,
                          Exception,
                          "Column labels are not the same for tables.");
 
-        ASSERT_EQUAL(table1.getIndependentColumn(),
+        OpenSim_CHECK_EQUAL(table1.getIndependentColumn(),
                      table2.getIndependentColumn(), tolerance);
     } catch (const OpenSim::KeyNotFound&) {}
 
@@ -61,7 +61,7 @@ void compare_tables(const OpenSim::TimeSeriesTable_<ETY>& table1,
             auto elt2 = matrix2.getElt(r, c);
 
             CAPTURE(r, c);
-            ASSERT_EQUAL(elt1, elt2, tolerance);
+            OpenSim_CHECK_EQUAL(elt1, elt2, tolerance);
         }
 }
 
@@ -211,11 +211,11 @@ void test(const std::string filename) {
     SimTK::RowVectorView forcesTableFirstRow = forces.getRowAtIndex(0);
 
 
-    ASSERT_EQUAL(analogTableFirstRow.getElt(0, 0),
+    OpenSim_CHECK_EQUAL(analogTableFirstRow.getElt(0, 0),
         -forcesTableFirstRow.getElt(0, 1), SimTK::SignificantReal);
-    ASSERT_EQUAL(analogTableFirstRow.getElt(0, 1),
+    OpenSim_CHECK_EQUAL(analogTableFirstRow.getElt(0, 1),
         -forcesTableFirstRow.getElt(0, 0), SimTK::SignificantReal);
-    ASSERT_EQUAL(analogTableFirstRow.getElt(0, 2),
+    OpenSim_CHECK_EQUAL(analogTableFirstRow.getElt(0, 2),
         -forcesTableFirstRow.getElt(0, 2), SimTK::SignificantReal);
 
 }

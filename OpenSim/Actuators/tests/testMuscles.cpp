@@ -159,11 +159,10 @@ namespace {
                 // equilibrium demands tendon and muscle fiber forces are equivalent
                 CAPTURE(muscle.getConcreteClassName(), i, j, activation,
                         tf, mf);
-                ASSERT_EQUAL(tf, mf, equilTol);
+                OpenSim_CHECK_EQUAL(tf, mf, equilTol);
             }
         }
     }
-
 
     /**
     Main test driver to be used on any muscle model (derived from Muscle) so new
@@ -382,7 +381,7 @@ namespace {
         double length = actu.getLength(si);
         double trueLength = startX + xSinG - anchorWidth/2;
 
-        ASSERT_EQUAL(length/trueLength, 1.0, InitializationTestTolerance);
+        OpenSim_CHECK_EQUAL(length/trueLength, 1.0, InitializationTestTolerance);
 
         model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
 
@@ -504,7 +503,7 @@ namespace {
 
                 dKEPEW_dt = dtendonPE + dfiberPE - dfiberW - dboundaryW;
 
-                ASSERT_EQUAL(dKEPEW_dt, 0.0, CorrectnessTestTolerance);
+                OpenSim_CHECK_EQUAL(dKEPEW_dt, 0.0, CorrectnessTestTolerance);
             }
         }
     }
@@ -695,22 +694,23 @@ TEST_CASE("testThelen2003Muscle")
         // Check properties of MuscleFixedWidthPennationModel.
         const MuscleFixedWidthPennationModel& pennMdl =
             myMcl->getPennationModel();
-        ASSERT_EQUAL(optimalFiberLength, pennMdl.get_optimal_fiber_length(),
-            SimTK::SignificantReal);
-        ASSERT_EQUAL(pennAngAtOptimal, pennMdl.get_pennation_angle_at_optimal(),
-            SimTK::SignificantReal);
-        ASSERT_EQUAL(maximumPennation, pennMdl.get_maximum_pennation_angle(),
-            SimTK::SignificantReal);
+        OpenSim_CHECK_EQUAL(optimalFiberLength,
+                pennMdl.get_optimal_fiber_length(), SimTK::SignificantReal);
+        OpenSim_CHECK_EQUAL(pennAngAtOptimal,
+                pennMdl.get_pennation_angle_at_optimal(),
+                SimTK::SignificantReal);
+        OpenSim_CHECK_EQUAL(maximumPennation,
+                pennMdl.get_maximum_pennation_angle(), SimTK::SignificantReal);
 
         // Check properties of MuscleFirstOrderActivationDynamicModel.
         const MuscleFirstOrderActivationDynamicModel& actMdl =
             myMcl->getActivationModel();
-        ASSERT_EQUAL(actTimeConstant, actMdl.get_activation_time_constant(),
-            SimTK::SignificantReal);
-        ASSERT_EQUAL(deactTimeConstant, actMdl.get_deactivation_time_constant(),
-            SimTK::SignificantReal);
-        ASSERT_EQUAL(minimumActivation, actMdl.get_minimum_activation(),
-            SimTK::SignificantReal);
+        OpenSim_CHECK_EQUAL(actTimeConstant,
+                actMdl.get_activation_time_constant(), SimTK::SignificantReal);
+        OpenSim_CHECK_EQUAL(deactTimeConstant,
+                actMdl.get_deactivation_time_constant(), SimTK::SignificantReal);
+        OpenSim_CHECK_EQUAL(minimumActivation, actMdl.get_minimum_activation(),
+                SimTK::SignificantReal);
 
         myModel.finalizeConnections();  // Needed so sockets have correct absolute path on print
         // Print model and read back in.
@@ -723,22 +723,24 @@ TEST_CASE("testThelen2003Muscle")
         // Check properties of MuscleFixedWidthPennationModel.
         const MuscleFixedWidthPennationModel& pennMdl2 =
             myMcl2.getPennationModel();
-        ASSERT_EQUAL(optimalFiberLength, pennMdl2.get_optimal_fiber_length(),
-            SimTK::SignificantReal);
-        ASSERT_EQUAL(pennAngAtOptimal, pennMdl2.get_pennation_angle_at_optimal(),
-            SimTK::SignificantReal);
-        ASSERT_EQUAL(maximumPennation, pennMdl2.get_maximum_pennation_angle(),
-            SimTK::SignificantReal);
+        OpenSim_CHECK_EQUAL(optimalFiberLength,
+                pennMdl2.get_optimal_fiber_length(), SimTK::SignificantReal);
+        OpenSim_CHECK_EQUAL(pennAngAtOptimal,
+                pennMdl2.get_pennation_angle_at_optimal(),
+                SimTK::SignificantReal);
+        OpenSim_CHECK_EQUAL(maximumPennation,
+                pennMdl2.get_maximum_pennation_angle(), SimTK::SignificantReal);
 
         // Check properties of MuscleFirstOrderActivationDynamicModel.
         const MuscleFirstOrderActivationDynamicModel& actMdl2 =
             myMcl2.getActivationModel();
-        ASSERT_EQUAL(actTimeConstant, actMdl2.get_activation_time_constant(),
-            SimTK::SignificantReal);
-        ASSERT_EQUAL(deactTimeConstant, actMdl2.get_deactivation_time_constant(),
-            SimTK::SignificantReal);
-        ASSERT_EQUAL(minimumActivation, actMdl2.get_minimum_activation(),
-            SimTK::SignificantReal);
+        OpenSim_CHECK_EQUAL(actTimeConstant,
+                actMdl2.get_activation_time_constant(), SimTK::SignificantReal);
+        OpenSim_CHECK_EQUAL(deactTimeConstant,
+                actMdl2.get_deactivation_time_constant(),
+                SimTK::SignificantReal);
+        OpenSim_CHECK_EQUAL(minimumActivation, actMdl2.get_minimum_activation(),
+                SimTK::SignificantReal);
     }
 
     // Test exception when muscle cannot be initialized.
@@ -959,6 +961,9 @@ TEST_CASE("testDeGrooteFregly2016Muscle") {
     muscle.set_tendon_compliance_dynamics_mode("explicit");
     muscle.set_activation_time_constant(Activation0);
     muscle.set_deactivation_time_constant(Deactivation0);
+    // Set a non-zero minimum control to prevent a divide-by-zero since this
+    // muscle is using explicit tendon dynamics.
+    muscle.setMinControl(0.05);
 
     double x0 = 0;
     double act0 = 0.2;

@@ -112,8 +112,8 @@ TEST_CASE("testStates")
 
     for (int i = 0; i < y1.size(); i++)
     {
-        ASSERT_EQUAL(y1[i], y3[i], 1e-5);
-        ASSERT_EQUAL(y2[i], y4[i], 1e-5);
+        OpenSim_CHECK_EQUAL(y1[i], y3[i], 1e-5);
+        OpenSim_CHECK_EQUAL(y2[i], y4[i], 1e-5);
     }
     OPENSIM_ASSERT_ALWAYS(max(abs(y1-y2)) > 1e-4);
 }

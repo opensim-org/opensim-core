@@ -332,13 +332,9 @@ namespace {
 
             cout << "r's = " << ma << "::" << ma_dldtheta <<"  at q = " << coord.getValue(s)*180/Pi;
 
-            try {
-                // Verify that the definition of the moment-arm is satisfied
-                ASSERT_EQUAL(ma, ma_dldtheta, integ_accuracy);
-            }
-            catch (const OpenSim::Exception&) {
-                passesDefinition = false;
-            }
+            // Verify that the definition of the moment-arm is satisfied
+            passesDefinition &= SimTK::Test::numericallyEqual(ma, ma_dldtheta,
+                1, integ_accuracy);
 
             // Verify that the moment-arm calculated is dynamically consistent with moment generated
             if (mass!=0 ) {
@@ -393,16 +389,24 @@ namespace {
                 cout << "  Tau = " << equivalentIvdMuscleTorque <<"::" << equivalentMuscleTorque
                     << "  r*fm = " << ma*force <<"::" << ma_dldtheta*force << endl;
 
+                // Resulting torque from ID (no constraints) + constraints =
+                // equivalent applied torque
+                bool inverseDynamicsTorqueEqualsEquivalentMuscleTorque =
+                    SimTK::Test::numericallyEqual(0.0,
+                        (equivalentIvdMuscleTorque-equivalentMuscleTorque) /
+                            equivalentIvdMuscleTorque,
+                        1, integ_accuracy);
 
-                try {
-                    // Resulting torque from ID (no constraints) + constraints = equivalent applied torque
-                    ASSERT_EQUAL(0.0, (equivalentIvdMuscleTorque-equivalentMuscleTorque)/equivalentIvdMuscleTorque, integ_accuracy);
-                    // verify that equivalent torque is in fact moment-arm*force
-                    ASSERT_EQUAL(0.0, (ma*force-equivalentMuscleTorque)/equivalentMuscleTorque, integ_accuracy);
-                }
-                catch (const OpenSim::Exception&) {
-                    passesDynamicConsistency = false;
-                }
+                // verify that equivalent torque is in fact moment-arm*force
+                bool equivalentMuscleTorqueEqualsMomentArmTimesForce =
+                    SimTK::Test::numericallyEqual(0.0, (
+                        ma*force-equivalentMuscleTorque)/equivalentMuscleTorque,
+                        1, integ_accuracy);
+
+                passesDynamicConsistency &=
+                    inverseDynamicsTorqueEqualsEquivalentMuscleTorque &&
+                    equivalentMuscleTorqueEqualsMomentArmTimesForce;
+
             } else {
                 cout << endl;
             }
@@ -418,7 +422,8 @@ namespace {
 
         // Minimum requirement to pass is that calculated moment-arm satisfies either
         // dL/dTheta definition or is at least dynamically consistent, in which dL/dTheta is not
-        OPENSIM_ASSERT_ALWAYS(passesDefinition || passesDynamicConsistency);
+        INFO(errorMessage);
+        CHECK((passesDefinition || passesDynamicConsistency));
     }
 
 }

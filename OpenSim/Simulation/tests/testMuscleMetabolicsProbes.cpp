@@ -536,7 +536,7 @@ TEST_CASE("compareUmbergerProbeToPublishedResults") {
         // Normalized force should be within roundoff error of this analytical
         // expression.
         double forceExpected = sol_Arel * (1 + vNorm) / (sol_Arel - vNorm);
-        ASSERT_EQUAL(forceExpected, sol_normalizedForce[i],
+        OpenSim_CHECK_EQUAL(forceExpected, sol_normalizedForce[i],
             100*SimTK::SignificantReal);
 
         // Mechanical power should be within roundoff error of this analytical
@@ -544,7 +544,7 @@ TEST_CASE("compareUmbergerProbeToPublishedResults") {
         double v_mps = vNorm * (sol_Brel/sol_Arel) * sol_optimalFiberLength;
         double powerExpected = -forceExpected * sol_maxIsometricForce * v_mps
                                / sol_muscleMass;
-        ASSERT_EQUAL(powerExpected, sol_mechanicalPower[i],
+        OpenSim_CHECK_EQUAL(powerExpected, sol_mechanicalPower[i],
             100*SimTK::SignificantReal);
 
         // Polynomials have been fit to the published results for total energy
@@ -561,7 +561,7 @@ TEST_CASE("compareUmbergerProbeToPublishedResults") {
             rateExpected = ((-187.6077328*vNorm - 553.9650747)*vNorm
                            - 194.9721769)*vNorm + 332.9105995;
         }
-        ASSERT_EQUAL(rateExpected, sol_totalEnergyRate[i], 1.0);
+        OpenSim_CHECK_EQUAL(rateExpected, sol_totalEnergyRate[i], 1.0);
 
         if (DISPLAY_ERROR_CALCULATIONS) {
             cout << setw(w) << -(double)i/(numPoints-1)
@@ -609,7 +609,7 @@ TEST_CASE("compareUmbergerProbeToPublishedResults") {
         // Normalized force should be within roundoff error of this analytical
         // expression.
         double forceExpected = rec_Arel * (1 + vNorm) / (rec_Arel - vNorm);
-        ASSERT_EQUAL(forceExpected, rec_normalizedForce[i],
+        OpenSim_CHECK_EQUAL(forceExpected, rec_normalizedForce[i],
             100*SimTK::SignificantReal);
 
         // Mechanical power should be within roundoff error of this analytical
@@ -617,7 +617,7 @@ TEST_CASE("compareUmbergerProbeToPublishedResults") {
         double v_mps = vNorm * (rec_Brel/rec_Arel) * rec_optimalFiberLength;
         double powerExpected = -forceExpected * rec_maxIsometricForce * v_mps
                                / rec_muscleMass;
-        ASSERT_EQUAL(powerExpected, rec_mechanicalPower[i],
+        OpenSim_CHECK_EQUAL(powerExpected, rec_mechanicalPower[i],
             100*SimTK::SignificantReal);
 
         // Polynomials have been fit to the published results for total energy
@@ -634,7 +634,7 @@ TEST_CASE("compareUmbergerProbeToPublishedResults") {
             rateExpected = ((-404.1161485*vNorm - 1267.967225)*vNorm
                            - 744.3435788)*vNorm + 362.7505521;
         }
-        ASSERT_EQUAL(rateExpected, rec_totalEnergyRate[i], 1.0);
+        OpenSim_CHECK_EQUAL(rateExpected, rec_totalEnergyRate[i], 1.0);
 
         if (DISPLAY_ERROR_CALCULATIONS) {
             cout << setw(w) << -(double)i/(numPoints-1)
@@ -1137,14 +1137,14 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
         // Output from the probes reporting individual heat rates and mechanical
         // power must sum to the output from the probe reporting the total rate
         // of energy liberation.
-        ASSERT_EQUAL(probeData[probeCol["umbActMaint_rate_m1"]]
+        OpenSim_CHECK_EQUAL(probeData[probeCol["umbActMaint_rate_m1"]]
                        + probeData[probeCol["umbShorten_rate_m1"]]
                        + probeData[probeCol["umbBasal_rate_m1"]]
                        + probeData[probeCol["umbMechWork_rate_m1"]],
                      probeData[probeCol["umbTotal_rate_m1"]],
                      100*SimTK::SignificantReal);
 
-        ASSERT_EQUAL(probeData[probeCol["bhaAct_rate_m1"]]
+        OpenSim_CHECK_EQUAL(probeData[probeCol["bhaAct_rate_m1"]]
                        + probeData[probeCol["bhaMaint_rate_m1"]]
                        + probeData[probeCol["bhaShorten_rate_m1"]]
                        + probeData[probeCol["bhaBasal_rate_m1"]]
@@ -1154,11 +1154,11 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
 
         // Total rate of energy liberation reported must not depend on whether
         // the individual components are reported as well.
-        ASSERT_EQUAL(probeData[probeCol["umbTotal_both"]],
+        OpenSim_CHECK_EQUAL(probeData[probeCol["umbTotal_both"]],
                      probeData[probeCol["umbTotalAllPieces_both_total"]],
                      100*SimTK::SignificantReal);
 
-        ASSERT_EQUAL(probeData[probeCol["bhaTotal_both"]],
+        OpenSim_CHECK_EQUAL(probeData[probeCol["bhaTotal_both"]],
                      probeData[probeCol["bhaTotalAllPieces_both_total"]],
                      100*SimTK::SignificantReal);
 
@@ -1174,11 +1174,11 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
 
         const double powerExpected = -forceData[idx_force_muscle1]
                                      * fibVelData[idx_fibVel_muscle1];
-        ASSERT_EQUAL(probeData[probeCol["umbMechWork_rate_m1"]], powerExpected,
-                     1.0e-2);
+        OpenSim_CHECK_EQUAL(probeData[probeCol["umbMechWork_rate_m1"]],
+                powerExpected, 1.0e-2);
 
-        ASSERT_EQUAL(probeData[probeCol["bhaMechWork_rate_m1"]], powerExpected,
-                     1.0e-2);
+        OpenSim_CHECK_EQUAL(probeData[probeCol["bhaMechWork_rate_m1"]],
+                powerExpected, 1.0e-2);
     }
 
     //--------------------------------------------------------------------------
@@ -1202,55 +1202,59 @@ TEST_CASE("testProbesUsingMillardMuscleSimulation") {
     probeStorageInt->getDataAtTime(t1, numProbeOutputs, probeDataInt);
 
     // Total energy at final time must equal integral of total rate.
-    ASSERT_EQUAL(probeData_t1[probeCol["umbTotal_m1"]],
+    OpenSim_CHECK_EQUAL(probeData_t1[probeCol["umbTotal_m1"]],
                  probeDataInt[probeCol["umbTotal_rate_m1"]],
                  1.0e-2);
 
-    ASSERT_EQUAL(probeData_t1[probeCol["bhaTotal_m1"]],
+    OpenSim_CHECK_EQUAL(probeData_t1[probeCol["bhaTotal_m1"]],
                  probeDataInt[probeCol["bhaTotal_rate_m1"]],
                  1.0e-2);
 
     // Check reporting of metabolic probe components: Umberger2010.
-    ASSERT_EQUAL(probeData_t1[probeCol["umbTotalAllPieces_both_basal"]],
+    OpenSim_CHECK_EQUAL(probeData_t1[probeCol["umbTotalAllPieces_both_basal"]],
                  probeDataInt[probeCol["umbBasal_rate_m1"]],
                  1.0e-2);
 
-    ASSERT_EQUAL(probeData_t1[probeCol["umbTotalAllPieces_both_muscle1"]],
-                 probeData_t1[probeCol["umbTotal_m1"]]
-                 - probeDataInt[probeCol["umbBasal_rate_m1"]],
-                 1.0e-2);
+    OpenSim_CHECK_EQUAL(
+            probeData_t1[probeCol["umbTotalAllPieces_both_muscle1"]],
+            probeData_t1[probeCol["umbTotal_m1"]]
+            - probeDataInt[probeCol["umbBasal_rate_m1"]],
+            1.0e-2);
 
-    ASSERT_EQUAL(probeData_t1[probeCol["umbTotalAllPieces_both_muscle2"]],
-                 probeData_t1[probeCol["umbTotal_m2"]]
-                 - probeDataInt[probeCol["umbBasal_rate_m1"]],
-                 1.0e-2);
+    OpenSim_CHECK_EQUAL(
+            probeData_t1[probeCol["umbTotalAllPieces_both_muscle2"]],
+            probeData_t1[probeCol["umbTotal_m2"]]
+            - probeDataInt[probeCol["umbBasal_rate_m1"]],
+            1.0e-2);
 
     // Check reporting of metabolic probe components: Bhargava2004.
-    ASSERT_EQUAL(probeData_t1[probeCol["bhaTotalAllPieces_both_basal"]],
+    OpenSim_CHECK_EQUAL(probeData_t1[probeCol["bhaTotalAllPieces_both_basal"]],
                  probeDataInt[probeCol["bhaBasal_rate_m1"]],
                  1.0e-2);
 
-    ASSERT_EQUAL(probeData_t1[probeCol["bhaTotalAllPieces_both_muscle1"]],
-                 probeData_t1[probeCol["bhaTotal_m1"]]
-                 - probeDataInt[probeCol["bhaBasal_rate_m1"]],
-                 1.0e-2);
+    OpenSim_CHECK_EQUAL(
+            probeData_t1[probeCol["bhaTotalAllPieces_both_muscle1"]],
+            probeData_t1[probeCol["bhaTotal_m1"]]
+            - probeDataInt[probeCol["bhaBasal_rate_m1"]],
+            1.0e-2);
 
-    ASSERT_EQUAL(probeData_t1[probeCol["bhaTotalAllPieces_both_muscle2"]],
-                 probeData_t1[probeCol["bhaTotal_m2"]]
-                 - probeDataInt[probeCol["bhaBasal_rate_m1"]],
-                 1.0e-2);
+    OpenSim_CHECK_EQUAL(
+            probeData_t1[probeCol["bhaTotalAllPieces_both_muscle2"]],
+            probeData_t1[probeCol["bhaTotal_m2"]]
+            - probeDataInt[probeCol["bhaBasal_rate_m1"]],
+            1.0e-2);
 
     // Check reporting for multiple muscles.
     //   Total energy for muscle1      = basal + heat1 + work1
     //   Total energy for muscle2      = basal + heat2 + work2
     //   Total energy for both muscles = basal + heat1 + heat2 + work1 + work2
-    ASSERT_EQUAL(probeData_t1[probeCol["umbTotal_both"]],
+    OpenSim_CHECK_EQUAL(probeData_t1[probeCol["umbTotal_both"]],
                  probeData_t1[probeCol["umbTotal_m1"]]
                  + probeData_t1[probeCol["umbTotal_m2"]]
                  - probeDataInt[probeCol["umbBasal_rate_m1"]],
                  1.0e-2);
 
-    ASSERT_EQUAL(probeData_t1[probeCol["bhaTotal_both"]],
+    OpenSim_CHECK_EQUAL(probeData_t1[probeCol["bhaTotal_both"]],
                  probeData_t1[probeCol["bhaTotal_m1"]]
                  + probeData_t1[probeCol["bhaTotal_m2"]]
                  - probeDataInt[probeCol["bhaBasal_rate_m1"]],

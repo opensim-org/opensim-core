@@ -911,12 +911,13 @@ TEST_CASE("Component Interface Misc.")
     OPENSIM_ASSERT_ALWAYS(ncols == static_cast<size_t>(finalVal.size()));
 
     // Check the result of the integration on our state variables.
-    ASSERT_EQUAL(3.5, bar.getOutputValue<double>(s, "fiberLength"), 1e-10);
-    ASSERT_EQUAL(1.5, bar.getOutputValue<double>(s, "activation"), 1e-10);
+    double tol = 1e-10;
+    OpenSim_CHECK_EQUAL(3.5, bar.getOutputValue<double>(s, "fiberLength"), tol);
+    OpenSim_CHECK_EQUAL(1.5, bar.getOutputValue<double>(s, "activation"), tol);
 
     // Ensure the connection works.
-    ASSERT_EQUAL(3.5, foo.getInputValue<double>(s, "fiberLength"), 1e-10);
-    ASSERT_EQUAL(1.5, foo.getInputValue<double>(s, "activation"), 1e-10);
+    OpenSim_CHECK_EQUAL(3.5, foo.getInputValue<double>(s, "fiberLength"), tol);
+    OpenSim_CHECK_EQUAL(1.5, foo.getInputValue<double>(s, "activation"), tol);
 
     theWorld.printSubcomponentInfo();
     theWorld.printOutputInfo();
@@ -2576,7 +2577,7 @@ void assertEqual(const RowVec& a, const RowVec& b) {
     OPENSIM_ASSERT_ALWAYS(a.nrow() == b.nrow());
     OPENSIM_ASSERT_ALWAYS(a.ncol() == b.ncol());
     for(int i = 0; i < a.ncol(); ++i)
-        ASSERT_EQUAL(a[i], b[i], 1e-10);
+        OpenSim_CHECK_EQUAL(a[i], b[i], 1e-10);
 }
 
 TEST_CASE("Component Interface Table Source")
@@ -3397,10 +3398,10 @@ TEST_CASE("Component Interface: Incorrectly Reading An Optional Simple Property 
 {
     ComponentWithOptionalSimpleProperty c;
 
-    ASSERT_EQUAL(c.getProperty_num().size(), 0);
+    OpenSim_CHECK_EQUAL(c.getProperty_num().size(), 0);
     try {
         // shouldn't segfault...
-        ASSERT_EQUAL(c.get_num(), 1337);
+        OpenSim_CHECK_EQUAL(c.get_num(), 1337);
     } catch (const std::exception&) {
         // ... but should throw an exception
     }
@@ -3416,7 +3417,7 @@ TEST_CASE("Component Interface: Incorrectly Reading an Optional Object Property 
 {
     ComponentWithOptionalObjectProperty c;
 
-    ASSERT_EQUAL(c.getProperty_func().size(), 0);
+    OpenSim_CHECK_EQUAL(c.getProperty_func().size(), 0);
     try {
         // shouldn't segfault...
         c.get_func().getName();

@@ -229,8 +229,11 @@ void compareSimulationStates(SimTK::Vector q_sb, SimTK::Vector u_sb,
     //q_err.dump("Diff q's:");
     //u_err.dump("Diff u's:");
 
-    OPENSIM_ASSERT_ALWAYS(q_err.norm() <= 10*integ_accuracy);
-    OPENSIM_ASSERT_ALWAYS(u_err.norm() <= 20*integ_accuracy);
+    INFO("q_err.norm = " << q_err.norm());
+    CHECK(q_err.norm() <= 10*integ_accuracy);
+
+    INFO("u_err.norm = " << u_err.norm());
+    CHECK(u_err.norm() <= 20*integ_accuracy);
 }
 
 void compareSimulations(SimTK::MultibodySystem &system, SimTK::State &state, Model *osimModel, SimTK::State &osim_state, string errorMessagePrefix = "")
@@ -528,7 +531,8 @@ TEST_CASE("testCoordinateLocking")
     qf.dump("Final q's"); // pendulum positions
     si2.getU().dump("Final u's"); // pendulum velocities
 
-    OPENSIM_ASSERT_ALWAYS(fabs(qf[1]-fixedKneeAngle) <= integ_accuracy);
+    INFO("q_err = " << qf[1]-qi[1]);
+    CHECK(fabs(qf[1]-fixedKneeAngle) <= integ_accuracy);
 }
 
 TEST_CASE("testWeldConstraint")
@@ -1044,11 +1048,9 @@ TEST_CASE("testRollingOnSurfaceConstraint")
     Vec3 osim_vcom = osimModel->calcMassCenterVelocity(osim_state);
     Vec3 osim_acom = osimModel->calcMassCenterAcceleration(osim_state);
 
-    Vec3 tol(SimTK::SignificantReal);
-
-    ASSERT_EQUAL(pcom, osim_pcom, tol);
-    ASSERT_EQUAL(vcom, osim_vcom, tol);
-    ASSERT_EQUAL(acom, osim_acom, tol);
+    OpenSim_CHECK_EQUAL(pcom, osim_pcom, SimTK::SignificantReal);
+    OpenSim_CHECK_EQUAL(vcom, osim_vcom, SimTK::SignificantReal);
+    OpenSim_CHECK_EQUAL(acom, osim_acom, SimTK::SignificantReal);
 
     //==========================================================================================================
     // Compare Simbody system and OpenSim model simulations
