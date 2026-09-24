@@ -119,7 +119,8 @@ void test(const std::string filename) {
     const std::string forces_file = base + "_grfs.sto";
     const std::string analogs_file = base + "_analog.sto";
 
-    OPENSIM_ASSERT_ALWAYS(marker_table->getNumRows() > 0);
+    OPENSIM_THROW_IF(marker_table->getNumRows() == 0, Exception,
+            "Failed to read marker data from " + filename);
 
     marker_table->updTableMetaData().setValueForKey("Units", 
                                                     std::string{"mm"});
@@ -129,7 +130,8 @@ void test(const std::string filename) {
     cout << "\tWrote '" << marker_file << "' in "
         << watch.getElapsedTimeFormatted() << endl;
 
-    OPENSIM_ASSERT_ALWAYS(force_table->getNumRows() > 0);
+    OPENSIM_THROW_IF(force_table->getNumRows() == 0, Exception,
+            "Failed to read forces data from " + filename);
 
     force_table->updTableMetaData().setValueForKey("Units", 
                                                     std::string{"mm"});

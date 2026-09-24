@@ -691,7 +691,9 @@ TEST_CASE("testBushingForce") {
     const BushingForce& bushingForceFromPrevious =
             previousVersionModel.getComponent<BushingForce>("forceset/bushing");
 
-    OPENSIM_ASSERT_ALWAYS(bushingForce == bushingForceFromPrevious);
+    OPENSIM_ASSERT_ALWAYS(bushingForce == bushingForceFromPrevious &&
+            "current bushing force FAILED to match bushing force from previous "
+            "model.");
 
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter(&osimModel);
@@ -835,7 +837,9 @@ TEST_CASE("testTwoFrameLinkerUpdateFromXMLNode") {
             previousVersionModel.getComponent<BushingForce>(
                     "./forceset/bushing");
 
-    OPENSIM_ASSERT_ALWAYS(bushingForce == bushingForceFromPrevious);
+    OPENSIM_ASSERT_ALWAYS(bushingForce == bushingForceFromPrevious &&
+            "current bushing force FAILED to match bushing force from previous "
+            "model.");
 }
 
 TEST_CASE("testFunctionBasedBushingForce") {
@@ -2275,26 +2279,27 @@ TEST_CASE("testBlankevoort1991Ligament") {
     TimeSeriesTable results(ind_col,output_data,outputs);
     STOFileAdapter::write(results, "ligament_strain_test.sto");
 
-    // Blankevoort1991Ligament should be slack at first time step of test case.
     OPENSIM_ASSERT_ALWAYS(
-            results.getDependentColumn("strain").getElt(0, 0) < 0.0);
+            results.getDependentColumn("strain").getElt(0, 0) < 0.0 &&
+            "Expected Blankevoort1991Ligament to be slack at first time step "
+            "of test case.");
 
     // The potential energy in Blankevoort1991Ligament should be
     // equal to zero when the ligament is slack
     OpenSim_CHECK_EQUAL(
-            results.getDependentColumn("potential_energy").getElt(0, 0),
-            0.0,
+            results.getDependentColumn("potential_energy").getElt(0, 0), 0.0,
             1e-3);
 
     // The spring_force in Blankevoort1991Ligament should be equal to zero when
     // the ligament is slack.
     OpenSim_CHECK_EQUAL(results.getDependentColumn("spring_force").getElt(0, 0),
-        0.0, 1e-3);
+            0.0, 1e-3);
 
     // The damping_force in Blankevoort1991Ligament should be equal to zero when
     // the ligament is slack.
     OpenSim_CHECK_EQUAL(
-        results.getDependentColumn("damping_force").getElt(0, 0), 0.0, 1e-3);
+            results.getDependentColumn("damping_force").getElt(0, 0), 0.0,
+            1e-3);
 
     //Check that the spring_force and potential_energy are greater when the
     //ligment crosses the transition from the toe region to linear region
@@ -2304,32 +2309,32 @@ TEST_CASE("testBlankevoort1991Ligament") {
 
     double transition_strain = lig->get_transition_strain();
 
-    // The strain at the toe_index should be less than the transition_strain
-    // property in Blankevoort1991Ligament test.
     OPENSIM_ASSERT_ALWAYS(
             results.getDependentColumn("strain").getElt(toe_index, 0)
-                    < transition_strain);
+                    < transition_strain &&
+            "Expected strain at the toe_index to be less than the "
+            "transition_strain property in Blankevoort1991Ligament test.");
 
-    // The strain at the linear_index should be greater than the
-    // transition_strain property in Blankevoort1991Ligament.
     OPENSIM_ASSERT_ALWAYS(
             results.getDependentColumn("strain").getElt(linear_index, 0)
-                    > transition_strain);
+                    > transition_strain &&
+            "Expected strain at the linear_index to be greater than the "
+            "transition_strain property in Blankevoort1991Ligament test.");
 
-    // The potential_energy in the Blankevoort1991Ligament should be greater in
-    // the linear region compared to the toe region.
     OPENSIM_ASSERT_ALWAYS(results.getDependentColumn("potential_energy")
                    .getElt(linear_index, 0) >
            results.getDependentColumn("potential_energy")
-                   .getElt(toe_index, 0));
+                   .getElt(toe_index, 0) &&
+            "Expexted potential_energy in the Blankevoort1991Ligament to be "
+            "greater in the linear region compared to the toe region");
 
-    // The spring_force in the Blankevoort1991Ligament should be greater in the
-    // linear region compared to the toe region.
     OPENSIM_ASSERT_ALWAYS(
             results.getDependentColumn("spring_force")
                             .getElt(linear_index, 0)
                     > results.getDependentColumn("spring_force")
-                              .getElt(toe_index, 0));
+                              .getElt(toe_index, 0) &&
+            "Expected the spring_force in the Blankevoort1991Ligament to be "
+            " greater in the linear region compared to the toe region");
 
     //Check that damping is nonzero if ligament is lengthening
     slotCoord.setSpeedValue(state, 1.0);
@@ -2337,10 +2342,10 @@ TEST_CASE("testBlankevoort1991Ligament") {
     double damping_lengthening =
         lig->getOutputValue<double>(state, "damping_force");
 
-    // The damping force in Blankevoort1991Ligament should be greater than zero
-    // when the ligament is streched beyond the slack length and the
-    // lengthening_speed is positive.
-    OPENSIM_ASSERT_ALWAYS(damping_lengthening > 0.0);
+    OPENSIM_ASSERT_ALWAYS(damping_lengthening > 0.0 &&
+            "Expected the damping force in Blankevoort1991Ligament to be "
+            "greater than zero when the ligament is streched beyond the slack "
+            "length and the lengthening_speed is positive.");
 
     //Check that damping is zero if ligament is shortening
     slotCoord.setSpeedValue(state, -1.0);
