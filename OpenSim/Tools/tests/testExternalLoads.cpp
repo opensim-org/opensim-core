@@ -173,7 +173,7 @@ TEST_CASE("ExternalLoads")
     double norm_err = err.norm();
 
     // kinematics should match to within integ accuracy
-    ASSERT_EQUAL(0.0, norm_err, integ_accuracy);
+    OpenSim_CHECK_EQUAL(0.0, norm_err, integ_accuracy);
 
     /***************************** CASE 2 ************************************/
     // Simulate the same system without gravity but with an equivalent external
@@ -237,7 +237,7 @@ TEST_CASE("ExternalLoads")
     norm_err = err.norm();
 
     // kinematics should match to within integ accuracy
-    ASSERT_EQUAL(0.0, norm_err, integ_accuracy);
+    OpenSim_CHECK_EQUAL(0.0, norm_err, integ_accuracy);
 }
 
 // Ensure the default values for the ExternalForce properties work as expected.

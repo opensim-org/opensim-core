@@ -92,7 +92,7 @@ namespace {
 
             std::cout << "  '" << absPathStr << "' - location: " << result_loc << std::endl;
             CAPTURE(absPathStr);
-            ASSERT_EQUAL(result_loc, target_loc, tol);
+            OpenSim_CHECK_EQUAL(result_loc, target_loc, tol);
         }
 
         // Check number of GeometryPath Components (otherwise, test will pass even
@@ -126,7 +126,7 @@ namespace {
                     .getPathPointSet()[i].getLocation(sTarget);
 
                 CAPTURE(absPathStr, i);
-                ASSERT_EQUAL(result_loc, target_loc, tol);
+                OpenSim_CHECK_EQUAL(result_loc, target_loc, tol);
             }
         }
     }
@@ -315,10 +315,8 @@ TEST_CASE("scaleModelWithLigament") {
     ComponentList<Ligament>::const_iterator its = stdLigs.begin();
 
     for (; its != stdLigs.end() && itc != compLigs.end(); ++its, ++itc){
-        std::cout << "std:" << its->getName() << "==";
-        std::cout << "comp:" << itc->getName() << " : ";
-        std::cout << (*its == *itc) << std::endl;
-        OPENSIM_ASSERT_ALWAYS(*its == *itc);
+        INFO("std: " << its->getName() << "== comp: " << itc->getName());
+        CHECK(*its == *itc);
     }
 
     //Finally make sure we didn't incorrectly scale anything else in the model
@@ -354,7 +352,7 @@ TEST_CASE("Scale PhysicalOffsetFrames in models with atypical ownership trees") 
         model->scale(s, scaleSet, false);
         const Vec3 finalLoc = body.findStationLocationInGround(s, Vec3(0));
 
-        ASSERT_EQUAL(finalLoc, expectedLoc, SimTK::SignificantReal);
+        OpenSim_CHECK_EQUAL(finalLoc, expectedLoc, SimTK::SignificantReal);
     };
 
     // Case 1: Use PinJoint's convenience constructor to create the child POF
@@ -502,7 +500,7 @@ TEST_CASE("Scale PhysicalOffsetFrames in models with atypical ownership trees") 
             const Vec3 loc = marker->getLocationInGround(s);
 
             CAPTURE(marker->getName(), msg);
-            ASSERT_EQUAL(loc, expectedMarkerLoc, SimTK::SignificantReal);
+            OpenSim_CHECK_EQUAL(loc, expectedMarkerLoc, SimTK::SignificantReal);
         };
 
         testMarkerLoc(marker1, s, "before scaling");
@@ -578,7 +576,7 @@ TEST_CASE("Scale PhysicalOffsetFrames in models with atypical ownership trees") 
                 const Vec3& p2 = pps2[i].getLocationInGround(s);
 
                 CAPTURE(i, msg);
-                ASSERT_EQUAL(p1, p2, SimTK::SignificantReal);
+                OpenSim_CHECK_EQUAL(p1, p2, SimTK::SignificantReal);
             }
         };
 
@@ -635,13 +633,13 @@ TEST_CASE("Scaling Joints and Constraints") {
         // Radii of ellipsoid1 should not have changed.
         const Vec3& actual1   = ellipsoid1->get_radii_x_y_z();
         const Vec3& expected1 = radii;
-        ASSERT_EQUAL(actual1, expected1, SimTK::SignificantReal);
+        OpenSim_CHECK_EQUAL(actual1, expected1, SimTK::SignificantReal);
 
         // Radii of ellipsoid2 should have been scaled using the scale factors
         // corresponding to body2.
         const Vec3& actual2   = ellipsoid2->get_radii_x_y_z();
         const Vec3& expected2 = radii.elementwiseMultiply(scaleFactors);
-        ASSERT_EQUAL(actual2, expected2, SimTK::SignificantReal);
+        OpenSim_CHECK_EQUAL(actual2, expected2, SimTK::SignificantReal);
     }
 
     // Test CustomJoint scaling. Ensure SpatialTransform is scaled if the parent
@@ -680,16 +678,16 @@ TEST_CASE("Scaling Joints and Constraints") {
         // Transform of custom1 should not have changed.
         const OpenSim::Function& fn1 =
             custom1->getSpatialTransform()[3].getFunction();
-        ASSERT_EQUAL(fn1.calcValue(xA), yA, SimTK::SignificantReal);
-        ASSERT_EQUAL(fn1.calcValue(xB), yB, SimTK::SignificantReal);
+        OpenSim_CHECK_EQUAL(fn1.calcValue(xA), yA, SimTK::SignificantReal);
+        OpenSim_CHECK_EQUAL(fn1.calcValue(xB), yB, SimTK::SignificantReal);
 
         // Transform of custom2 should have been scaled using the scale factors
         // corresponding to body2.
         const OpenSim::Function& fn2 =
             custom2->getSpatialTransform()[3].getFunction();
-        ASSERT_EQUAL(fn2.calcValue(xA), yA * scaleFactors[0],
+        OpenSim_CHECK_EQUAL(fn2.calcValue(xA), yA * scaleFactors[0],
                 SimTK::SignificantReal);
-        ASSERT_EQUAL(fn2.calcValue(xB), yB * scaleFactors[0],
+        OpenSim_CHECK_EQUAL(fn2.calcValue(xB), yB * scaleFactors[0],
                 SimTK::SignificantReal);
     }
 
@@ -732,12 +730,12 @@ TEST_CASE("Scaling Joints and Constraints") {
 
         // Test coupling function before scaling.
         slider1->getCoordinate().setValue(s, 0., true);
-        ASSERT_EQUAL(slider2->getCoordinate().getValue(s), intercept,
+        OpenSim_CHECK_EQUAL(slider2->getCoordinate().getValue(s), intercept,
             SimTK::SignificantReal);
 
         slider1->getCoordinate().setValue(s, 1., true);
-        ASSERT_EQUAL(slider2->getCoordinate().getValue(s), intercept + slope,
-            SimTK::SignificantReal);
+        OpenSim_CHECK_EQUAL(slider2->getCoordinate().getValue(s),
+                intercept + slope, SimTK::SignificantReal);
 
         // Scale body2 uniformly.
         const double uniformFactor = 1.23456;
@@ -752,11 +750,11 @@ TEST_CASE("Scaling Joints and Constraints") {
 
         // Test coupling function after scaling.
         slider1->getCoordinate().setValue(s, 0., true);
-        ASSERT_EQUAL(slider2->getCoordinate().getValue(s),
+        OpenSim_CHECK_EQUAL(slider2->getCoordinate().getValue(s),
             intercept * uniformFactor, SimTK::SignificantReal);
 
         slider1->getCoordinate().setValue(s, 1., true);
-        ASSERT_EQUAL(slider2->getCoordinate().getValue(s),
+        OpenSim_CHECK_EQUAL(slider2->getCoordinate().getValue(s),
             (intercept + slope) * uniformFactor, SimTK::SignificantReal);
     }
 }

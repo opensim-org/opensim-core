@@ -959,11 +959,11 @@ testDiscreteVariables(State& state, const ForceSet& fSet) {
         if (SimTK::Value<double>::isA(valAbstract)) {
             SimTK::Value<double>& valDbl =
                 SimTK::Value<double>::updDowncast(valAbstract);
-            ASSERT_EQUAL(valDbl.get(), valStartDbl + deltaDbl, tol);
+            OpenSim_CHECK_EQUAL(valDbl.get(), valStartDbl + deltaDbl, tol);
         } else if (SimTK::Value<Vec3>::isA(valAbstract)) {
             SimTK::Value<Vec3>& valVec3 =
                 SimTK::Value<Vec3>::updDowncast(valAbstract);
-            ASSERT_EQUAL(valVec3.get(), valStartVec3 + deltaVec3, tol);
+            OpenSim_CHECK_EQUAL(valVec3.get(), valStartVec3 + deltaVec3, tol);
         }
 
         // Restore the starting value
@@ -982,11 +982,11 @@ testDiscreteVariables(State& state, const ForceSet& fSet) {
         if (SimTK::Value<double>::isA(valAbstract)) {
             SimTK::Value<double>& valDbl =
                 SimTK::Value<double>::updDowncast(valAbstract);
-            ASSERT_EQUAL(valDbl.get(), valStartDbl, tol);
+            OpenSim_CHECK_EQUAL(valDbl.get(), valStartDbl, tol);
         } else if (SimTK::Value<Vec3>::isA(valAbstract)) {
             SimTK::Value<Vec3>& valVec3 =
                 SimTK::Value<Vec3>::updDowncast(valAbstract);
-            ASSERT_EQUAL(valVec3.get(), valStartVec3, tol);
+            OpenSim_CHECK_EQUAL(valVec3.get(), valStartVec3, tol);
         }
 
     }

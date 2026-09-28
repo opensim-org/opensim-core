@@ -135,7 +135,7 @@ TEST_CASE("testTorqueActuator") {
     OPENSIM_ASSERT_ALWAYS(udotMobility.norm() != 0.0 || udotBody.norm() != 0.0);
     // Then check if they are equal
     for(int i=0; i<udotMobility.size(); ++i){
-        ASSERT_EQUAL(udotMobility[i], udotBody[i], 1.0e-12);
+        OpenSim_CHECK_EQUAL(udotMobility[i], udotBody[i], 1.0e-12);
     }
 
     // clear the mobility forces
@@ -184,7 +184,7 @@ TEST_CASE("testTorqueActuator") {
     // Then verify that the TorqueActuator also generates the same acceleration
     // as the equivalent applied mobility force
     for(int i=0; i<udotMobility.size(); ++i){
-        ASSERT_EQUAL(udotMobility[i], udotTorqueActuator[i], 1.0e-12);
+        OpenSim_CHECK_EQUAL(udotMobility[i], udotTorqueActuator[i], 1.0e-12);
     }
 
     // determine the initial kinetic energy of the system
@@ -206,7 +206,7 @@ TEST_CASE("testTorqueActuator") {
     // Change in system kinetic energy can only be attributable to actuator work
     //double actuatorWork = (powerProbe->getProbeOutputs(state))[0];
     // test that this is true
-    //ASSERT_EQUAL(actuatorWork, fKE-iKE, integ_accuracy);
+    //OpenSim_CHECK_EQUAL(actuatorWork, fKE-iKE, integ_accuracy);
 
     // Before exiting lets see if copying the spring works
     TorqueActuator* copyOfActuator = actuator->clone();
@@ -356,7 +356,7 @@ TEST_CASE("testClutchedPathSpring") {
     cout << "Tension is: " << model_force << " and should be: " << analytical_force << endl;
 
     // error if the block does not reach equilibrium since spring is clamped
-    ASSERT_EQUAL(model_force, analytical_force, 10*integ_accuracy);
+    OpenSim_CHECK_EQUAL(model_force, analytical_force, 10*integ_accuracy);
 
     // unclamp and continue integrating
     final_t = 5.99999;
@@ -370,7 +370,7 @@ TEST_CASE("testClutchedPathSpring") {
 
     cout << "Tension is: " << model_force << " and should be: 0.0" << endl;
     // is unclamped and block should be in free-fall
-    ASSERT_EQUAL(model_force, 0.0, 10*integ_accuracy);
+    OpenSim_CHECK_EQUAL(model_force, 0.0, 10*integ_accuracy);
 
     // spring is reclamped at 7s so keep integrating
     final_t = 10.0;
@@ -386,12 +386,12 @@ TEST_CASE("testClutchedPathSpring") {
     cout << "Tension is: " << model_force << " and should be: "<< analytical_force << endl;
 
     // is unclamped and block should be in free-fall
-    ASSERT_EQUAL(model_force, analytical_force, 10*integ_accuracy);
+    OpenSim_CHECK_EQUAL(model_force, analytical_force, 10*integ_accuracy);
 
     cout << "Steady stretch at control = 1.0 is " << stretch0 << " m." << endl;
     cout << "Steady stretch at control = 0.5 is " << stretch1 << " m." << endl;
 
-    ASSERT_EQUAL(2*stretch0, stretch1, 10*integ_accuracy);
+    OpenSim_CHECK_EQUAL(2*stretch0, stretch1, 10*integ_accuracy);
 
     manager.getStateStorage().print("clutched_path_spring_states.sto");
     model->getControllerSet().printControlStorage("clutched_path_spring_controls.sto");
@@ -472,7 +472,7 @@ TEST_CASE("testMcKibbenActuator") {
 
         double theoretical = (pressure / (4 * pow(num_turns, 2) * SimTK::Pi)) * (3 * pow(pos(0), 2) - pow(B, 2));
 
-        ASSERT_EQUAL(applied, theoretical, 10.0);
+        OpenSim_CHECK_EQUAL(applied, theoretical, 10.0);
     }
 
 
@@ -578,7 +578,7 @@ TEST_CASE("testBodyActuator") {
     OPENSIM_ASSERT_ALWAYS(udotMobility.norm() != 0.0 || udotBody.norm() != 0.0);
     // Then check if they are equal
     for (int i = 0; i<udotMobility.size(); ++i){
-        ASSERT_EQUAL(udotMobility[i], udotBody[i], SimTK::Eps);
+        OpenSim_CHECK_EQUAL(udotMobility[i], udotBody[i], SimTK::Eps);
     }
 
     // clear the mobility forces
@@ -628,7 +628,7 @@ TEST_CASE("testBodyActuator") {
     // Then verify that the BodyActuator also generates the same acceleration
     // as the equivalent applied mobility force
     for (int i = 0; i<udotBodyActuator.size(); ++i){
-        ASSERT_EQUAL(udotMobility[i], udotBodyActuator[i], SimTK::Eps);
+        OpenSim_CHECK_EQUAL(udotMobility[i], udotBodyActuator[i], SimTK::Eps);
     }
 
     // -------------- Setup manager -------------------
@@ -850,7 +850,8 @@ TEST_CASE("testActuatorsCombination") {
             udotOnlyBodyActuator.norm() != 0.0 ||
             udotActuatorsCombination.norm() != 0.0);
     for (int i = 0; i<udotActuatorsCombination.size(); ++i){
-        ASSERT_EQUAL(udotOnlyBodyActuator[i], udotActuatorsCombination[i], 1.0e-12);
+        OpenSim_CHECK_EQUAL(udotOnlyBodyActuator[i],
+                udotActuatorsCombination[i], 1.0e-12);
     }
     
     // ------------------------ Setup manager -----------------------
@@ -907,5 +908,5 @@ TEST_CASE("testActivationCoordinateActuator") {
             (a0 - x) * exp(-tf / tau) + x;
     const double foundFinalActivation =
             aca->getStateVariableValue(state, "activation");
-    ASSERT_EQUAL(expectedFinalActivation, foundFinalActivation, 1e-4);
+    OpenSim_CHECK_EQUAL(expectedFinalActivation, foundFinalActivation, 1e-4);
 }
