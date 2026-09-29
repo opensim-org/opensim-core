@@ -16,12 +16,6 @@ endif()
 # We set these COMPILE_OPTIONS in the root CMakeLists.txt.
 set_directory_properties(PROPERTIES COMPILE_OPTIONS "")
 
-# Default is on and version 3.10 if you want to use the stable ABI, 
-# you must use Python 3.8 or higher. If sbi version needs to be changed 
-# modify the value of the Py_LIMITED_API definition in this file.
-option(OPENSIM_USE_PYTHON_SABI 
-    "Use the stable ABI for Python bindings (requires Python 3.8+)" ON)
-
 set(OPENSIM_PYTHON_LIMITED_API_HEX 0x030A0000)
 
 # Helper macros.
