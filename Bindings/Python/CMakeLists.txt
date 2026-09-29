@@ -137,7 +137,7 @@ macro(OpenSimAddPythonModule)
             /wd4996  # Disable warning 4996: deprecated functions.
             /wd4114  # Disable warning 4114: "const const T"
         >
-    )
+     )
     target_compile_definitions(${_libname} PRIVATE
         # SWIG_PYTHON was added to account for generated cxx files
         # failing to compile due to operators defined in simbody (removed
@@ -188,8 +188,8 @@ macro(OpenSimAddPythonModule)
     )
     if(WIN32)
         set_target_properties(${_libname} PROPERTIES SUFFIX ".pyd")
-    elseif(LINUX)
-        # Defaults to .dylib; change to .so
+    else()
+        # Defaults to .dylib; change to .so on MacOS, also on both mac, linux add abi3 for SABI
         if (OPENSIM_USE_PYTHON_SABI)
             set_target_properties(${_libname} PROPERTIES SUFFIX ".abi3.so")
         else()
