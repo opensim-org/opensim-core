@@ -16,6 +16,7 @@ endif()
 # We set these COMPILE_OPTIONS in the root CMakeLists.txt.
 set_directory_properties(PROPERTIES COMPILE_OPTIONS "")
 
+set(OPENSIM_PYTHON_LIMITED_API_HEX 0x030A0000)
 
 # Helper macros.
 # ==============
@@ -69,7 +70,11 @@ macro(OpenSimAddPythonModule)
     set(_output_header_file "${_output_file_prefix}.h")
     set(_interface_file
         "${CMAKE_CURRENT_SOURCE_DIR}/swig/python_${OSIMSWIGPY_MODULE}.i")
-
+    if (OPENSIM_USE_PYTHON_SABI)
+        set_property(SOURCE ${_output_cxx_file} PROPERTY 
+            COMPILE_DEFINITIONS "Py_LIMITED_API=${OPENSIM_PYTHON_LIMITED_API_HEX}"
+        )
+    endif()
     # We run swig once to get dependencies and then again to actually generate
     # the wrappers. This variable holds the parts of the swig command that
     # are shared between both invocations.
@@ -132,12 +137,14 @@ macro(OpenSimAddPythonModule)
             /wd4996  # Disable warning 4996: deprecated functions.
             /wd4114  # Disable warning 4114: "const const T"
         >
-    )
+     )
     target_compile_definitions(${_libname} PRIVATE
         # SWIG_PYTHON was added to account for generated cxx files
         # failing to compile due to operators defined in simbody (removed
         # by this symbol) -Ayman 3/25
         SWIG_PYTHON
+        # Pass Limited_API version to the compiler if needed
+        $<$<BOOL:${OPENSIM_USE_PYTHON_SABI}>:-DPy_LIMITED_API=${OPENSIM_PYTHON_LIMITED_API_HEX}>
     )
 
     target_include_directories(${_libname} PRIVATE
@@ -161,11 +168,15 @@ macro(OpenSimAddPythonModule)
     if("${PYTHON_LDSHARED}" MATCHES "dynamic_lookup")
         set_target_properties(${_libname} PROPERTIES LINK_FLAGS
             "-undefined dynamic_lookup")
-    else()
-        target_link_libraries(${_libname} ${Python3_LIBRARIES})
+    elseif(WIN32)
+        if (OPENSIM_USE_PYTHON_SABI)
+           target_link_libraries(${_libname} PRIVATE Python3::SABIModule)
+        else()
+            target_link_libraries(${_libname} PRIVATE Python3::Module)
+        endif()
     endif()
 
-    target_link_libraries(${_libname} osimTools osimExampleComponents osimMoco)
+    target_link_libraries(${_libname} PUBLIC osimTools osimExampleComponents osimMoco)
     
     # Set target properties for various platforms.
     # --------------------------------------------
@@ -177,9 +188,13 @@ macro(OpenSimAddPythonModule)
     )
     if(WIN32)
         set_target_properties(${_libname} PROPERTIES SUFFIX ".pyd")
-    elseif(APPLE)
-        # Defaults to .dylib; change to .so.
-        set_target_properties(${_libname} PROPERTIES SUFFIX ".so")
+    else()
+        # Defaults to .dylib; change to .so on MacOS, also on both mac, linux add abi3 for SABI
+        if (OPENSIM_USE_PYTHON_SABI)
+            set_target_properties(${_libname} PROPERTIES SUFFIX ".abi3.so")
+        else()
+            set_target_properties(${_libname} PROPERTIES SUFFIX ".so")
+        endif()
     endif()
     
     # RPATH: We always set a relative RPATH but only use an absolute RPATH if
