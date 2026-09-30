@@ -1,12 +1,7 @@
 find_package(Catch2 REQUIRED
         HINTS "${OPENSIM_DEPENDENCIES_DIR}/catch2")
 
-OpenSimAddTests(
-    TESTPROGRAMS testCommandLineInterface.cpp
-    # Don't need OpenSim since we only interact with OpenSim through the
-    # command line tool. But we use Simbody for its Testing.h.
-    LINKLIBS SimTKcommon Catch2::Catch2WithMain
-    )
+OpenSimAddTest(NAME testCommandLineInterface)
 
 add_dependencies(testCommandLineInterface opensim-cmd)
 
