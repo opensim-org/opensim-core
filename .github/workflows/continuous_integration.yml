@@ -75,7 +75,7 @@ jobs:
       id: configure
       run: |
         cmake -G "Visual Studio 17 2022" . --preset ci-msvc-windows-release -LAH `
-            -DPython3_ROOT_DIR=$env:pythonLocation
+            -DPython3_ROOT_DIR=$env:pythonLocation -DOPENSIM_USE_PYTHON_SABI=OFF
 
         $env:match = cmake -N -L build/ci-msvc-windows-release | Select-String -Pattern OPENSIM_QUALIFIED_VERSION
         $version = $env:match.split('=')[1]
@@ -180,7 +180,7 @@ jobs:
       id: configure
       run: |
         cmake -S $GITHUB_WORKSPACE --preset ci-make-macos-release -LAH \
-            -DSWIG_EXECUTABLE=$HOME/swig/bin/swig
+            -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DOPENSIM_USE_PYTHON_SABI=OFF
 
         VERSION=`cmake -N -L $GITHUB_WORKSPACE/build/ci-make-macos-release | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
         echo "version=$VERSION" >> $GITHUB_OUTPUT
@@ -299,7 +299,7 @@ jobs:
     - name: Configure opensim-core
       id: configure
       run: |
-        cmake -S $GITHUB_WORKSPACE --preset ci-make-linux-release -DPython3_ROOT_DIR=/opt/python/cp311-cp311 -LAH
+        cmake -S $GITHUB_WORKSPACE --preset ci-make-linux-release -DPython3_ROOT_DIR=/opt/python/cp311-cp311 -DOPENSIM_USE_PYTHON_SABI=OFF -LAH
 
         VERSION=`cmake -N -L $GITHUB_WORKSPACE/build/ci-make-linux-release | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
         echo "version=$VERSION" >> $GITHUB_OUTPUT
