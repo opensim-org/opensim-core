@@ -1,84 +1,85 @@
-include(CMakeParseArguments)
-
 find_package(Catch2 REQUIRED
         HINTS "${OPENSIM_DEPENDENCIES_DIR}/catch2")
 
-# Create an executable for the file ${TEST_NAME}.cpp, which depends on
-# libraries ${LIB_DEPENDENCIES}. Also create a CTest test for this executable.
-function(MocoAddTest)
-    set(options)
-    set(oneValueArgs NAME REQUIRES_CASADI)
-    set(multiValueArgs LIB_DEPENDS RESOURCES)
-    cmake_parse_arguments(MOCOTEST
-            "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    add_executable(${MOCOTEST_NAME} ${MOCOTEST_NAME}.cpp
-            "${CMAKE_SOURCE_DIR}/tests/Testing.h")
-    # To organize targets in Visual Studio's Solution Explorer.
-    set_target_properties(${MOCOTEST_NAME} PROPERTIES FOLDER "Moco/Tests")
-    target_link_libraries(${MOCOTEST_NAME} osimMoco ${MOCOTEST_LIB_DEPENDS}
-            osimTesting Catch2::Catch2WithMain)
-    if(APPLE)
-        list(APPEND test_args "~[win]~[linux]~[win/linux]~[linux/win]")
-    endif()
-    if(LINUX)
-        list(APPEND test_args "~[win]~[mac]~[win/mac]~[mac/win]")
-    endif()
-    if(WIN32)
-        list(APPEND test_args "~[mac]~[linux]~[mac/linux]~[linux/mac]~[unix]")
-    endif()
-    add_test(NAME ${MOCOTEST_NAME} COMMAND ${MOCOTEST_NAME} ${test_args})
-    # Default to requiring CasADi unless the caller explicitly passes REQUIRES_CASADI FALSE.
-    if(NOT DEFINED MOCOTEST_REQUIRES_CASADI)
-        set(MOCOTEST_REQUIRES_CASADI TRUE)
-    endif()
-    if(MOCOTEST_REQUIRES_CASADI AND NOT OPENSIM_WITH_CASADI)
-        set_tests_properties(${MOCOTEST_NAME} PROPERTIES DISABLED TRUE)
-    endif()
-    # Tests likely run faster if we parallelize the tests rather than the
-    # individual problems.
-    set_property(TEST ${MOCOTEST_NAME} APPEND PROPERTY
-            ENVIRONMENT "OPENSIM_MOCO_PARALLEL=0")
-    file(COPY ${MOCOTEST_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
-endfunction()
+if(OPENSIM_WITH_CASADI)
+    set(MOCO_CASADI_TESTS_DISABLED FALSE)
+else()
+    set(MOCO_CASADI_TESTS_DISABLED TRUE)
+endif()
 
-MocoAddTest(NAME testMocoInterface)
+OpenSimAddTest(NAME testMocoInterface
+        LINKLIBS osimMoco
+        DISABLED ${MOCO_CASADI_TESTS_DISABLED}
+        ENVIRONMENT "OPENSIM_MOCO_PARALLEL=0")
 
-MocoAddTest(NAME testMocoGoals)
+OpenSimAddTest(NAME testMocoGoals
+        LINKLIBS osimMoco
+        DISABLED ${MOCO_CASADI_TESTS_DISABLED}
+        ENVIRONMENT "OPENSIM_MOCO_PARALLEL=0")
 
-MocoAddTest(NAME testMocoParameters)
+OpenSimAddTest(NAME testMocoParameters
+        LINKLIBS osimMoco
+        DISABLED ${MOCO_CASADI_TESTS_DISABLED}
+        ENVIRONMENT "OPENSIM_MOCO_PARALLEL=0")
 
-MocoAddTest(NAME testMocoImplicit)
+OpenSimAddTest(NAME testMocoImplicit
+        LINKLIBS osimMoco
+        DISABLED ${MOCO_CASADI_TESTS_DISABLED}
+        ENVIRONMENT "OPENSIM_MOCO_PARALLEL=0")
 
-MocoAddTest(NAME testMocoConstraints)
+OpenSimAddTest(NAME testMocoConstraints
+        LINKLIBS osimMoco
+        DISABLED ${MOCO_CASADI_TESTS_DISABLED}
+        ENVIRONMENT "OPENSIM_MOCO_PARALLEL=0")
 
-MocoAddTest(NAME testMocoContact RESOURCES
-        resources/subject_20dof18musc_running.osim
-        resources/running_solution_full_stride.sto)
-
-MocoAddTest(NAME testMocoControllers)
-
-MocoAddTest(NAME testMocoActuators)
-
-MocoAddTest(NAME testMocoInverse RESOURCES
-        resources/subject_walk_armless_18musc.osim
-        resources/subject_walk_armless_coordinates.mot
-        resources/subject_walk_armless_grfs.mot
-        resources/subject_walk_armless_external_loads.xml
-        resources/std_testMocoInverse_subject_18musc_solution.sto
+OpenSimAddTest(NAME testMocoContact
+        LINKLIBS osimMoco
+        DISABLED ${MOCO_CASADI_TESTS_DISABLED}
+        ENVIRONMENT "OPENSIM_MOCO_PARALLEL=0"
+        RESOURCES resources/subject_20dof18musc_running.osim
+                  resources/running_solution_full_stride.sto
         )
 
-MocoAddTest(NAME testMocoTrack RESOURCES
-        resources/walk_gait1018_subject01.osim
-        resources/walk_gait1018_state_reference.mot
-        resources/walk_gait1018_subject01_grf.xml
-        resources/walk_gait1018_subject01_grf.mot
-        resources/std_testMocoTrackGait10dof18musc_solution.sto
+OpenSimAddTest(NAME testMocoControllers
+        LINKLIBS osimMoco
+        DISABLED ${MOCO_CASADI_TESTS_DISABLED}
+        ENVIRONMENT "OPENSIM_MOCO_PARALLEL=0")
+
+OpenSimAddTest(NAME testMocoActuators
+        LINKLIBS osimMoco
+        DISABLED ${MOCO_CASADI_TESTS_DISABLED}
+        ENVIRONMENT "OPENSIM_MOCO_PARALLEL=0")
+
+OpenSimAddTest(NAME testMocoInverse
+        LINKLIBS osimMoco
+        DISABLED ${MOCO_CASADI_TESTS_DISABLED}
+        ENVIRONMENT "OPENSIM_MOCO_PARALLEL=0"
+        RESOURCES resources/subject_walk_armless_18musc.osim
+                  resources/subject_walk_armless_coordinates.mot
+                  resources/subject_walk_armless_grfs.mot
+                  resources/subject_walk_armless_external_loads.xml
+                  resources/std_testMocoInverse_subject_18musc_solution.sto
         )
 
-MocoAddTest(NAME testMocoAnalytic)
+OpenSimAddTest(NAME testMocoTrack
+        LINKLIBS osimMoco
+        DISABLED ${MOCO_CASADI_TESTS_DISABLED}
+        ENVIRONMENT "OPENSIM_MOCO_PARALLEL=0"
+        RESOURCES resources/walk_gait1018_subject01.osim
+                  resources/walk_gait1018_state_reference.mot
+                  resources/walk_gait1018_subject01_grf.xml
+                  resources/walk_gait1018_subject01_grf.mot
+                  resources/std_testMocoTrackGait10dof18musc_solution.sto
+        )
 
-MocoAddTest(NAME testMocoMetabolics REQUIRES_CASADI FALSE RESOURCES
-        resources/testMocoMetabolics_hanging_muscle.osim
+OpenSimAddTest(NAME testMocoAnalytic
+        LINKLIBS osimMoco
+        DISABLED ${MOCO_CASADI_TESTS_DISABLED}
+        ENVIRONMENT "OPENSIM_MOCO_PARALLEL=0")
+
+OpenSimAddTest(NAME testMocoMetabolics
+        LINKLIBS osimMoco
+        RESOURCES resources/testMocoMetabolics_hanging_muscle.osim
         )
 
 file(COPY resources/subject_walk_armless_18musc.osim
@@ -87,4 +88,4 @@ file(COPY resources/subject_walk_armless_18musc.osim
 
 file(COPY resources/walk_gait1018_subject01.osim
           resources/walk_gait1018_state_reference.mot
-        DESTINATION "${CMAKE_BINARY_DIR}/OpenSim/Tests/Wrapping")
+     DESTINATION "${CMAKE_BINARY_DIR}/OpenSim/Tests/Wrapping")
