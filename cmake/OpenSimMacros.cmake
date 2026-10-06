@@ -416,13 +416,14 @@ endfunction()
 # Create an executable for the file ${OSIMTEST_NAME}.cpp, which depends on
 # libraries ${LINKLIBS}. Also, create a CTest test for this executable.
 #
-# RESOURCES: Files necessary to run the test. These will be copied into the
-#   corresponding build directory.
+# RESOURCES: Files necessary to run the test. These will be symlinked into the
+#            corresponding build directory. Relative paths are interpreted
+#            relative to the current source directory.
 # LINKLIBS: Arguments to TARGET_LINK_LIBRARIES.
 # EXTRA_SOURCES: Extra source files for the executable.
 # ENVIRONMENT: "NAME=VALUE" entries to add to the test's ENVIRONMENT property.
 # DISABLED: If TRUE, the test is still built and registered, but will be
-#   skipped by CTest instead of run.
+#           skipped by CTest instead of run.
 #
 # Here's an example:
 #   OpenSimAddTest(NAME testMocoContact
@@ -473,8 +474,17 @@ function(OpenSimAddTest)
         set_property(TEST ${OSIMTEST_NAME} APPEND PROPERTY
                 ENVIRONMENT ${OSIMTEST_ENVIRONMENT})
 
-        # Copy test resources.
-        file(COPY ${OSIMTEST_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+        # Symlink test resources into the build directory.
+        foreach(resource ${OSIMTEST_RESOURCES})
+            get_filename_component(RESOURCE_PATH "${resource}" ABSOLUTE
+                    BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+            get_filename_component(RESOURCE_NAME "${resource}" NAME)
+            # Create the symlink, falling back to a plain file copy
+            # if the symlink fails.
+            file(CREATE_LINK "${RESOURCE_PATH}"
+                    "${CMAKE_CURRENT_BINARY_DIR}/${RESOURCE_NAME}"
+                    SYMBOLIC COPY_ON_ERROR)
+        endforeach()
 
     endif()
 
