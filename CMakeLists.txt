@@ -433,12 +433,24 @@ if(${BUILD_JAVA_WRAPPING})
 endif()
 
 if(${BUILD_PYTHON_WRAPPING})
-    set(required_python_version 3)
-    set(Python3_ROOT_DIR ""  CACHE PATH "Top level directory containing Python3. For conda environments, this can also be set to the top level directory for a specific environment.")
-    find_package(Python3 3.6 REQUIRED COMPONENTS Interpreter Development.Module NumPy)
+    # Default OPENSIM_USE_PYTHON_SABI is on and version 3.10 If you want to use the stable ABI, 
+    # you must use Python 3.8 or higher. If actual ABI version needs to be changed then
+    # modify the value of the Py_LIMITED_API definition in this file. If building wheels,
+    # you must modify the value of py_limited_api in setup.py as well.
+    option(OPENSIM_USE_PYTHON_SABI 
+        "Use the stable ABI for Python bindings" ON)
+
+    set(Python3_ROOT_DIR ""  CACHE PATH 
+        "Top level directory containing Python3. For conda environments, this can also be set to the top level directory for a specific environment.")
+    if(${OPENSIM_USE_PYTHON_SABI})
+        find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter Development.SABIModule NumPy)
+    else()
+        find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter Development.Module NumPy)
+    endif()
     message("Python3_FOUND:${Python3_FOUND}")
     message("Python3_VERSION:${Python3_VERSION}")
     message("Python3_Development_FOUND:${Python3_Development_FOUND}")
+    message("Python_Development.SABIModule_FOUND:${Python3_Development_SABIModule_FOUND}")
     message("Python3_LIBRARIES:${Python3_LIBRARIES}")
     message("Python3_Numpy_Include:${Python3_NumPy_INCLUDE_DIRS}")
     message("Python3_Numpy_VERSION:${Python3_NumPy_VERSION}")
