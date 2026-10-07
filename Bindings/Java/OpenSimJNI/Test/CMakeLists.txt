@@ -1,13 +1,13 @@
-if(BUILD_JAVA_WRAPPING) 
+if(BUILD_JAVA_WRAPPING)
 
-    file(GLOB TEST_PROGS "test*.cpp")
-    file(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
+    find_package(Catch2 REQUIRED
+            HINTS "${OPENSIM_DEPENDENCIES_DIR}/catch2")
 
-    OpenSimAddTests(
-        TESTPROGRAMS ${TEST_PROGS}
-        DATAFILES ${TEST_FILES}
+    OpenSimAddTest(NAME testContext
         LINKLIBS osimJavaJNI
-        SOURCES "../OpenSimContext.cpp"
+        EXTRA_SOURCES "../OpenSimContext.cpp"
+        RESOURCES arm26_20.osim
+                  wrist.osim
         )
 
 endif(BUILD_JAVA_WRAPPING)

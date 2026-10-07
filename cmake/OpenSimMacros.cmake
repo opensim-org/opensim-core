@@ -412,86 +412,79 @@ function(OpenSimCopySharedTestFiles)
     endif()
 endfunction()
 
-# Create test targets for this directory.
-# TESTPROGRAMS: Names of test CPP files. One test will be created for each cpp
-#   of these files.
-# DATAFILES: Files necessary to run the test. These will be copied into the
-#   corresponding build directory.
+
+# Create an executable for the file ${OSIMTEST_NAME}.cpp, which depends on
+# libraries ${LINKLIBS}. Also, create a CTest test for this executable.
+#
+# RESOURCES: Files necessary to run the test. These will be symlinked into the
+#            corresponding build directory. Relative paths are interpreted
+#            relative to the current source directory.
 # LINKLIBS: Arguments to TARGET_LINK_LIBRARIES.
-# SOURCES: Extra source files for the executable.
+# EXTRA_SOURCES: Extra source files for the executable.
+# ENVIRONMENT: "NAME=VALUE" entries to add to the test's ENVIRONMENT property.
+# DISABLED: If TRUE, the test is still built and registered, but will be
+#           skipped by CTest instead of run.
 #
 # Here's an example:
-#   file(GLOB TEST_PROGRAMS "test*.cpp")
-#   file(GLOB DATA_FILES *.osim *.xml *.sto *.mot)
-#   OpenSimAddTests(
-#       TESTPROGRAMS ${TEST_PROGRAMS}
-#       DATAFILES ${DATA_FILES}
-#       LINKLIBS osimCommon osimSimulation osimAnalyses
-#       )
-function(OpenSimAddTests)
+#   OpenSimAddTest(NAME testMocoContact
+#       LINKLIBS osimMoco
+#       DISABLED ${MOCO_CASADI_TESTS_DISABLED}
+#       ENVIRONMENT "OPENSIM_MOCO_PARALLEL=0"
+#       RESOURCES resources/subject_20dof18musc_running.osim
+#                 resources/running_solution_full_stride.sto)
+#
+function(OpenSimAddTest)
 
     if(BUILD_TESTING)
 
         # Parse arguments.
         # ----------------
-        # http://www.cmake.org/cmake/help/v2.8.9/cmake.html#module:CMakeParseArguments
         set(options)
-        set(oneValueArgs)
-        set(multiValueArgs TESTPROGRAMS DATAFILES LINKLIBS SOURCES)
-        cmake_parse_arguments(
-            OSIMADDTESTS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+        set(oneValueArgs NAME DISABLED)
+        set(multiValueArgs RESOURCES LINKLIBS EXTRA_SOURCES ENVIRONMENT)
+        cmake_parse_arguments(OSIMTEST
+                "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-        # If EXECUTABLE_OUTPUT_PATH is set, then that's where the tests will be
-        # located. Otherwise, they are located in the current binary directory.
-        if(EXECUTABLE_OUTPUT_PATH)
-            set(TEST_PATH "${EXECUTABLE_OUTPUT_PATH}")
-        else()
-            set(TEST_PATH "${CMAKE_CURRENT_BINARY_DIR}")
+        add_executable(${OSIMTEST_NAME} ${OSIMTEST_NAME}.cpp
+                "${CMAKE_SOURCE_DIR}/tests/Testing.h" ${OSIMTEST_EXTRA_SOURCES})
+        OpenSimConfigureTarget(${OSIMTEST_NAME})
+        set_target_properties(${OSIMTEST_NAME} PROPERTIES FOLDER "Tests")
+        target_link_libraries(${OSIMTEST_NAME} ${OSIMTEST_LINKLIBS}
+                osimTesting Catch2::Catch2WithMain)
+
+        # Platform-specific test exclusion.
+        if(APPLE)
+            list(APPEND test_args "~[win]~[linux]~[win/linux]~[linux/win]")
+        endif()
+        if(LINUX)
+            list(APPEND test_args "~[win]~[mac]~[win/mac]~[mac/win]")
+        endif()
+        if(WIN32)
+            list(APPEND test_args "~[mac]~[linux]~[mac/linux]~[linux/mac]~[unix]")
         endif()
 
-        # Make test targets.
-        foreach(test_program ${OSIMADDTESTS_TESTPROGRAMS})
-            # NAME_WE stands for "name without extension"
-            get_filename_component(TEST_NAME ${test_program} NAME_WE)
+        # Add the test.
+        add_test(NAME ${OSIMTEST_NAME} COMMAND ${OSIMTEST_NAME} ${test_args})
 
-            add_executable(${TEST_NAME} ${test_program}
-                ${OSIMADDTESTS_SOURCES})
-            OpenSimConfigureTarget(${TEST_NAME})
-            target_link_libraries(${TEST_NAME} ${OSIMADDTESTS_LINKLIBS}
-                    osimTesting)
-            set(test_args "")
-            if(APPLE)
-                list(APPEND test_args "~[win]~[linux]~[win/linux]~[linux/win]")
-            endif()
-            if(LINUX)
-                list(APPEND test_args "~[win]~[mac]~[win/mac]~[mac/win]")
-            endif()
-            if(WIN32)
-                list(APPEND test_args "~[mac]~[linux]~[mac/linux]~[linux/mac]~[unix]")
-            endif()
-            add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME} ${test_args})
-            set_target_properties(${TEST_NAME} PROPERTIES
-                FOLDER "Tests"
-            )
+        # Skip this test, if required.
+        set_tests_properties(${OSIMTEST_NAME} PROPERTIES
+                DISABLED "${OSIMTEST_DISABLED}")
+
+        # Set any test-specific environment variables.
+        set_property(TEST ${OSIMTEST_NAME} APPEND PROPERTY
+                ENVIRONMENT ${OSIMTEST_ENVIRONMENT})
+
+        # Symlink test resources into the build directory.
+        foreach(resource ${OSIMTEST_RESOURCES})
+            get_filename_component(RESOURCE_PATH "${resource}" ABSOLUTE
+                    BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+            get_filename_component(RESOURCE_NAME "${resource}" NAME)
+            # Create the symlink, falling back to a plain file copy
+            # if the symlink fails.
+            file(CREATE_LINK "${RESOURCE_PATH}"
+                    "${CMAKE_CURRENT_BINARY_DIR}/${RESOURCE_NAME}"
+                    SYMBOLIC COPY_ON_ERROR)
         endforeach()
-
-        # Copy data files to build directory.
-        foreach(data_file ${OSIMADDTESTS_DATAFILES})
-            # This command symlinks the data files
-            # from the source directories into the running directory.
-            # This preserves changes to source files.
-            get_filename_component(FILENAME ${data_file} NAME)
-            add_custom_command(
-                TARGET ${TEST_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E create_symlink
-                    "${data_file}" 
-                    "${CMAKE_CURRENT_BINARY_DIR}/${FILENAME}")
-        endforeach()
-
-        #if(UNIX)
-        #  add_definitions(-fprofile-arcs -ftest-coverage)
-        #  link_libraries(gcov)
-        #endif(UNIX)
 
     endif()
 

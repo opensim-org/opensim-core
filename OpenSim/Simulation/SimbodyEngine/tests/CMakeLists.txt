@@ -1,14 +1,13 @@
 find_package(Catch2 REQUIRED
         HINTS "${OPENSIM_DEPENDENCIES_DIR}/catch2")
 
-file(GLOB TEST_PROGS "test*.cpp")
-file(GLOB TEST_FILES resources/*.osim
-                     resources/*.xml
-                     resources/*.sto
-                     resources/*.mot)
+OpenSimAddTest(NAME testConstraints
+        LINKLIBS osimSimulation osimCommon osimAnalyses
+        RESOURCES resources/testJointConstraints.osim
+        )
 
-OpenSimAddTests(
-    TESTPROGRAMS ${TEST_PROGS}
-    DATAFILES ${TEST_FILES}
-    LINKLIBS osimSimulation osimCommon osimAnalyses Catch2::Catch2WithMain
-    )
+OpenSimAddTest(NAME testJoints
+        LINKLIBS osimSimulation osimCommon osimAnalyses
+        RESOURCES resources/double_pendulum_testReverse.osim
+                  resources/testJointConstraints.osim
+        )

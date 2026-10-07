@@ -21,7 +21,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <SimTKcommon/Testing.h>
 #include <catch2/catch_all.hpp>
 #include <cstdlib>
 #include <iostream>
