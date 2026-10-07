@@ -6,8 +6,8 @@ Fixes issue #<issue_number>
 
 ### Looking for feedback on...
 
-### AI/LLM usage
-<!-- Please disclose any AI or LLM tools used to create this pull request.-->
+### AI/LLM use
+<!-- Please disclose any AI or LLM tools that were used to create this pull request, how they were used, and what quality checks were performed. -->
 
 ### CHANGELOG.md (choose one)
 
