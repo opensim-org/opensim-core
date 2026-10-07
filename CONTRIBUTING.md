@@ -74,7 +74,7 @@ AI/LLM Usage Policy
 Contributors to OpenSim are welcome to use Artificial Intelligence (AI) or Large Language Model (LLM) coding tools to create pull requests. However, all pull requests must be created with a human in the loop. The contributor is always the author and is fully accountable for their contributions. Contributors must be confident that their submission is high quality and worth the (limited) time of the maintainers.
 
 - You must disclose in the pull request description that you used an AI/LLM tool or model and how it was used.
-- You must review all AI/LLM-generated code, comments, or documentation before requesting a review.
+- You must review all AI/LLM-generated code, comments, and documentation before requesting a review.
 - You must not attribute an AI/LLM model authorship to any commit in a pull request (e.g., "Co-Authored by Claude").
 - You must answer all maintainer questions and pull request review comments yourself, without using an LLM or AI chatbot.
 
