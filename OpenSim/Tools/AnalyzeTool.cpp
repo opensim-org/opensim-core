@@ -35,6 +35,8 @@
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
 
+#include <cmath>
+
 using namespace OpenSim;
 using namespace std;
 
@@ -59,6 +61,7 @@ AnalyzeTool::AnalyzeTool() :
     _coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
     _speedsFileName(_speedsFileNameProp.getValueStr()),
     _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
+    _filteredCoordinateSampling(_filteredCoordinateSamplingProp.getValueStr()),
     _printResultFiles(true),
     _loadModelAndInput(false)
 {
@@ -79,11 +82,13 @@ AnalyzeTool::AnalyzeTool(const string &aFileName, bool aLoadModelAndInput) :
     _coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
     _speedsFileName(_speedsFileNameProp.getValueStr()),
     _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
+    _filteredCoordinateSampling(_filteredCoordinateSamplingProp.getValueStr()),
     _printResultFiles(true),
     _loadModelAndInput(aLoadModelAndInput)
 {
     setNull();
     updateFromXMLDocument();
+    getFilteredCoordinateSampling();
 
     if(aLoadModelAndInput) {
         loadModel(aFileName);
@@ -111,6 +116,7 @@ AnalyzeTool::AnalyzeTool(Model& aModel) :
     _coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
     _speedsFileName(_speedsFileNameProp.getValueStr()),
     _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
+    _filteredCoordinateSampling(_filteredCoordinateSamplingProp.getValueStr()),
     _printResultFiles(true),
     _loadModelAndInput(false)
 {
@@ -171,6 +177,7 @@ AnalyzeTool(const AnalyzeTool &aTool) :
     _coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
     _speedsFileName(_speedsFileNameProp.getValueStr()),
     _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
+    _filteredCoordinateSampling(_filteredCoordinateSamplingProp.getValueStr()),
     _loadModelAndInput(false)
 {
     setNull();
@@ -191,6 +198,8 @@ setNull()
     _coordinatesFileName = "";
     _speedsFileName = "";
     _lowpassCutoffFrequency = -1.0;
+    setFilteredCoordinateSampling(
+            FilteredCoordinateSampling::UniformInputCount);
 
     _statesStore = NULL;
 
@@ -236,6 +245,16 @@ void AnalyzeTool::setupProperties()
     _lowpassCutoffFrequencyProp.setName("lowpass_cutoff_frequency_for_coordinates");
     _propertySet.append( &_lowpassCutoffFrequencyProp );
 
+    _filteredCoordinateSamplingProp.setName("filtered_coordinate_sampling");
+    _filteredCoordinateSamplingProp.setComment(
+            "Sampling after coordinate filtering: uniform_input_count "
+            "(default) preserves the original count and endpoints with uniform "
+            "spacing; filter_grid retains the possibly denser filtering grid. "
+            "Padding is retained for differentiation. The cutoff must be below "
+            "the uniform output Nyquist frequency and sufficiently attenuate "
+            "higher frequencies. No additional anti-aliasing filter is "
+            "applied. Ignored when coordinate filtering is disabled.");
+    _propertySet.append(&_filteredCoordinateSamplingProp);
 }
 
 
@@ -259,9 +278,109 @@ operator=(const AnalyzeTool &aTool)
     _coordinatesFileName = aTool._coordinatesFileName;
     _speedsFileName = aTool._speedsFileName;
     _lowpassCutoffFrequency= aTool._lowpassCutoffFrequency;
+    _filteredCoordinateSampling = aTool._filteredCoordinateSampling;
     _statesStore = aTool._statesStore;
     _printResultFiles = aTool._printResultFiles;
     return(*this);
+}
+
+AnalyzeTool::FilteredCoordinateSampling
+AnalyzeTool::getFilteredCoordinateSampling() const {
+    const string sampling = IO::Lowercase(_filteredCoordinateSampling);
+    if (sampling == "uniform_input_count") {
+        return FilteredCoordinateSampling::UniformInputCount;
+    }
+    if (sampling == "filter_grid") {
+        return FilteredCoordinateSampling::FilterGrid;
+    }
+    throw Exception("AnalyzeTool: unrecognized filtered_coordinate_sampling '" +
+            _filteredCoordinateSampling +
+            "'; expected uniform_input_count or filter_grid.");
+}
+
+void AnalyzeTool::setFilteredCoordinateSampling(
+        FilteredCoordinateSampling sampling) {
+    switch (sampling) {
+    case FilteredCoordinateSampling::UniformInputCount:
+        _filteredCoordinateSampling = "uniform_input_count";
+        return;
+    case FilteredCoordinateSampling::FilterGrid:
+        _filteredCoordinateSampling = "filter_grid";
+        return;
+    }
+    throw Exception("AnalyzeTool: unrecognized filtered coordinate sampling.");
+}
+
+void AnalyzeTool::filterCoordinates(Storage& coordinates) const {
+    if (_lowpassCutoffFrequency < 0) return;
+
+    const auto sampling = getFilteredCoordinateSampling();
+    if (sampling == FilteredCoordinateSampling::FilterGrid) {
+        // Preserve the original guard: a NaN cutoff skips filtering.
+        if (_lowpassCutoffFrequency >= 0) {
+            log_info("Low-pass filtering coordinates data with a cutoff "
+                    "frequency of {}...", _lowpassCutoffFrequency);
+            coordinates.pad(coordinates.getSize() / 2);
+            coordinates.lowpassIIR(_lowpassCutoffFrequency);
+        }
+        return;
+    }
+
+    const int count = coordinates.getSize();
+    // Padding must supply enough points for the quintic splines used here
+    // and in formCompleteStorages(). Two or three inputs are insufficient.
+    if (count < 4 || !std::isfinite(_lowpassCutoffFrequency)) {
+        throw Exception("AnalyzeTool: coordinate filtering requires at least "
+                "four samples and a finite cutoff frequency.");
+    }
+    const double first = coordinates.getFirstTime();
+    const double last = coordinates.getLastTime();
+    for (int i = 0; i < count; ++i) {
+        const double time = coordinates.getStateVector(i)->getTime();
+        if (!std::isfinite(time) ||
+                (i > 0 && time <=
+                        coordinates.getStateVector(i - 1)->getTime())) {
+            throw Exception("AnalyzeTool: coordinate filtering requires "
+                    "finite, strictly increasing timestamps.");
+        }
+    }
+    const double dt = (last - first) / (count - 1);
+    if (!std::isfinite(dt) || dt <= 0) {
+        throw Exception("AnalyzeTool: invalid coordinate sampling interval.");
+    }
+    if (_lowpassCutoffFrequency >= 0.5 / dt) {
+        throw Exception("AnalyzeTool: the coordinate filter cutoff must be "
+                "below the uniform output Nyquist frequency. Use a lower "
+                "cutoff or select filtered_coordinate_sampling=filter_grid.");
+    }
+
+    log_info("Low-pass filtering coordinates data with a cutoff frequency "
+            "of {}...", _lowpassCutoffFrequency);
+    coordinates.pad(count / 2);
+    coordinates.lowpassIIR(_lowpassCutoffFrequency);
+
+    // Anchor the grid to the unpadded input, not the first padded sample.
+    // Retain available padding so that differentiation can use it at the ends.
+    const int begin = static_cast<int>(
+            std::ceil((coordinates.getFirstTime() - first) / dt));
+    const int end = static_cast<int>(
+            std::floor((coordinates.getLastTime() - first) / dt));
+    Storage resampled(coordinates, false);
+    const int width = coordinates.getSmallestNumberOfStates();
+    // Use the same interpolating spline degree as formCompleteStorages().
+    // Linear interpolation can introduce slope changes before differentiation.
+    const GCVSplineSet splines(5, &coordinates);
+    SimTK::Vector argument(1, 0.0);
+    Array<double> values(0.0, width);
+    for (int i = begin; i <= end; ++i) {
+        const double time = i == count - 1 ? last : first + i * dt;
+        argument[0] = time;
+        for (int j = 0; j < width; ++j) {
+            values[j] = splines.get(j).calcValue(argument);
+        }
+        resampled.append(time, values);
+    }
+    coordinates = resampled;
 }
 
 
@@ -388,15 +507,7 @@ loadStatesFromFile(SimTK::State& s)
         log_info("Loading coordinates from file '{}'.", _coordinatesFileName);
         Storage coordinatesStore(_coordinatesFileName);
 
-        if(_lowpassCutoffFrequency>=0) {
-            log_info("Low-pass filtering coordinates data with a cutoff "
-                "frequency of {}...", _lowpassCutoffFrequency);
-            //coordinatesStore.pad(60);
-            //coordinatesStore.lowpassFIR(50,_lowpassCutoffFrequency);
-            //coordinatesStore.smoothSpline(5,_lowpassCutoffFrequency);
-            coordinatesStore.pad(coordinatesStore.getSize()/2);
-            coordinatesStore.lowpassIIR(_lowpassCutoffFrequency);
-        }
+        filterCoordinates(coordinatesStore);
 
         Storage *qStore=NULL, *uStore=NULL;
 
@@ -438,12 +549,7 @@ setStatesFromMotion(const SimTK::State& s, const Storage &aMotion, bool aInDegre
 
     if(!aInDegrees) _model->getSimbodyEngine().convertRadiansToDegrees(motionCopy);
 
-    if(_lowpassCutoffFrequency>=0) {
-        log_info("Low-pass filtering coordinates data with a cutoff frequency "
-            "of {}...", _lowpassCutoffFrequency);
-        motionCopy.pad(motionCopy.getSize()/2);
-        motionCopy.lowpassIIR(_lowpassCutoffFrequency);
-    }
+    filterCoordinates(motionCopy);
 
     Storage *qStore=NULL, *uStore=NULL;
     // qStore and uStore returned are in radians
