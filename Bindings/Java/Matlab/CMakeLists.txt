@@ -61,6 +61,54 @@ file(COPY "examples/Moco/exampleSquatToStand/squatToStand_3dof9musc.osim"
         DESTINATION
         "${CMAKE_BINARY_DIR}/Examples/Moco/exampleSquatToStand")
 
+# Copy and install the example2DWalking resources from the C++ example.
+set(EXAMPLE_2D_WALKING_DIR
+    "${CMAKE_SOURCE_DIR}/OpenSim/Examples/Moco/example2DWalking")
+set(EXAMPLE_2D_WALKING_FILES
+    "${EXAMPLE_2D_WALKING_DIR}/2D_gait.osim"
+    "${EXAMPLE_2D_WALKING_DIR}/referenceCoordinates.sto"
+    "${EXAMPLE_2D_WALKING_DIR}/referenceGRF.sto"
+    "${EXAMPLE_2D_WALKING_DIR}/referenceGRF.xml")
+
+file(COPY ${EXAMPLE_2D_WALKING_FILES}
+     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/examples/Moco/example2DWalking")
+install(FILES ${EXAMPLE_2D_WALKING_FILES}
+        DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}/Moco/example2DWalking")
+
+# Copy and install the example3DWalking resources from the C++ example.
+set(EXAMPLE_3D_WALKING_DIR
+    "${CMAKE_SOURCE_DIR}/OpenSim/Examples/Moco/example3DWalking")
+set(EXAMPLE_MOCO_TRACK_FILES
+    "${EXAMPLE_3D_WALKING_DIR}/subject_walk_scaled.osim"
+    "${EXAMPLE_3D_WALKING_DIR}/subject_walk_scaled_FunctionBasedPathSet.xml"
+    "${EXAMPLE_3D_WALKING_DIR}/subject_walk_scaled_ContactForceSet.xml"
+    "${EXAMPLE_3D_WALKING_DIR}/subject_walk_scaled_ContactGeometrySet.xml"
+    "${EXAMPLE_3D_WALKING_DIR}/subject_walk_scaled_ExpressionBasedCoordinateForceSet.xml"
+    "${EXAMPLE_3D_WALKING_DIR}/coordinates.sto"
+    "${EXAMPLE_3D_WALKING_DIR}/grf_walk.mot"
+    "${EXAMPLE_3D_WALKING_DIR}/grf_walk.xml"
+    "${EXAMPLE_3D_WALKING_DIR}/markers_walk.trc"
+    "${EXAMPLE_3D_WALKING_DIR}/ik_tasks_walk.xml"
+    "${EXAMPLE_3D_WALKING_DIR}/electromyography.sto"
+    "${EXAMPLE_3D_WALKING_DIR}/id_walk.sto"
+    "${EXAMPLE_3D_WALKING_DIR}/README.txt")
+
+# Copy and install the exampleMocoTrack resources from the C++ example.
+file(COPY ${EXAMPLE_MOCO_TRACK_FILES}
+     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/examples/Moco/example3DWalking")
+install(FILES ${EXAMPLE_MOCO_TRACK_FILES}
+        DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}/Moco/example3DWalking")
+
+# Copy and install the examplePolynomialPathFitter resources from the C++ example.
+set(EXAMPLE_PATH_FITTER_FILES
+    "${EXAMPLE_3D_WALKING_DIR}/subject_walk_scaled.osim"
+    "${EXAMPLE_3D_WALKING_DIR}/coordinates.sto")
+
+file(COPY ${EXAMPLE_PATH_FITTER_FILES}
+     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/examples/PolynomialPathFitter")
+install(FILES ${EXAMPLE_PATH_FITTER_FILES}
+        DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}/PolynomialPathFitter")
+
 # Copy Geometry folder for squat-to-stand examples
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSenseExample/Geometry/"
         DESTINATION
@@ -68,7 +116,7 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSenseExample/Geometry/"
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSenseExample/Geometry/"
         DESTINATION
         "${OPENSIM_INSTALL_PYTHONEXDIR}/Moco/exampleSquatToStand/Geometry/")
-        
+
 # Copy Geometry folder for Moco examples
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSenseExample/Geometry/"
         DESTINATION
