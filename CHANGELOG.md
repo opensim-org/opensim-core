@@ -9,6 +9,10 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.6.1
 ======
+- `AnalyzeTool` now restores the original coordinate sample count and time range
+  with uniform spacing after filtering, retaining padding for differentiation.
+  Set `filtered_coordinate_sampling` to `filter_grid` for the previous behavior.
+  The default mode requires a cutoff below the output Nyquist frequency. (#4126)
 - Added `CantileverFreeBeamJoint`, a joint type providing a lightweight way for modeling flexible structures (e.g., the bending of the spinal column in a human or animal skeleton). (#4227)
 - Added `ExponentialCoordinateLimitForce`, a force element for enforcing coordinate limits using exponential spring functions. (#4231)
 - Added `CoordinateLinearStopForce`, a force element for enforcing coordinate limits using a
