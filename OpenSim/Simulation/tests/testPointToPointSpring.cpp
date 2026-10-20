@@ -37,10 +37,10 @@ TEST_CASE("PointToPointSpring finalizeConnectionsWhenBothSidesConnectedToDiffere
 {
     OpenSim::Model m;
 
-    OpenSim::Body* b1 = new OpenSim::Body{"b1", 1.0, {}, {}};
+    OpenSim::Body* b1 = new OpenSim::Body{"b1", 1.0, {}, SimTK::Inertia{1.0}};
     m.addBody(b1);
 
-    OpenSim::Body* b2 = new OpenSim::Body{"b2", 1.0, {}, {}};
+    OpenSim::Body* b2 = new OpenSim::Body{"b2", 1.0, {}, SimTK::Inertia{1.0}};
     m.addBody(b2);
 
     CHECK_NOTHROW(m.finalizeConnections());
@@ -57,7 +57,7 @@ TEST_CASE("PointToPointSpring finalizeConnectionsWhenBothSidesConnectedToSameBod
 {
     OpenSim::Model m;
 
-    OpenSim::Body* b = new OpenSim::Body{"b", 1.0, {}, {}};
+    OpenSim::Body* b = new OpenSim::Body{"b", 1.0, {}, SimTK::Inertia{1.0}};
     m.addBody(b);
 
     CHECK_NOTHROW(m.finalizeConnections());

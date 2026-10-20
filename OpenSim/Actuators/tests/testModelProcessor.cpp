@@ -188,7 +188,7 @@ TEST_CASE("ModOpPrescribeMotion") {
             state = statesTraj[itime];
             double time = state.getTime();
             double posActual = model.getStateVariableValue(state, path);
-            SimTK::RowVectorView row = table.getNearestRow(time);
+            const SimTK::RowVectorView row = table.getNearestRow(time);
             double posExpected = row[jointColumn];
             REQUIRE(posActual == Catch::Approx(posExpected).margin(1e-3));
         }

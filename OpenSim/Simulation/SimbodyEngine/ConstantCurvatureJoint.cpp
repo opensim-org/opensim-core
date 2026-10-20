@@ -60,7 +60,6 @@ SimTK::Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q) {
                 "to unphysical behavior. Please adjust your model "
                 "or simulation to avoid this state.",
                 pos(0), bound));
-        OPENSIM_ASSERT(false);
         pos(0) = bound;
     }
     if (pos(0) < -bound) {
@@ -71,7 +70,6 @@ SimTK::Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q) {
                 "to unphysical behavior. Please adjust your model "
                 "or simulation to avoid this state.",
                 pos(0), -bound));
-        OPENSIM_ASSERT(false);
         pos(0) = -bound;
     }
     if (pos(1) > bound) {
@@ -82,7 +80,6 @@ SimTK::Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q) {
                 "to unphysical behavior. Please adjust your model "
                 "or simulation to avoid this state.",
                 pos(1), bound));
-        OPENSIM_ASSERT(false);
         pos(1) = bound;
     }
     if (pos(1) < -bound) {
@@ -93,7 +90,6 @@ SimTK::Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q) {
                 "to unphysical behavior. Please adjust your model "
                 "or simulation to avoid this state.",
                 pos(1), -bound));
-        OPENSIM_ASSERT(false);
         pos(1) = -bound;
     }
     if (pos(2) > bound) {
@@ -104,7 +100,6 @@ SimTK::Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q) {
                 "to unphysical behavior. Please adjust your model "
                 "or simulation to avoid this state.",
                 pos(2), bound));
-        OPENSIM_ASSERT(false);
         pos(2) = bound;
     }
     if (pos(2) < -bound) {
@@ -115,7 +110,6 @@ SimTK::Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q) {
                 "to unphysical behavior. Please adjust your model "
                 "or simulation to avoid this state.",
                 pos(2), -bound));
-        OPENSIM_ASSERT(false);
         pos(2) = -bound;
     }
     return pos;

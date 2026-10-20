@@ -263,10 +263,10 @@ TEST_CASE("StationDefinedFrame_SanityCheckCanUsePOFAsParentOfJointViaOtherOffset
         std::string{"weld"},
         pof,
         SimTK::Vec3{1.0, 0.0, 0.0},  // location in parent
-        SimTK::Vec3{},               // orientation in parent
+        SimTK::Vec3{0.0, 0.0, 0.0},  // orientation in parent
         body,
         SimTK::Vec3{0.0, 1.0, 0.0},  // location in child
-        SimTK::Vec3{}                // orientation in child
+        SimTK::Vec3{0.0, 0.0, 0.0}   // orientation in child
     );
 
     // fails because `Ground` <-- `PhysicalOffsetFrame` <-- `PhysicalOffsetFrame` <-- `Joint` --> `PhysicalOffsetFrame` --> `Body`
@@ -319,10 +319,10 @@ TEST_CASE("StationDefinedFrame_CanCreateModelContainingStationDefinedFrameViaOff
         std::string{"weld"},
         sdf,
         SimTK::Vec3{1.0, 0.0, 0.0},  // location in parent
-        SimTK::Vec3{},  // orientation in parent
+        SimTK::Vec3{0.0, 0.0, 0.0},  // orientation in parent
         body,
         SimTK::Vec3{0.0, 1.0, 0.0},  // location in child
-        SimTK::Vec3{}  // orientation in child
+        SimTK::Vec3{0.0, 0.0, 0.0}  // orientation in child
     );
 
     // fails in the same way that `PhysicalOffsetFrame` would (see sanity test above)
@@ -399,6 +399,7 @@ TEST_CASE("StationDefinedFrame_HasExpectedOriginLocation")
     // the property values `seem` ok (the implementation can't necessarily be sure where the stations are)
     model.buildSystem();
     SimTK::State state = model.initializeState();
+    model.realizePosition(state);
     auto* c = model.findComponent<StationDefinedFrame>("sdf");
     REQUIRE(c != nullptr);
     REQUIRE(c->getTransformInGround(state).p() == originLoc);
@@ -428,6 +429,7 @@ TEST_CASE("StationDefinedFrame_OriginLocationCanBePointA")
 
     model.buildSystem();
     SimTK::State state = model.initializeState();
+    model.realizePosition(state);
     auto* c = model.findComponent<StationDefinedFrame>("sdf");
     REQUIRE(c != nullptr);
     REQUIRE(c->getTransformInGround(state).p() == p1.get_location());
@@ -457,6 +459,7 @@ TEST_CASE("StationDefinedFrame_OriginLocationCanBePointB")
 
     model.buildSystem();
     SimTK::State state = model.initializeState();
+    model.realizePosition(state);
     auto* c = model.findComponent<StationDefinedFrame>("sdf");
     REQUIRE(c != nullptr);
     REQUIRE(c->getTransformInGround(state).p() == p2.get_location());
@@ -486,6 +489,7 @@ TEST_CASE("StationDefinedFrame_OriginLocationCanBePointC")
 
     model.buildSystem();
     SimTK::State state = model.initializeState();
+    model.realizePosition(state);
     auto* c = model.findComponent<StationDefinedFrame>("sdf");
     REQUIRE(c != nullptr);
     REQUIRE(c->getTransformInGround(state).p() == p3.get_location());

@@ -221,6 +221,11 @@ double LatinHypercubeDesign::evaluateDesign(
 //=============================================================================
 double LatinHypercubeDesign::computeMaximinDistanceCriterion(
         const SimTK::Matrix& design) {
+   // A design with fewer than two points has no inter-point distances, so this
+   // criterion is undefined.
+   if (design.nrow() < 2) {
+       return 0.0;
+   }
    SimTK::Matrix neighbors = computeKNearestNeighbors(design, design, 2);
    return -SimTK::min(neighbors.col(1));
 }
@@ -415,6 +420,14 @@ SimTK::Matrix LatinHypercubeDesign::computeStochasticEvolutionaryDesign(
     int numSamples = initialDesign.nrow();
     int numVariables = initialDesign.ncol();
 
+    // The algorithm improves a design by exchanging elements between two rows
+    // of a column. With fewer than two rows the two selected rows are always
+    // the same row, so every exchange is a no-op and no iteration can improve
+    // on the initial design.
+    if (numSamples < 2) {
+        return initialDesign;
+    }
+
     // Initialize the algorithm parameters.
     // ------------------------------------
     // Initialize the design and their initial distance criterion values.
@@ -578,6 +591,16 @@ SimTK::Matrix LatinHypercubeDesign::computeRandomHypercube(
 SimTK::Matrix LatinHypercubeDesign::computeRandomDesign(
         int numSamples, int numVariables, int iterations) const {
     // Iterate through the number of random designs and save the best one.
+    // A design with fewer than two points has no inter-point distances, so
+    // every candidate scores identically under either distance criterion and
+    // the search below would always keep the first one. Generate it once.
+    if (numSamples < 2) {
+        SimTK::Matrix design = computeRandomHypercube(numSamples, numVariables);
+        design -= computeRandomMatrix(numSamples, numVariables);
+        design /= numSamples;
+        return design;
+    }
+
     SimTK::Matrix design;
     SimTK::Matrix designBest;
     double distanceBest = SimTK::Infinity;

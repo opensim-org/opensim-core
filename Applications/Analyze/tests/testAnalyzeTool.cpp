@@ -350,9 +350,10 @@ TEST_CASE("testIMUDataReporter") {
     const TimeSeriesTable_<SimTK::Quaternion>& rotationsTable =
             imuDataReporter->getOrientationsTable();
     int angNr = int(angVelTable.getNumRows());
+    const SimTK::MatrixView_<SimTK::Vec3>& matrix = angVelTable.getMatrix();
     for (int row = 0; row < angNr; ++row) {
-        OpenSim_CHECK_EQUAL(angVelTable.getMatrix()[row][0].norm(), 0., 1e-7);
-        OpenSim_CHECK_EQUAL(angVelTable.getMatrix()[row][1].norm(), 0., 1e-7);
+        OpenSim_CHECK_EQUAL(matrix.getElt(row, 0).norm(), 0., 1e-7);
+        OpenSim_CHECK_EQUAL(matrix.getElt(row, 1).norm(), 0., 1e-7);
     }
     // Now allow pendulum to drop under gravity from horizontal
     bodyKinematics->getPositionStorage()->purge();
