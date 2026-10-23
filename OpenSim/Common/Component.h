@@ -1012,7 +1012,7 @@ public:
     * is bound to. If the Component is already connected, the connected object
     * will be retrieved via the Socket's connectee pointer (fast path). IF the
     * Socket has not been connected, the connectee will be retrieved via the
-    * connectee's path property (slow path). If either path fails, an exception
+    * connectee's path property (slow path). If both paths fail, an exception
     * is thrown.
     *
     * This method is for getting the concrete connectee object, and is not
