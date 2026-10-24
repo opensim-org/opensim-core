@@ -272,6 +272,10 @@ const SimTK::State& Manager::integrate(double finalTime) {
     // Initial state.
     const SimTK::State& s = _integ->getState();
 
+    OPENSIM_THROW_IF(s.getSystemStage() < SimTK::Stage::Topology, Exception,
+        "The initial state is uninitialized. You must call "
+        "Manager::initialize() before calling Manager::integrate().");
+
     OPENSIM_THROW_IF(SimTK::isNaN(s.getTime()), Exception,
         "The initial state time is NaN. You must call Manager::initialize() "
         "before calling Manager::integrate().");

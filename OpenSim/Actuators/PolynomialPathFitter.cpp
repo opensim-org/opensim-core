@@ -588,7 +588,8 @@ int fitAllCoefficients(
         for (int itime = 0; itime < numTimes; ++itime) {
             A(itime, 0, 1, numCoefficients) =
                     dummyFunction.getTermValues(
-                        coordinates.row(itime).transpose().getAsVector());
+                        coordinates.row(itime).transpose().getAsVector())
+                        .transpose();
 
             for (int ic = 0; ic < numCoordinates; ++ic) {
                 SimTK::Vector termDerivatives =
@@ -596,7 +597,7 @@ int fitAllCoefficients(
                         coordinates.row(itime).transpose().getAsVector())
                         .negate();
                 A((ic+1)*numTimes + itime, 0, 1, numCoefficients) =
-                        termDerivatives;
+                        termDerivatives.transpose();
             }
         }
 
@@ -664,7 +665,8 @@ void fitCoefficientsStepwiseRegression(
     for (int itime = 0; itime < numTimes; ++itime) {
         Afull(itime, 0, 1, numCoefficients) =
                 dummyFunction.getTermValues(
-                    coordinates.row(itime).transpose().getAsVector());
+                    coordinates.row(itime).transpose().getAsVector())
+                    .transpose();
 
         for (int ic = 0; ic < numCoordinates; ++ic) {
             SimTK::Vector termDerivatives =
@@ -672,7 +674,7 @@ void fitCoefficientsStepwiseRegression(
                     coordinates.row(itime).transpose().getAsVector())
                     .negate();
             Afull((ic+1)*numTimes + itime, 0, 1, numCoefficients) =
-                    termDerivatives;
+                    termDerivatives.transpose();
         }
     }
 

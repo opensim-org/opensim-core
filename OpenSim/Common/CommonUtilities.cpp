@@ -225,6 +225,10 @@ SimTK::Matrix OpenSim::computeKNearestNeighbors(const SimTK::Matrix& x,
             "columns, but found {} and {}, respectively.",
             x.ncol(), y.ncol());
 
+    OPENSIM_THROW_IF(k < 1 || k > x.nrow(), Exception,
+            "Expected 'k' to be between 1 and the number of rows in 'x' ({}), "
+            "but received {}.", x.nrow(), k);
+
     // Initialize the output matrices.
     SimTK::Matrix distances(y.nrow(), k, 0.0);
 

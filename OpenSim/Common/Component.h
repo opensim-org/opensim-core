@@ -1009,9 +1009,11 @@ public:
 
     /**
     * Get the "connectee" object that the Component's Socket
-    * is bound to. Guaranteed to be valid only after the Component
-    * has been connected (that is connect() has been invoked).
-    * If the Socket has not been connected, an exception is thrown.
+    * is bound to. If the Component is already connected, the connected object
+    * will be retrieved via the Socket's connectee pointer (fast path). IF the
+    * Socket has not been connected, the connectee will be retrieved via the
+    * connectee's path property (slow path). If both paths fail, an exception
+    * is thrown.
     *
     * This method is for getting the concrete connectee object, and is not
     * available in scripting. If you want generic access to the connectee as an
@@ -1030,17 +1032,16 @@ public:
     */
     template<typename T>
     const T& getConnectee(const std::string& name) const {
-        // get the Socket and check if it is connected.
-        const Socket<T>& socket = getSocket<T>(name);
-        OPENSIM_ASSERT_FRMOBJ(socket.isConnected());
-        return socket.getConnectee();
+        return getSocket<T>(name).getConnectee();
     }
 
     /**
     * Get the "connectee" object at the provided index that the Component's
-    * Socket is bound to. Guaranteed to be valid only after the Component
-    * has been connected (that is, connect() has been invoked).
-    * If the Socket has not been connected, an exception is thrown.
+    * Socket is bound to. If the Component is already connected, the connected
+    * object will be retrieved via the Socket's connectee pointer (fast path).
+    * If the Socket has not been connected, the connectee will be retrieved via
+    * the connectee's path property (slow path). If either path fails, an
+    * exception is thrown.
     *
     * This method is for getting the concrete connectee object, and is not
     * available in scripting. If you want generic access to the connectee as an
@@ -1060,10 +1061,7 @@ public:
     */
     template<typename T>
     const T& getConnectee(const std::string& name, int index) const {
-        // get the Socket and check if it is connected.
-        const Socket<T>& socket = getSocket<T>(name);
-        OPENSIM_ASSERT_FRMOBJ(socket.isConnected());
-        return socket.getConnectee(index);
+        return getSocket<T>(name).getConnectee(index);
     }
 
     /** Get the connectee as an Object. This means you will not have
@@ -1091,9 +1089,7 @@ public:
     * @endcode
     */
     const Object& getConnectee(const std::string& name) const {
-        const AbstractSocket& socket = getSocket(name);
-        OPENSIM_ASSERT_FRMOBJ(socket.isConnected());
-        return socket.getConnecteeAsObject();
+        return getSocket(name).getConnecteeAsObject();
     }
 
     /** Get the connectee at the provided index as an Object. This means you
@@ -1121,9 +1117,7 @@ public:
     * @endcode
     */
     const Object& getConnectee(const std::string& name, int index) const {
-        const AbstractSocket& socket = getSocket(name);
-        OPENSIM_ASSERT_FRMOBJ(socket.isConnected());
-        return socket.getConnecteeAsObject(index);
+        return getSocket(name).getConnecteeAsObject(index);
     }
 
     /**

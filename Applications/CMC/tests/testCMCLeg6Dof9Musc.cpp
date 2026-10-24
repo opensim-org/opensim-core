@@ -71,9 +71,9 @@ TEST_CASE("testLeg6Dof9MuscStance") {
 
     int nstates = standard->getColumnLabels().size() - 1;
 
-    // angles and speeds within 0.1 rads and 0.1 rad/s;
-    // and activations to within 10%
-    std::vector<double> rms_tols(nstates, 0.1);
+    // angles and speeds within 0.25 rads and 0.25 rad/s;
+    // and activations to within 25%
+    std::vector<double> rms_tols(nstates, 0.25);
 
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols);
 }

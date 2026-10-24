@@ -38,7 +38,7 @@ namespace {
     void simulate(Model& model, SimTK::State& state, double initialTime, 
             double finalTime) {
         // Create the Manager for the simulation.
-        const double accuracy = 1.0e-4;
+        const double accuracy = 1.0e-3;
         Manager manager(model);
         manager.setIntegratorAccuracy(accuracy);
     

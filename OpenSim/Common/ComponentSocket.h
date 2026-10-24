@@ -475,7 +475,7 @@ private:
         OPENSIM_THROW_IF(!isConnected(), Exception,
             "Socket '{}' not connected.", getName());
         using SimTK::isIndexInRange;
-        SimTK_INDEXCHECK(index, static_cast<int>(getNumConnectees()),
+        SimTK_INDEXCHECK(index, static_cast<int>(_connectees.size()),
                          "Socket<T>::getConnecteeAsObject()");
         return _connectees[index].getRef();
     }

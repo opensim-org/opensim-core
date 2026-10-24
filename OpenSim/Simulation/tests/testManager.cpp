@@ -702,6 +702,8 @@ TEST_CASE("Updating states") {
 }
 
 TEST_CASE("Updating controls") {
+    using SimTK::Vector;
+
     Model model = createBallModel(false);
     // this custom controller allows us to update the controls with the state
     DiscreteController* controller = new DiscreteController();
@@ -711,27 +713,36 @@ TEST_CASE("Updating controls") {
     Manager manager(model); 
 
     // default controls are zero
-    manager.initialize(state);
-    state = manager.integrate(1.0);
-    auto controlsTable = model.getControlsTable();
-    CHECK(controlsTable.getDependentColumnAtIndex(0)[0] == 0.0);
+    {
+        manager.initialize(state);
+        state = manager.integrate(1.0);
+        auto controlsTable = model.getControlsTable();
+        const auto control = controlsTable.getDependentColumnAtIndex(0);
+        CHECK(control[0] == 0.0);
+    }
 
     // update the controls
     SimTK::Vector controls = SimTK::Test::randVector(model.getNumControls());
     controller->setDiscreteControls(state, controls);
 
     // we didn't call initialize(), so the controls should not have changed
-    manager.integrate(2.0);
-    controlsTable = model.getControlsTable();
-    int nrow = static_cast<int>(controlsTable.getNumRows());
-    CHECK(controlsTable.getDependentColumnAtIndex(0)[nrow - 1] == 0.0);
+    {
+        manager.integrate(2.0);
+        auto controlsTable = model.getControlsTable();
+        int nrow = static_cast<int>(controlsTable.getNumRows());
+        const auto control = controlsTable.getDependentColumnAtIndex(0);
+        CHECK(control[nrow - 1] == 0.0);
+    }
     
     // now initialize the manager and integrate again
-    manager.initialize(state);
-    manager.integrate(2.0);
-    controlsTable = model.getControlsTable();
-    nrow = static_cast<int>(controlsTable.getNumRows());
-    CHECK(controlsTable.getDependentColumnAtIndex(0)[nrow - 1] == controls[0]);
+    {
+        manager.initialize(state);
+        manager.integrate(2.0);
+        auto controlsTable = model.getControlsTable();
+        int nrow = static_cast<int>(controlsTable.getNumRows());
+        const auto control = controlsTable.getDependentColumnAtIndex(0);
+        CHECK(control[nrow - 1] == controls[0]);
+    }
 }
 
 TEST_CASE("Manager is compatible with StatesTrajectoryReporter") {

@@ -236,8 +236,8 @@ jobs:
         name: opensim-core-${{ steps.configure.outputs.version }}-mac-arm64
         path: opensim-core-${{ steps.configure.outputs.version }}.zip
 
-  manylinux_2_28:
-    name: ManyLinux 2.28
+  manylinux_2_28_release:
+    name: ManyLinux 2.28 (release)
     runs-on: ubuntu-latest
     container:
       image: quay.io/pypa/manylinux_2_28_x86_64
@@ -366,6 +366,66 @@ jobs:
         # bits. So we zip ourselves, even though this causes a double-zip.
         name: opensim-core-${{ steps.configure.outputs.version }}-manylinux2_28-linux
         path: opensim-core-${{ steps.configure.outputs.version }}-manylinux2_28.zip
+
+  manylinux_2_28_debug:
+    name: ManyLinux 2.28 (debug, minimal)
+    runs-on: ubuntu-latest
+    container:
+      image: quay.io/pypa/manylinux_2_28_x86_64
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Mark workspace as safe for git (manylinux container)
+      run: |
+        git config --global --add safe.directory "$GITHUB_WORKSPACE"
+        git config --global --add safe.directory /__w/opensim-core/opensim-core
+
+    - name: Install packages
+      run: |
+        dnf update -y
+        dnf install -y \
+          gcc-c++ \
+          make \
+          cmake \
+          libtool \
+          autoconf \
+          pkgconfig \
+          gcc-gfortran \
+          openblas-devel \
+          lapack-devel \
+          freeglut-devel \
+          libXi-devel \
+          libXmu-devel
+
+    - name: Cache dependencies
+      id: cache-dependencies
+      uses: actions/cache@v3
+      with:
+        path: build/dependencies/dev-minimal-linux-debug/install
+        key: ${{ runner.os }}-manylinux2_28-debug-dependencies-${{ hashFiles('dependencies/*') }}
+
+    - name: Build dependencies
+      if: steps.cache-dependencies.outputs.cache-hit != 'true'
+      run: |
+        cd $GITHUB_WORKSPACE/dependencies
+        cmake . --preset dev-minimal-linux-debug -LAH
+        cmake --build --preset dev-minimal-linux-debug -j 4
+
+    - name: Configure opensim-core
+      id: configure
+      run: |
+        cmake -S $GITHUB_WORKSPACE --preset dev-minimal-linux-debug -LAH
+        echo "OPENSIM_DEPENDENCIES_DIR=$GITHUB_WORKSPACE/build/dependencies/dev-minimal-linux-debug/install" >> $GITHUB_OUTPUT
+
+    - name: Build opensim-core
+      run: |
+        cmake --build --preset dev-minimal-linux-debug -j 4
+
+    - name: Test opensim-core
+      run: |
+        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ steps.configure.outputs.OPENSIM_DEPENDENCIES_DIR }}/simbody/lib
+        ctest --preset dev-minimal-linux-debug -j 4
 
   build_gui:
     name: Build GUI

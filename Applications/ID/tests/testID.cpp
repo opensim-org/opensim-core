@@ -79,7 +79,8 @@ TEST_CASE("testThoracoscapularShoulderModel") {
 
     for (size_t i = 0; i < labels.size(); ++i) {
         const Coordinate& thisCoord = model.getCoordinateSet().get(labels[i]);
-        auto thisValue = motionTable.getDependentColumn(labels[i])[0];
+        const auto column = motionTable.getDependentColumn(labels[i]);
+        auto thisValue = column[0];
         log_cout("ThoracoscapularShoulderModel set {} to {}", labels[i], thisValue);
         thisCoord.setLocked(s, false);
         thisCoord.setValue(s, thisValue, false);
@@ -104,7 +105,7 @@ TEST_CASE("testThoracoscapularShoulderModel") {
     idTool.run();
     TimeSeriesTable idToolTable("ThorascapularShoulderModel_ID_output.sto");
     auto idToolLabels = idToolTable.getColumnLabels();
-    auto row = idToolTable.getRowAtIndex(0);
+    const auto row = idToolTable.getRowAtIndex(0);
     SimTK::Vector idToolVec(nCoords);
 
     // Reorder Storage file results to multibody tree order just in case

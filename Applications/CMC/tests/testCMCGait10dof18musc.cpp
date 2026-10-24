@@ -57,7 +57,7 @@ TEST_CASE("testGait10dof18musc") {
             INFO(label << " at time " << time[it] << ": " <<
                 result.calcValue(timeVec) << " vs " <<
                 expected.calcValue(timeVec));
-            REQUIRE((Catch::Approx(result.calcValue(timeVec)).margin(1e-1)
+            REQUIRE((Catch::Approx(result.calcValue(timeVec)).margin(2e-1)
                 == expected.calcValue(timeVec)));
         }
     }

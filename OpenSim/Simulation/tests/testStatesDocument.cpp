@@ -31,6 +31,8 @@
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
 #include <catch2/catch_all.hpp>
 
+#include <limits>
+
 using namespace SimTK;
 using namespace OpenSim;
 using std::cout;
@@ -356,7 +358,7 @@ value.
 double
 computeRoundingError(const double& value, int precision) {
     int p = clamp(1, precision, SimTK::LosslessNumDigitsReal);
-    SimTK::String valueStr(value, precision);
+    SimTK::String valueStr(value, p);
     double valueDbl;
     if(!valueStr.tryConvertToDouble(valueDbl))
         cout << "Conversion to double failed" << endl;
@@ -678,7 +680,11 @@ TEST_CASE("Serialization and Deserialization")
     // Serialize
     SimTK::String filename = "BlockOnASpring.ostates";
     SimTK::String note = "Output from `testStatesDocument.cpp`.";
-    for (int p = 1; p < 22; ++p) {
+    // Only test precision up to the max number of digits needed to guarantee
+    // a correct float-to-text-to-float round-trip (as defined by the IEEE 754
+    // 64-bit double-precision floating-point type standard).
+    const int maxPrecision = std::numeric_limits<double>::max_digits10;
+    for (int p = 1; p <= maxPrecision; ++p) {
         cout << "Testing for precision = " << p << endl;
 
         StatesDocument doc(*model, traj, note, p);

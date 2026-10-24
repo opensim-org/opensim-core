@@ -139,7 +139,7 @@
         },
         {
             "name": "dev-minimal-msvc-debug",
-            "description": "Minimal development configuration that only build the dependencies necessary for a minimal build (no Moco, no ezc3d)",
+            "description": "Minimal debug development configuration for MSVC (no Moco, no ezc3d)",
             "inherits": ["dev-default"],
             "cacheVariables": {
                 "OPENSIM_WITH_CASADI": "OFF",
@@ -149,6 +149,29 @@
             },
             "environment": {
                 "CXXFLAGS": "/w"
+            }
+        },
+        {
+            "name": "dev-minimal-macos-debug",
+            "description": "Minimal debug development configuration for MacOS (no Moco, no ezc3d)",
+            "inherits": ["dev-default"],
+            "cacheVariables": {
+                "OPENSIM_WITH_CASADI": "OFF",
+                "SUPERBUILD_ezc3d": "OFF",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "dev-minimal-linux-debug",
+            "description": "Minimal debug development configuration for Linux (no Moco, no ezc3d)",
+            "inherits": [
+                "dev-default",
+                "linux"
+            ],
+            "cacheVariables": {
+                "OPENSIM_WITH_CASADI": "OFF",
+                "SUPERBUILD_ezc3d": "OFF",
+                "CMAKE_BUILD_TYPE": "Debug"
             }
         },
         {
@@ -269,6 +292,15 @@
             "configurePreset": "dev-minimal-msvc-debug"
         },
         {
+            "name": "dev-minimal-macos-debug",
+            "configurePreset": "dev-minimal-macos-debug"
+        },
+        {
+            "name": "dev-minimal-linux-debug",
+            "configurePreset": "dev-minimal-linux-debug",
+            "inherits": "linux"
+        },
+        {
             "name": "ci-msvc-windows-release",
             "configurePreset": "ci-msvc-windows-release",
             "inherits": "windows",
@@ -349,6 +381,20 @@
             "steps": [
                 { "type": "configure", "name": "dev-minimal-msvc-debug" },
                 { "type": "build",     "name": "dev-minimal-msvc-debug" }
+            ]
+        },
+        {
+            "name": "dev-minimal-macos-debug",
+            "steps": [
+                { "type": "configure", "name": "dev-minimal-macos-debug" },
+                { "type": "build",     "name": "dev-minimal-macos-debug" }
+            ]
+        },
+        {
+            "name": "dev-minimal-linux-debug",
+            "steps": [
+                { "type": "configure", "name": "dev-minimal-linux-debug" },
+                { "type": "build",     "name": "dev-minimal-linux-debug" }
             ]
         }
     ]
