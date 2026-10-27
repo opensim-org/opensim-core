@@ -107,6 +107,9 @@ OpenSimAddTest(NAME testStorage
                   resources/testDiff.sto
         )
 
+OpenSimAddTest(NAME testTableUtilities
+        LINKLIBS ${OSIM_COMMON_TEST_LIBS})
+
 OpenSimAddTest(NAME testTRCFileAdapter
         LINKLIBS ${OSIM_COMMON_TEST_LIBS}
         RESOURCES "${OSIM_APPS_DIR}/IK/tests/resources/constraintTest.trc"

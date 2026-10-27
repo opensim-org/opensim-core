@@ -28,11 +28,13 @@
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/STOFileAdapter.h>
+#include <OpenSim/Common/TableUtilities.h>
 #include <OpenSim/Common/LatinHypercubeDesign.h>
 #include <OpenSim/Common/MultivariatePolynomialFunction.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 
+#include <algorithm>
 #include <format>
 #include <atomic>
 #include <future>
@@ -57,6 +59,7 @@ struct Settings {
     bool useStepwiseRegression = false;
     double momentArmTolerance = 1e-4;
     double pathLengthTolerance = 1e-4;
+    double outlierThreshold = 15.0;
     int minimumPolynomialOrder = 2;
     int maximumPolynomialOrder = 6;
     int numParallelThreads = (int)std::thread::hardware_concurrency();
@@ -101,15 +104,19 @@ TimeSeriesTable loadCoordinateValuesAndValidateModel(
             values.getNumColumns(), values.getNumRows());
 
     // Remove any rows in the coordinate values table provided by the user that
-    // contain NaN values.
+    // contain non-finite values.
+    std::vector<bool> nonFiniteRows(values.getNumRows(), false);
+    for (const auto& element : TableUtilities::findNonFiniteElements(values)) {
+        nonFiniteRows[element.second] = true;
+    }
     const auto& times = values.getIndependentColumn();
-    for (int i = 0; i < static_cast<int>(times.size()); ++i) {
-        if (SimTK::isNaN(values.getRowAtIndex(i).sum())) {
-            values.removeRow(times[i]);
-            log_info("NaN coordinate value detected at time {:1.2f} s, "
+    for (int i = 0; i < static_cast<int>(nonFiniteRows.size()); ++i) {
+        if (nonFiniteRows[i]) {
+            log_info("Non-finite coordinate value detected at time {:1.2f} s, "
                      "removing row...", times[i]);
         }
     }
+    values.removeRows(nonFiniteRows);
 
     // Validate the coordinate values table
     std::vector<std::string> jointsToWeld;
@@ -187,24 +194,19 @@ TimeSeriesTable sampleCoordinateValues(
     lhs.setNumSamples(settings.numSamplesPerFrame);
     lhs.setNumVariables((int)values.getNumColumns());
 
-    // Helper function for sampling the coordinate values between two time
-    // indexes.
-    auto sampleCoordinateValuesSubset = [lhs](
-            std::vector<int>::iterator begin_iter,
-            std::vector<int>::iterator end_iter,
-            const TimeSeriesTable& values,
-            const CoordinateMap& coordinateBoundsMap,
-            const CoordinateMap& coordinateRangeMap,
-            bool useStochasticEvolutionaryLHS) -> SimTK::Matrix {
+    // Define the sampling worker. The atomic integer 'timeIndex' provides a
+    // thread-safe index to the next available time point to sample around.
+    const int numTimePoints = static_cast<int>(values.getNumRows());
+    std::atomic<int> timeIndex(0);
+    std::vector<SimTK::Matrix> timeResults(numTimePoints);
+    auto samplingWorker = [&](LatinHypercubeDesign lhs,
+                              TimeSeriesTable values) {
 
-        SimTK::Matrix results(
-                lhs.getNumSamples()*(int)std::distance(begin_iter, end_iter),
-                (int)values.getNumColumns());
         SimTK::Matrix design(lhs.getNumSamples(), lhs.getNumVariables());
-        int thisTimeIndex = 0;
-        for (auto it = begin_iter; it != end_iter; ++it) {
+        int itime;
+        while ((itime = timeIndex.fetch_add(1)) < numTimePoints) {
             // Generate the design and shift its values between [-1, 1].
-            if (useStochasticEvolutionaryLHS) {
+            if (settings.useStochasticEvolutionaryLHS) {
                 design = lhs.generateStochasticEvolutionaryDesign();
             } else {
                 design = lhs.generateRandomDesign();
@@ -223,66 +225,64 @@ TimeSeriesTable sampleCoordinateValues(
                 // each coordinate.
                 double slope = 0.5*(bounds[1] - bounds[0]);
                 SimTK::Vector candidateCol = slope*(design.col(icol) + 1.0) +
-                        bounds[0] + column[*it];
+                        bounds[0] + column[itime];
 
-                // Check that all elements in the column are within the range of
-                // motion. If not, move the element inside the range of motion
-                // that is closest to the original value.
+                // Reflect any elements that fall outside the range of motion
+                // back inside it.
+                const double lower = range[0];
+                const double upper = range[1];
+                const bool lowerIsFinite = SimTK::isFinite(lower);
+                const bool upperIsFinite = SimTK::isFinite(upper);
                 for (double& elt : candidateCol) {
-                    if (elt < range[0]) {
-                        elt = range[0];
-                    } else if (elt > range[1]) {
-                        elt = range[1];
+                    if (lowerIsFinite && upperIsFinite) {
+                        const double width = upper - lower;
+                        if (width <= 0) {
+                            elt = lower;
+                        } else if (elt < lower || elt > upper) {
+                            // Fold, so that an element overshooting by more
+                            // than the width of the range still lands inside.
+                            double offset =
+                                    std::fmod(elt - lower, 2.0 * width);
+                            if (offset < 0) { offset += 2.0 * width; }
+                            elt = offset <= width
+                                          ? lower + offset
+                                          : lower + 2.0 * width - offset;
+                        }
+                    } else if (lowerIsFinite && elt < lower) {
+                        // With no opposite limit a single reflection suffices.
+                        elt = 2.0 * lower - elt;
+                    } else if (upperIsFinite && elt > upper) {
+                        elt = 2.0 * upper - elt;
                     }
                 }
                 design.updCol(icol) = candidateCol;
                 ++icol;
             }
 
-            // Store the results.
-            results.updBlock(thisTimeIndex*lhs.getNumSamples(), 0,
-                    lhs.getNumSamples(), (int)values.getNumColumns()) = design;
-            ++thisTimeIndex;
+            // Store the samples for this time point.
+            timeResults[itime] = design;
         }
-
-        return results;
     };
 
-    // Determine the number of threads and the stride based on the number of
-    // forces and the number of threads.
-    int numTimePoints = static_cast<int>(values.getNumRows());
-    int numThreads = std::min(numTimePoints, settings.numParallelThreads);
-    int stride = static_cast<int>(std::floor(numTimePoints / numThreads));
-    int offset = 0;
-
-    // Divide the sampling across multiple threads.
-    std::vector<int> timeIndexes(values.getNumRows());
-    std::iota(timeIndexes.begin(), timeIndexes.end(), 0);
-    std::vector<std::future<SimTK::Matrix>> futures;
+    // Launch the worker threads.
+    const int numThreads =
+            std::min(numTimePoints, settings.numParallelThreads);
+    std::vector<std::future<void>> futures;
+    futures.reserve(numThreads);
     for (int thread = 0; thread < numThreads; ++thread) {
-        auto begin_iter = timeIndexes.begin() + offset;
-        auto end_iter = (thread == numThreads-1) ?
-                timeIndexes.end() :
-                timeIndexes.begin() + offset + stride;
-        futures.push_back(std::async(std::launch::async,
-                sampleCoordinateValuesSubset,
-                begin_iter, end_iter, values, coordinateBoundsMap,
-                coordinateRangeMap, settings.useStochasticEvolutionaryLHS));
-        offset += stride;
+        futures.push_back(std::async(std::launch::async, samplingWorker,
+                lhs, values));
     }
 
-    // Wait for threads to finish and collect the results.
-    std::vector<SimTK::Matrix> outputs;
-    outputs.reserve(numThreads);
-    for (int i = 0; i < numThreads; ++i) {
-        outputs.push_back(futures[i].get());
+    // Wait for all threads to finish.
+    for (auto& future : futures) {
+        future.get();
     }
 
     // Reset the logger.
     OpenSim::Logger::setLevel(origLoggerLevel);
 
     // Assemble the results into one TimeSeriesTable.
-    int timeIdx = 0;
     const auto& times = values.getIndependentColumn();
     TimeSeriesTable valuesSampled;
 
@@ -299,19 +299,16 @@ TimeSeriesTable sampleCoordinateValues(
             createVectorLinspace(numSampledRows, startTime, endTime);
 
     int rowIdx = 0;
-    for (int i = 0; i < numThreads; ++i) {
-        int numTimeIndexes = outputs[i].nrow() / settings.numSamplesPerFrame;
-        for (int j = 0; j < numTimeIndexes; ++j) {
-            // Append the original values.
-            valuesSampled.appendRow(sampledTimes[rowIdx++],
-                    values.getRowAtIndex(timeIdx));
+    for (int itime = 0; itime < numTimePoints; ++itime) {
+        // Append the original values.
+        valuesSampled.appendRow(sampledTimes[rowIdx++],
+                values.getRowAtIndex(itime));
 
-            // Append the sampled values.
-            for (int irow = 0; irow < settings.numSamplesPerFrame; ++irow) {
-                valuesSampled.appendRow(sampledTimes[rowIdx++],
-                        outputs[i].row(irow + j*settings.numSamplesPerFrame));
-            }
-            ++timeIdx;
+        // Append the sampled values.
+        for (int isample = 0; isample < settings.numSamplesPerFrame;
+                ++isample) {
+            valuesSampled.appendRow(sampledTimes[rowIdx++],
+                    timeResults[itime].row(isample));
         }
     }
     valuesSampled.addTableMetaData<std::string>("inDegrees", "no");
@@ -463,93 +460,71 @@ void computePathLengthsAndMomentArms(
     momentArms = TimeSeriesTable(times, momentArmsMatrix, momentArmLabels);
 }
 
-// Helper function to filter out bad coordinate value samples. Bad samples
-// are defined as coordinate values that produce path length and/or moment
-// arm values that contain NaNs or deviate by a set number of standard
-// deviations away from the nominal trajectories.
+// Helper function to filter out bad coordinate value samples. Bad samples are
+// samples whose path lengths or moment arms are not finite (i.e., the path
+// computation failed), and samples that are outliers with respect to the other
+// samples drawn around the same time point.
 void filterSampledData(
         const Settings& settings,
         TimeSeriesTable& coordinateValues,
         TimeSeriesTable& pathLengths,
         TimeSeriesTable& momentArms) {
 
-    // Remove any path length or moment arm rows that contain NaN values.
-    std::vector<double> times = coordinateValues.getIndependentColumn();
-    for (const auto& time : times) {
-        bool momentArmNaN = SimTK::isNaN(momentArms.getRow(time).sum());
-        bool pathLengthNaN = SimTK::isNaN(pathLengths.getRow(time).sum());
-        if (momentArmNaN || pathLengthNaN) {
-            pathLengths.removeRow(time);
-            momentArms.removeRow(time);
-            coordinateValues.removeRow(time);
-            log_info("NaN path length or moment arm detected at time {:1.2f} s, "
-                     "removing row...", time);
+    const int numRows = static_cast<int>(coordinateValues.getNumRows());
+    OPENSIM_ASSERT_ALWAYS(
+            numRows == static_cast<int>(pathLengths.getNumRows()));
+    OPENSIM_ASSERT_ALWAYS(
+            numRows == static_cast<int>(momentArms.getNumRows()));
+
+    // Mark every row that holds at least one non-finite element.
+    std::vector<bool> nonFiniteRows(numRows, false);
+    for (const auto& table : {&pathLengths, &momentArms}) {
+        for (const auto& element :
+                TableUtilities::findNonFiniteElements(*table)) {
+            nonFiniteRows[element.second] = true;
         }
     }
 
-    // Remove sample points that fall outside two standard deviations of the
-    // data in each column.
-    double threshold = 5.0;
-    std::vector<double> rejectedTimePoints;
-    auto rejectTimePoints = [threshold, &settings](
-            const TimeSeriesTable& table,
-            std::vector<double>& rejectedTimePoints) {
-        const auto& times = table.getIndependentColumn();
-        int increment = settings.numSamplesPerFrame + 1;
-        int numOriginalTimes = (int)table.getNumRows() / increment;
-        for (const auto& label : table.getColumnLabels()) {
-            SimTK::Vector column = table.getDependentColumn(label);
+    // Mark every row holding an outlier, screening one sampling frame at a
+    // time.
+    std::vector<bool> outlierRows(numRows, false);
+    auto markBlockOutliers = [&](const TimeSeriesTable& table,
+                                     double tolerance) {
+        const auto& data = table.getMatrix();
+        const int blockSize = settings.numSamplesPerFrame + 1;
 
-            SimTK::Vector std(numOriginalTimes, 0.0);
-            for (int i = 0; i < numOriginalTimes; ++i) {
-                // Compute the mean and standard deviation segments of the
-                // column segment.
-                SimTK::Vector segment = column.block(i*increment, 0,
-                        increment, 1).getAsVector();
-                double mean = segment.sum() / segment.size();
-                segment.elementwiseSubtractFromScalarInPlace(mean);
-                std[i] = std::sqrt(segment.normSqr() / segment.size());
-            }
+        for (int start = 0; start < data.nrow(); start += blockSize) {
+            const int count = std::min(blockSize, data.nrow() - start);
+            const auto block = data.block(start, 0, count, data.ncol());
 
-            // Compute the average standard deviation.
-            double avgStd = std.sum() / std.size();
-
-            // Find the time points that deviate too far from the nominal
-            // values.
-            int currentNominalIndex = 0;
-            for (int i = 0; i < column.size(); ++i) {
-                double nominal = column[currentNominalIndex];
-                if (std::abs(column[i] - nominal) > threshold * avgStd) {
-                    rejectedTimePoints.push_back(times[i]);
-                }
-                if ((i + 1) % increment == 0 &&
-                        currentNominalIndex + increment < column.size()) {
-                    currentNominalIndex += increment;
-                }
+            for (const auto& element : TableUtilities::hampel(block,
+                         std::max(1, count - 1), settings.outlierThreshold,
+                         tolerance)) {
+                outlierRows[start + element.second] = true;
             }
         }
     };
-    rejectTimePoints(pathLengths, rejectedTimePoints);
-    rejectTimePoints(momentArms, rejectedTimePoints);
+    markBlockOutliers(pathLengths, settings.pathLengthTolerance);
+    markBlockOutliers(momentArms, settings.momentArmTolerance);
 
-    // Remove duplicate time points.
-    std::sort(rejectedTimePoints.begin(), rejectedTimePoints.end());
-    rejectedTimePoints.erase(std::unique(rejectedTimePoints.begin(),
-            rejectedTimePoints.end()), rejectedTimePoints.end());
-
-    // Remove the rejected time points.
-    if (!rejectedTimePoints.empty()) {
-        double percentTotal = 100.0 * (int)rejectedTimePoints.size() /
-                                      (int)coordinateValues.getNumRows();
-        log_info("Removing {} samples ({:1.1f}% of total) that are larger than "
-                 "{} standard deviations from nominal values...",
-                rejectedTimePoints.size(), percentTotal, threshold);
-        for (double time : rejectedTimePoints) {
-            coordinateValues.removeRow(time);
-            pathLengths.removeRow(time);
-            momentArms.removeRow(time);
-        }
+    std::vector<bool> remove(numRows, false);
+    for (int i = 0; i < numRows; ++i) {
+        remove[i] = nonFiniteRows[i] || outlierRows[i];
     }
+
+    // Report how many samples were removed.
+    const int numRemove =
+            static_cast<int>(std::count(remove.begin(), remove.end(), true));
+    log_info("Removed {} of {} samples with non-finite or outlier path lengths "
+             "or moment arms.", numRemove, numRows);
+    OPENSIM_THROW_IF(numRemove == numRows, Exception,
+            "All sampled coordinate values were rejected during filtering. "
+            "Check that the original model produces path lengths and moment "
+            "arms that are free of discontinuities.");
+
+    coordinateValues.removeRows(remove);
+    pathLengths.removeRows(remove);
+    momentArms.removeRows(remove);
 }
 
 // Fit to the path length and moment arm samples using all possible
@@ -800,27 +775,22 @@ Set<FunctionBasedPath> fitPolynomialCoefficients(
     // Pre-compute variables.
     // ----------------------
     const int numForces = (int)forcePaths.size();
-    // Force indexes: one per path-based force (indices into forcePaths).
-    std::vector<int> forceIndexes;
-    forceIndexes.reserve(numForces);
-    for (int i = 0; i < numForces; ++i) {
-        forceIndexes.push_back(i);
-    }
 
     // Build a FunctionBasedPath for each path-based force in the model.
     // -----------------------------------------------------------------
     // Solve A*x = b, where x is the vector of coefficients for the
     // FunctionBasedPath, A is a matrix of polynomial terms, and b is a vector
     // of path lengths and moment arms.
-    auto fitForcePolynomialSubset = [&](
-            std::vector<int>::iterator begin_iter,
-            std::vector<int>::iterator end_iter,
-            int thread) -> std::vector<std::unique_ptr<FunctionBasedPath>> {
+    //
+    // Define the fitting worker. The atomic integer 'forceIndex' provides a
+    // thread-safe index to the next available force for which to fit
+    // coefficients.
+    std::atomic<int> forceIndex(0);
+    std::vector<std::unique_ptr<FunctionBasedPath>> pathResults(numForces);
+    auto fitForcePolynomialWorker = [&]() {
 
-        std::vector<std::unique_ptr<FunctionBasedPath>> thesePaths;
-        thesePaths.reserve(std::distance(begin_iter, end_iter));
-        for (auto it = begin_iter; it != end_iter; ++it) {
-            int iforce = *it;
+        int iforce;
+        while ((iforce = forceIndex.fetch_add(1)) < numForces) {
             const std::string& forcePath = forcePaths[iforce];
 
             // Check if the current force is dependent on any coordinates in the
@@ -828,9 +798,8 @@ Set<FunctionBasedPath> fitPolynomialCoefficients(
             if (momentArmMap.find(forcePath) == momentArmMap.end()) {
                 continue;
             }
-            log_info("Thread {:2d}/{:2d}: fitting coefficients for force "
-                     "'{}'...", thread+1, settings.numParallelThreads,
-                    forcePath);
+            log_info("Fitting coefficients for force {} of {}: '{}'...",
+                    iforce+1, numForces, forcePath);
 
             // The coordinate paths that the current force depends on.
             const std::vector<std::string>& coordinatePathsThisForce =
@@ -906,37 +875,29 @@ Set<FunctionBasedPath> fitPolynomialCoefficients(
             }
 
             // Save the FunctionBasedPath.
-            thesePaths.push_back(std::move(functionBasedPath));
+            pathResults[iforce] = std::move(functionBasedPath);
         }
-
-        return thesePaths;
     };
 
-    // Determine the number of threads and the stride based on the number of
-    // forces and the number of threads.
-    int numThreads = std::min(numForces, settings.numParallelThreads);
-    int stride = static_cast<int>(std::floor(numForces / numThreads));
-    int offset = 0;
-
-    // Divide the polynomial fitting across multiple threads.
-    std::vector<std::future<std::vector<std::unique_ptr<FunctionBasedPath>>>>
-            futures;
+    // Launch the worker threads.
+    const int numThreads = std::min(numForces, settings.numParallelThreads);
+    std::vector<std::future<void>> futures;
+    futures.reserve(numThreads);
     for (int thread = 0; thread < numThreads; ++thread) {
-        auto begin_iter = forceIndexes.begin() + offset;
-        auto end_iter = (thread == numThreads-1) ?
-                forceIndexes.end() :
-                forceIndexes.begin() + offset + stride;
         futures.push_back(std::async(std::launch::async,
-                        fitForcePolynomialSubset,
-                        begin_iter, end_iter, thread));
-        offset += stride;
+                fitForcePolynomialWorker));
     }
 
-    // Wait for threads to finish and collect the results.
+    // Wait for all threads to finish.
+    for (auto& future : futures) {
+        future.get();
+    }
+
+    // Assemble the results. Forces that do not depend on any coordinates were
+    // skipped and leave an empty entry.
     Set<FunctionBasedPath> functionBasedPaths;
-    for (int thread = 0; thread < numThreads; ++thread) {
-        auto thesePaths = futures[thread].get();
-        for (auto& path : thesePaths) {
+    for (auto& path : pathResults) {
+        if (path) {
             functionBasedPaths.adoptAndAppend(path.release());
         }
     }
