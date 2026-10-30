@@ -57,6 +57,7 @@ The property `moment_arm_threshold` has been removed, and the methods `get/setMo
   without GCC installed at that prefix (#4447).
 - Added the `mirror_axis` property to `EllipsoidJoint`, which mirrors the joint about the plane normal to the given axis ('x', 'y', or 'z') of the parent frame. This is useful for constructing a left-side joint from the description of its right-side counterpart (or vice versa). (#4475)
 - Fixed several discarded calls to `SimTK::Vec3::normalize()`, which returns a normalized copy rather than normalizing in place and so had no effect. `CustomJoint` kinematics may change slightly for models read from the pre-4.0 `TransformAxis` format, and `CMC_Task::setDirection_0()`/`setDirection_1()` now normalize their argument as documented. (#4475)
+- Added `TableUtilities::findNonFiniteElements()` and `TableUtilities::hampel()` for locating the non-finite and outlying elements of a `TimeSeriesTable`, and `DataTable::removeRows()` for removing a set of rows simultaneously. (#4477)
 
 
 v4.6
