@@ -292,6 +292,7 @@ TimeSeriesTable TableUtilities::resampleWithIntervalBounded(
     }
     return resampleWithInterval<FunctionType>(in, interval);
 }
+
 TimeSeriesTable_<SimTK::Vec3> TableUtilities::convertRotationsToEulerAngles(
         const TimeSeriesTable_<SimTK::Rotation>& rotTable) {
     auto labels = rotTable.getColumnLabels();
@@ -315,6 +316,106 @@ TimeSeriesTable_<SimTK::Vec3> TableUtilities::convertRotationsToEulerAngles(
 
     return eulerData;
 }
+
+std::vector<std::pair<int, int>> TableUtilities::findNonFiniteElements(
+        const TimeSeriesTable& table) {
+    const int numRows = static_cast<int>(table.getNumRows());
+    const int numColumns = static_cast<int>(table.getNumColumns());
+    std::vector<std::pair<int, int>> nonFiniteElements;
+    for (int icol = 0; icol < numColumns; ++icol) {
+        const SimTK::VectorView column = table.getDependentColumnAtIndex(icol);
+        for (int irow = 0; irow < numRows; ++irow) {
+            if (!SimTK::isFinite(column[irow])) {
+                nonFiniteElements.emplace_back(icol, irow);
+            }
+        }
+    }
+    return nonFiniteElements;
+}
+
+std::vector<std::pair<int, int>> TableUtilities::hampel(
+        const TimeSeriesTable& table, int numAdjacentSamples,
+        double numStandardDeviations, double minimumDeviation) {
+    return hampel(table.getMatrix(), numAdjacentSamples,
+            numStandardDeviations, minimumDeviation);
+}
+
+std::vector<std::pair<int, int>> TableUtilities::hampel(
+        const SimTK::MatrixBase<double>& data, int numAdjacentSamples,
+        double numStandardDeviations, double minimumDeviation) {
+    const int numRows = data.nrow();
+    const int numColumns = data.ncol();
+    OPENSIM_THROW_IF(numAdjacentSamples < 1, Exception,
+            "Expected 'numAdjacentSamples' to be positive, but received {}.",
+            numAdjacentSamples);
+    OPENSIM_THROW_IF(numStandardDeviations < 0, Exception,
+            "Expected 'numStandardDeviations' to be non-negative, but received "
+            "{}.", numStandardDeviations);
+    OPENSIM_THROW_IF(minimumDeviation < 0, Exception,
+            "Expected 'minimumDeviation' to be non-negative, but received {}.",
+            minimumDeviation);
+    const double madScaleFactor = 1.482602218505602;
+
+    // Computes the median of `values`, reordering its contents. `values` must
+    // not be empty.
+    auto computeMedian = [](std::vector<double>& values) {
+        const int numValues = static_cast<int>(values.size());
+        OPENSIM_ASSERT_ALWAYS(numValues > 0);
+        const int mid = numValues / 2;
+        std::nth_element(values.begin(), values.begin() + mid, values.end());
+        const double upper = values[mid];
+        if (numValues % 2 == 1) {
+            return upper;
+        }
+        const double lower = *std::max_element(
+                values.begin(), values.begin() + mid);
+        return 0.5 * (lower + upper);
+    };
+
+    std::vector<std::pair<int, int>> outliers;
+    std::vector<double> window;
+    std::vector<double> deviations;
+    window.reserve(2 * numAdjacentSamples + 1);
+    deviations.reserve(2 * numAdjacentSamples + 1);
+    for (int icol = 0; icol < numColumns; ++icol) {
+        const SimTK::VectorView column = data.col(icol);
+        for (int irow = 0; irow < numRows; ++irow) {
+            // The window is centered on this element and truncated at the ends
+            // of the column, and holds only the finite elements.
+            const int begin = std::max(0, irow - numAdjacentSamples);
+            const int end = std::min(numRows - 1, irow + numAdjacentSamples);
+            window.clear();
+            for (int i = begin; i <= end; ++i) {
+                if (SimTK::isFinite(column[i])) {
+                    window.push_back(column[i]);
+                }
+            }
+            if (window.empty()) {
+                outliers.emplace_back(icol, irow);
+                continue;
+            }
+
+            const double center = computeMedian(window);
+            deviations.clear();
+            for (const double value : window) {
+                deviations.push_back(std::abs(value - center));
+            }
+            const double sigma = madScaleFactor * computeMedian(deviations);
+
+            // Written as the negation of the in-bounds test so that a
+            // non-finite element, which compares false against any bound, is
+            // reported as an outlier.
+            const double bound = std::max(
+                    numStandardDeviations * sigma, minimumDeviation);
+            if (!(std::abs(column[irow] - center) <= bound)) {
+                outliers.emplace_back(icol, irow);
+            }
+        }
+    }
+
+    return outliers;
+}
+
 // Explicit template instantiations.
 namespace OpenSim {
 template OSIMCOMMON_API TimeSeriesTable TableUtilities::resample<SimTK::Vector, GCVSpline>(

@@ -1073,6 +1073,61 @@ TEST_CASE("TableUtilities::resample") {
     }
 }
 
+TEST_CASE("TimeSeriesTable::removeRows") {
+    TimeSeriesTable table{std::vector<double>{0., 1., 2., 3., 4., 5.}};
+    table.appendColumn("a", SimTK::Vector{6, 10.});
+    table.appendColumn("b", SimTK::Vector{6, 20.});
+    for (int irow = 0; irow < 6; ++irow) {
+        table.updDependentColumnAtIndex(0)[irow] = 10.0 + irow;
+        table.updDependentColumnAtIndex(1)[irow] = 20.0 + irow;
+    }
+    table.addTableMetaData<std::string>("inDegrees", "no");
+
+    SECTION("Marked rows are removed and metadata is preserved") {
+        table.removeRows({false, true, false, false, true, false});
+
+        const std::vector<double> expectedTimes{0., 2., 3., 5.};
+        REQUIRE(table.getNumRows() == expectedTimes.size());
+        CHECK(table.getIndependentColumn() == expectedTimes);
+        const auto columnA = table.getDependentColumnAtIndex(0);
+        const auto columnB = table.getDependentColumnAtIndex(1);
+        for (int irow = 0; irow < (int)expectedTimes.size(); ++irow) {
+            CHECK(columnA[irow] == 10.0 + expectedTimes[irow]);
+            CHECK(columnB[irow] == 20.0 + expectedTimes[irow]);
+        }
+
+        const std::vector<std::string> expectedLabels{"a", "b"};
+        CHECK(table.getColumnLabels() == expectedLabels);
+        REQUIRE(table.hasTableMetaDataKey("inDegrees"));
+        CHECK(table.getTableMetaData<std::string>("inDegrees") == "no");
+    }
+
+    SECTION("Removing no rows leaves the table unchanged") {
+        table.removeRows(std::vector<bool>(6, false));
+        REQUIRE(table.getNumRows() == 6);
+        const auto column = table.getDependentColumnAtIndex(0);
+        for (int irow = 0; irow < 6; ++irow) {
+            CHECK(table.getIndependentColumn()[irow] == (double)irow);
+            CHECK(column[irow] == 10.0 + irow);
+        }
+    }
+
+    SECTION("Removing every row leaves an empty table") {
+        table.removeRows(std::vector<bool>(6, true));
+        CHECK(table.getNumRows() == 0);
+    }
+
+    SECTION("A mask with the wrong number of entries throws") {
+        CHECK_THROWS_AS(table.removeRows(std::vector<bool>(5, false)),
+                IncorrectNumRows);
+        CHECK_THROWS_AS(table.removeRows(std::vector<bool>(7, false)),
+                IncorrectNumRows);
+        CHECK_THROWS_AS(table.removeRows(std::vector<bool>{}),
+                IncorrectNumRows);
+        CHECK(table.getNumRows() == 6);
+    }
+}
+
 TEST_CASE("TimeSeriesTable trim methods") {
     // make time table
     TimeSeriesTable_<double> table{};

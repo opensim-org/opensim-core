@@ -55,6 +55,7 @@ The property `moment_arm_threshold` has been removed, and the methods `get/setMo
   referenced `libgfortran`/`libquadmath` by the absolute path those libraries had on the build
   machine, so `MocoStudy.solve()` failed with "Plugin 'ipopt' is not found" on any macOS machine
   without GCC installed at that prefix (#4447).
+- Added `TableUtilities::findNonFiniteElements()` and `TableUtilities::hampel()` for locating the non-finite and outlying elements of a `TimeSeriesTable`, and `DataTable::removeRows()` for removing a set of rows simultaneously. (#4477)
 
 
 v4.6
