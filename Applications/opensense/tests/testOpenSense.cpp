@@ -105,11 +105,11 @@ TEST_CASE("testOpenSense") {
     auto pelvisXInGround = pelvis.expressVectorInGround(
             rotatedModelState, SimTK::Vec3{1, 0, 0});
     pelvisXInGround.set(1, 0);
-    pelvisXInGround.normalize();
+    pelvisXInGround = pelvisXInGround.normalize();
     auto pelvisIMUZInGround = pelvis_imu->expressVectorInGround(
             rotatedModelState, SimTK::Vec3{0, 0, 1});
     pelvisIMUZInGround.set(1, 0);
-    pelvisIMUZInGround.normalize();
+    pelvisIMUZInGround = pelvisIMUZInGround.normalize();
     SimTK::Real angularDifference = acos(~pelvisXInGround * pelvisIMUZInGround);
     // Angle less than 30 would be reasonable goal to maintain
     assert(angularDifference < SimTK::Pi/6);

@@ -250,7 +250,7 @@ namespace
         explicit SimbodyEngineForceVectors(const SimTK::SimbodyMatterSubsystem& matter) :
             bodyForces{matter.getNumBodies(), SimTK::SpatialVec{SimTK::Vec3{0.0}, SimTK::Vec3{0.0}}},
             particleForces{matter.getNumParticles(), SimTK::Vec3{0.0}},
-            mobilityForces{matter.getNumMobilities(), double{}}
+            mobilityForces(matter.getNumMobilities(), double{})
         {}
 
         friend bool operator==(const SimbodyEngineForceVectors& lhs, const SimbodyEngineForceVectors& rhs)
