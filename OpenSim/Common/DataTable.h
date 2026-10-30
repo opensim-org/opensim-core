@@ -894,7 +894,7 @@ public:
                       "The iterator 'begin' does not provide elements that are "
                       "of same type as elements of this table.");
 
-        Vector col{static_cast<int>(std::distance(begin, end))};
+        Vector col(static_cast<int>(std::distance(begin, end)));
         int ind{0};
         for(auto it = begin; it != end; ++it)
             col[ind++] = *it;

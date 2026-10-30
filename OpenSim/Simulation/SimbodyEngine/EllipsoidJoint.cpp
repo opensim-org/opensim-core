@@ -43,6 +43,15 @@ EllipsoidJoint::EllipsoidJoint(const std::string& name,
 }
 
 EllipsoidJoint::EllipsoidJoint(const std::string& name,
+        const PhysicalFrame& parent, const PhysicalFrame& child,
+        const SimTK::Vec3& radii, const std::string& mirrorAxis) :
+        Super(name, parent, child) {
+    constructProperties();
+    set_radii_x_y_z(radii);
+    set_mirror_axis(mirrorAxis);
+}
+
+EllipsoidJoint::EllipsoidJoint(const std::string& name,
         const PhysicalFrame& parent, const SimTK::Vec3& locationInParent,
         const SimTK::Vec3& orientationInParent, const PhysicalFrame& child,
         const SimTK::Vec3& locationInChild,
@@ -53,10 +62,24 @@ EllipsoidJoint::EllipsoidJoint(const std::string& name,
     set_radii_x_y_z(radii);
 }
 
+EllipsoidJoint::EllipsoidJoint(const std::string& name,
+        const PhysicalFrame& parent, const SimTK::Vec3& locationInParent,
+        const SimTK::Vec3& orientationInParent, const PhysicalFrame& child,
+        const SimTK::Vec3& locationInChild,
+        const SimTK::Vec3& orientationInChild, const SimTK::Vec3& radii,
+        const std::string& mirrorAxis) :
+        Super(name, parent, locationInParent, orientationInParent,
+              child, locationInChild, orientationInChild) {
+    constructProperties();
+    set_radii_x_y_z(radii);
+    set_mirror_axis(mirrorAxis);
+}
+
 void EllipsoidJoint::constructProperties() {
     setAuthors("Ajay Seth");
     SimTK::Vec3 radii(SimTK::NaN);
     constructProperty_radii_x_y_z(radii);
+    constructProperty_mirror_axis();
 
     Appearance appearance;
     appearance.set_visible(true);
@@ -68,6 +91,23 @@ void EllipsoidJoint::constructProperties() {
 //=============================================================================
 void EllipsoidJoint::setEllipsoidRadii(const SimTK::Vec3& radii) {
     set_radii_x_y_z(radii);
+}
+
+std::optional<SimTK::CoordinateAxis> EllipsoidJoint::findMirrorAxis() const {
+    if (getProperty_mirror_axis().empty()) return std::nullopt;
+
+    const std::string& axis = get_mirror_axis();
+    if (axis.size() == 1) {
+        switch (axis[0]) {
+        case 'x': case 'X': return SimTK::CoordinateAxis::XCoordinateAxis();
+        case 'y': case 'Y': return SimTK::CoordinateAxis::YCoordinateAxis();
+        case 'z': case 'Z': return SimTK::CoordinateAxis::ZCoordinateAxis();
+        default: break;
+        }
+    }
+    OPENSIM_THROW_FRMOBJ(Exception,
+        "Expected 'mirror_axis' to be 'x', 'y', or 'z', but it was '"
+        + axis + "'.");
 }
 
 //==============================================================================
@@ -90,11 +130,21 @@ extendScale(const SimTK::State& s, const ScaleSet& scaleSet) {
 //==============================================================================
 // MODEL COMPONENT INTERFACE
 //==============================================================================
+void EllipsoidJoint::extendFinalizeFromProperties() {
+    Super::extendFinalizeFromProperties();
+
+    // Reject a malformed 'mirror_axis' property value.
+    findMirrorAxis();
+}
+
 void EllipsoidJoint::extendAddToSystem(SimTK::MultibodySystem& system) const {
     Super::extendAddToSystem(system);
     SimTK::MobilizedBody::Ellipsoid mobod =
             createMobilizedBody<SimTK::MobilizedBody::Ellipsoid>(system);
     mobod.setDefaultRadii(get_radii_x_y_z());
+    if (const auto mirrorAxis = findMirrorAxis()) {
+        mobod.setMirrorAxis(*mirrorAxis);
+    }
 }
 
 void EllipsoidJoint::extendInitStateFromProperties(SimTK::State& s) const {
@@ -110,6 +160,13 @@ void EllipsoidJoint::extendInitStateFromProperties(SimTK::State& s) const {
         SimTK::Rotation R(SimTK::BodyRotationSequence, xangle, SimTK::XAxis,
                 yangle, SimTK::YAxis, zangle, SimTK::ZAxis);
 
+        // The coordinates parameterize the rotation of the equivalent
+        // unmirrored joint, but setQToFitRotation() expects the actual
+        // (mirrored) rotation.
+        if (const auto mirrorAxis = findMirrorAxis()) {
+            R = R.mirror(*mirrorAxis);
+        }
+
         getChildFrame().getMobilizedBody().setQToFitRotation(s, R);
     }
 }
@@ -121,8 +178,14 @@ void EllipsoidJoint::extendSetPropertiesFromState(const SimTK::State& state) {
     const SimTK::SimbodyMatterSubsystem& matter =
             getModel().getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
-        SimTK::Rotation R =
-                getChildFrame().getMobilizedBody().getBodyRotation(state);
+        SimTK::Rotation R = getChildFrame().getMobilizedBody()
+                                           .getMobilizerTransform(state).R();
+
+        // Recover the rotation of the equivalent unmirrored joint, which is
+        // what the coordinates parameterize.
+        if (const auto mirrorAxis = findMirrorAxis()) {
+            R = R.mirror(*mirrorAxis);
+        }
 
         SimTK::Vec3 angles = R.convertRotationToBodyFixedXYZ();
         updCoordinate(Coord::Rotation1X).setDefaultValue(angles[0]);
