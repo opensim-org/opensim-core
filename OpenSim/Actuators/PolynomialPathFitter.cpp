@@ -194,24 +194,19 @@ TimeSeriesTable sampleCoordinateValues(
     lhs.setNumSamples(settings.numSamplesPerFrame);
     lhs.setNumVariables((int)values.getNumColumns());
 
-    // Helper function for sampling the coordinate values between two time
-    // indexes.
-    auto sampleCoordinateValuesSubset = [lhs](
-            std::vector<int>::iterator begin_iter,
-            std::vector<int>::iterator end_iter,
-            const TimeSeriesTable& values,
-            const CoordinateMap& coordinateBoundsMap,
-            const CoordinateMap& coordinateRangeMap,
-            bool useStochasticEvolutionaryLHS) -> SimTK::Matrix {
+    // Define the sampling worker. The atomic integer 'timeIndex' provides a
+    // thread-safe index to the next available time point to sample around.
+    const int numTimePoints = static_cast<int>(values.getNumRows());
+    std::atomic<int> timeIndex(0);
+    std::vector<SimTK::Matrix> timeResults(numTimePoints);
+    auto samplingWorker = [&](LatinHypercubeDesign lhs,
+                              TimeSeriesTable values) {
 
-        SimTK::Matrix results(
-                lhs.getNumSamples()*(int)std::distance(begin_iter, end_iter),
-                (int)values.getNumColumns());
         SimTK::Matrix design(lhs.getNumSamples(), lhs.getNumVariables());
-        int thisTimeIndex = 0;
-        for (auto it = begin_iter; it != end_iter; ++it) {
+        int itime;
+        while ((itime = timeIndex.fetch_add(1)) < numTimePoints) {
             // Generate the design and shift its values between [-1, 1].
-            if (useStochasticEvolutionaryLHS) {
+            if (settings.useStochasticEvolutionaryLHS) {
                 design = lhs.generateStochasticEvolutionaryDesign();
             } else {
                 design = lhs.generateRandomDesign();
@@ -230,7 +225,7 @@ TimeSeriesTable sampleCoordinateValues(
                 // each coordinate.
                 double slope = 0.5*(bounds[1] - bounds[0]);
                 SimTK::Vector candidateCol = slope*(design.col(icol) + 1.0) +
-                        bounds[0] + column[*it];
+                        bounds[0] + column[itime];
 
                 // Reflect any elements that fall outside the range of motion
                 // back inside it.
@@ -264,50 +259,30 @@ TimeSeriesTable sampleCoordinateValues(
                 ++icol;
             }
 
-            // Store the results.
-            results.updBlock(thisTimeIndex*lhs.getNumSamples(), 0,
-                    lhs.getNumSamples(), (int)values.getNumColumns()) = design;
-            ++thisTimeIndex;
+            // Store the samples for this time point.
+            timeResults[itime] = design;
         }
-
-        return results;
     };
 
-    // Determine the number of threads and the stride based on the number of
-    // forces and the number of threads.
-    int numTimePoints = static_cast<int>(values.getNumRows());
-    int numThreads = std::min(numTimePoints, settings.numParallelThreads);
-    int stride = static_cast<int>(std::floor(numTimePoints / numThreads));
-    int offset = 0;
-
-    // Divide the sampling across multiple threads.
-    std::vector<int> timeIndexes(values.getNumRows());
-    std::iota(timeIndexes.begin(), timeIndexes.end(), 0);
-    std::vector<std::future<SimTK::Matrix>> futures;
+    // Launch the worker threads.
+    const int numThreads =
+            std::min(numTimePoints, settings.numParallelThreads);
+    std::vector<std::future<void>> futures;
+    futures.reserve(numThreads);
     for (int thread = 0; thread < numThreads; ++thread) {
-        auto begin_iter = timeIndexes.begin() + offset;
-        auto end_iter = (thread == numThreads-1) ?
-                timeIndexes.end() :
-                timeIndexes.begin() + offset + stride;
-        futures.push_back(std::async(std::launch::async,
-                sampleCoordinateValuesSubset,
-                begin_iter, end_iter, values, coordinateBoundsMap,
-                coordinateRangeMap, settings.useStochasticEvolutionaryLHS));
-        offset += stride;
+        futures.push_back(std::async(std::launch::async, samplingWorker,
+                lhs, values));
     }
 
-    // Wait for threads to finish and collect the results.
-    std::vector<SimTK::Matrix> outputs;
-    outputs.reserve(numThreads);
-    for (int i = 0; i < numThreads; ++i) {
-        outputs.push_back(futures[i].get());
+    // Wait for all threads to finish.
+    for (auto& future : futures) {
+        future.get();
     }
 
     // Reset the logger.
     OpenSim::Logger::setLevel(origLoggerLevel);
 
     // Assemble the results into one TimeSeriesTable.
-    int timeIdx = 0;
     const auto& times = values.getIndependentColumn();
     TimeSeriesTable valuesSampled;
 
@@ -324,19 +299,16 @@ TimeSeriesTable sampleCoordinateValues(
             createVectorLinspace(numSampledRows, startTime, endTime);
 
     int rowIdx = 0;
-    for (int i = 0; i < numThreads; ++i) {
-        int numTimeIndexes = outputs[i].nrow() / settings.numSamplesPerFrame;
-        for (int j = 0; j < numTimeIndexes; ++j) {
-            // Append the original values.
-            valuesSampled.appendRow(sampledTimes[rowIdx++],
-                    values.getRowAtIndex(timeIdx));
+    for (int itime = 0; itime < numTimePoints; ++itime) {
+        // Append the original values.
+        valuesSampled.appendRow(sampledTimes[rowIdx++],
+                values.getRowAtIndex(itime));
 
-            // Append the sampled values.
-            for (int irow = 0; irow < settings.numSamplesPerFrame; ++irow) {
-                valuesSampled.appendRow(sampledTimes[rowIdx++],
-                        outputs[i].row(irow + j*settings.numSamplesPerFrame));
-            }
-            ++timeIdx;
+        // Append the sampled values.
+        for (int isample = 0; isample < settings.numSamplesPerFrame;
+                ++isample) {
+            valuesSampled.appendRow(sampledTimes[rowIdx++],
+                    timeResults[itime].row(isample));
         }
     }
     valuesSampled.addTableMetaData<std::string>("inDegrees", "no");
@@ -805,27 +777,22 @@ Set<FunctionBasedPath> fitPolynomialCoefficients(
     // Pre-compute variables.
     // ----------------------
     const int numForces = (int)forcePaths.size();
-    // Force indexes: one per path-based force (indices into forcePaths).
-    std::vector<int> forceIndexes;
-    forceIndexes.reserve(numForces);
-    for (int i = 0; i < numForces; ++i) {
-        forceIndexes.push_back(i);
-    }
 
     // Build a FunctionBasedPath for each path-based force in the model.
     // -----------------------------------------------------------------
     // Solve A*x = b, where x is the vector of coefficients for the
     // FunctionBasedPath, A is a matrix of polynomial terms, and b is a vector
     // of path lengths and moment arms.
-    auto fitForcePolynomialSubset = [&](
-            std::vector<int>::iterator begin_iter,
-            std::vector<int>::iterator end_iter,
-            int thread) -> std::vector<std::unique_ptr<FunctionBasedPath>> {
+    //
+    // Define the fitting worker. The atomic integer 'forceIndex' provides a
+    // thread-safe index to the next available force for which to fit
+    // coefficients.
+    std::atomic<int> forceIndex(0);
+    std::vector<std::unique_ptr<FunctionBasedPath>> pathResults(numForces);
+    auto fitForcePolynomialWorker = [&]() {
 
-        std::vector<std::unique_ptr<FunctionBasedPath>> thesePaths;
-        thesePaths.reserve(std::distance(begin_iter, end_iter));
-        for (auto it = begin_iter; it != end_iter; ++it) {
-            int iforce = *it;
+        int iforce;
+        while ((iforce = forceIndex.fetch_add(1)) < numForces) {
             const std::string& forcePath = forcePaths[iforce];
 
             // Check if the current force is dependent on any coordinates in the
@@ -833,9 +800,8 @@ Set<FunctionBasedPath> fitPolynomialCoefficients(
             if (momentArmMap.find(forcePath) == momentArmMap.end()) {
                 continue;
             }
-            log_info("Thread {:2d}/{:2d}: fitting coefficients for force "
-                     "'{}'...", thread+1, settings.numParallelThreads,
-                    forcePath);
+            log_info("Fitting coefficients for force {} of {}: '{}'...",
+                    iforce+1, numForces, forcePath);
 
             // The coordinate paths that the current force depends on.
             const std::vector<std::string>& coordinatePathsThisForce =
@@ -911,37 +877,29 @@ Set<FunctionBasedPath> fitPolynomialCoefficients(
             }
 
             // Save the FunctionBasedPath.
-            thesePaths.push_back(std::move(functionBasedPath));
+            pathResults[iforce] = std::move(functionBasedPath);
         }
-
-        return thesePaths;
     };
 
-    // Determine the number of threads and the stride based on the number of
-    // forces and the number of threads.
-    int numThreads = std::min(numForces, settings.numParallelThreads);
-    int stride = static_cast<int>(std::floor(numForces / numThreads));
-    int offset = 0;
-
-    // Divide the polynomial fitting across multiple threads.
-    std::vector<std::future<std::vector<std::unique_ptr<FunctionBasedPath>>>>
-            futures;
+    // Launch the worker threads.
+    const int numThreads = std::min(numForces, settings.numParallelThreads);
+    std::vector<std::future<void>> futures;
+    futures.reserve(numThreads);
     for (int thread = 0; thread < numThreads; ++thread) {
-        auto begin_iter = forceIndexes.begin() + offset;
-        auto end_iter = (thread == numThreads-1) ?
-                forceIndexes.end() :
-                forceIndexes.begin() + offset + stride;
         futures.push_back(std::async(std::launch::async,
-                        fitForcePolynomialSubset,
-                        begin_iter, end_iter, thread));
-        offset += stride;
+                fitForcePolynomialWorker));
     }
 
-    // Wait for threads to finish and collect the results.
+    // Wait for all threads to finish.
+    for (auto& future : futures) {
+        future.get();
+    }
+
+    // Assemble the results. Forces that do not depend on any coordinates were
+    // skipped and leave an empty entry.
     Set<FunctionBasedPath> functionBasedPaths;
-    for (int thread = 0; thread < numThreads; ++thread) {
-        auto thesePaths = futures[thread].get();
-        for (auto& path : thesePaths) {
+    for (auto& path : pathResults) {
+        if (path) {
             functionBasedPaths.adoptAndAppend(path.release());
         }
     }

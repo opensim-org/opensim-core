@@ -57,6 +57,7 @@ The property `moment_arm_threshold` has been removed, and the methods `get/setMo
   without GCC installed at that prefix (#4447).
 - Added `TableUtilities::findNonFiniteElements()` and `TableUtilities::hampel()` for locating the non-finite and outlying elements of a `TimeSeriesTable`, and `DataTable::removeRows()` for removing a set of rows simultaneously. (#4477)
 - `PolynomialPathFitter` now screens the sampled path lengths and moment arms for non-finite values and for outliers, applying a Hampel filter to the samples drawn around each time point, replacing the inconsistent standard deviation approach. In addition, samples near coordinate bounds are now reflected back into the acceptable range, avoiding unnecessary sample rejection by the Hampel filter. (#4478)
+- `PolynomialPathFitter` now distributes coordinate sampling and polynomial fitting across threads using an atomic work index rather than dividing the work into fixed contiguous blocks to better load balance work. (#4479)
 
 
 v4.6
