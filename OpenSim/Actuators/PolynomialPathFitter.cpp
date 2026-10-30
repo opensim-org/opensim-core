@@ -28,11 +28,13 @@
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/STOFileAdapter.h>
+#include <OpenSim/Common/TableUtilities.h>
 #include <OpenSim/Common/LatinHypercubeDesign.h>
 #include <OpenSim/Common/MultivariatePolynomialFunction.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 
+#include <algorithm>
 #include <format>
 #include <atomic>
 #include <future>
@@ -57,6 +59,7 @@ struct Settings {
     bool useStepwiseRegression = false;
     double momentArmTolerance = 1e-4;
     double pathLengthTolerance = 1e-4;
+    double outlierThreshold = 15.0;
     int minimumPolynomialOrder = 2;
     int maximumPolynomialOrder = 6;
     int numParallelThreads = (int)std::thread::hardware_concurrency();
@@ -101,15 +104,19 @@ TimeSeriesTable loadCoordinateValuesAndValidateModel(
             values.getNumColumns(), values.getNumRows());
 
     // Remove any rows in the coordinate values table provided by the user that
-    // contain NaN values.
+    // contain non-finite values.
+    std::vector<bool> nonFiniteRows(values.getNumRows(), false);
+    for (const auto& element : TableUtilities::findNonFiniteElements(values)) {
+        nonFiniteRows[element.second] = true;
+    }
     const auto& times = values.getIndependentColumn();
-    for (int i = 0; i < static_cast<int>(times.size()); ++i) {
-        if (SimTK::isNaN(values.getRowAtIndex(i).sum())) {
-            values.removeRow(times[i]);
-            log_info("NaN coordinate value detected at time {:1.2f} s, "
+    for (int i = 0; i < static_cast<int>(nonFiniteRows.size()); ++i) {
+        if (nonFiniteRows[i]) {
+            log_info("Non-finite coordinate value detected at time {:1.2f} s, "
                      "removing row...", times[i]);
         }
     }
+    values.removeRows(nonFiniteRows);
 
     // Validate the coordinate values table
     std::vector<std::string> jointsToWeld;
@@ -225,14 +232,32 @@ TimeSeriesTable sampleCoordinateValues(
                 SimTK::Vector candidateCol = slope*(design.col(icol) + 1.0) +
                         bounds[0] + column[*it];
 
-                // Check that all elements in the column are within the range of
-                // motion. If not, move the element inside the range of motion
-                // that is closest to the original value.
+                // Reflect any elements that fall outside the range of motion
+                // back inside it.
+                const double lower = range[0];
+                const double upper = range[1];
+                const bool lowerIsFinite = SimTK::isFinite(lower);
+                const bool upperIsFinite = SimTK::isFinite(upper);
                 for (double& elt : candidateCol) {
-                    if (elt < range[0]) {
-                        elt = range[0];
-                    } else if (elt > range[1]) {
-                        elt = range[1];
+                    if (lowerIsFinite && upperIsFinite) {
+                        const double width = upper - lower;
+                        if (width <= 0) {
+                            elt = lower;
+                        } else if (elt < lower || elt > upper) {
+                            // Fold, so that an element overshooting by more
+                            // than the width of the range still lands inside.
+                            double offset =
+                                    std::fmod(elt - lower, 2.0 * width);
+                            if (offset < 0) { offset += 2.0 * width; }
+                            elt = offset <= width
+                                          ? lower + offset
+                                          : lower + 2.0 * width - offset;
+                        }
+                    } else if (lowerIsFinite && elt < lower) {
+                        // With no opposite limit a single reflection suffices.
+                        elt = 2.0 * lower - elt;
+                    } else if (upperIsFinite && elt > upper) {
+                        elt = 2.0 * upper - elt;
                     }
                 }
                 design.updCol(icol) = candidateCol;
@@ -463,93 +488,71 @@ void computePathLengthsAndMomentArms(
     momentArms = TimeSeriesTable(times, momentArmsMatrix, momentArmLabels);
 }
 
-// Helper function to filter out bad coordinate value samples. Bad samples
-// are defined as coordinate values that produce path length and/or moment
-// arm values that contain NaNs or deviate by a set number of standard
-// deviations away from the nominal trajectories.
+// Helper function to filter out bad coordinate value samples. Bad samples are
+// samples whose path lengths or moment arms are not finite (i.e., the path
+// computation failed), and samples that are outliers with respect to the other
+// samples drawn around the same time point.
 void filterSampledData(
         const Settings& settings,
         TimeSeriesTable& coordinateValues,
         TimeSeriesTable& pathLengths,
         TimeSeriesTable& momentArms) {
 
-    // Remove any path length or moment arm rows that contain NaN values.
-    std::vector<double> times = coordinateValues.getIndependentColumn();
-    for (const auto& time : times) {
-        bool momentArmNaN = SimTK::isNaN(momentArms.getRow(time).sum());
-        bool pathLengthNaN = SimTK::isNaN(pathLengths.getRow(time).sum());
-        if (momentArmNaN || pathLengthNaN) {
-            pathLengths.removeRow(time);
-            momentArms.removeRow(time);
-            coordinateValues.removeRow(time);
-            log_info("NaN path length or moment arm detected at time {:1.2f} s, "
-                     "removing row...", time);
+    const int numRows = static_cast<int>(coordinateValues.getNumRows());
+    OPENSIM_ASSERT_ALWAYS(
+            numRows == static_cast<int>(pathLengths.getNumRows()));
+    OPENSIM_ASSERT_ALWAYS(
+            numRows == static_cast<int>(momentArms.getNumRows()));
+
+    // Mark every row that holds at least one non-finite element.
+    std::vector<bool> nonFiniteRows(numRows, false);
+    for (const auto& table : {&pathLengths, &momentArms}) {
+        for (const auto& element :
+                TableUtilities::findNonFiniteElements(*table)) {
+            nonFiniteRows[element.second] = true;
         }
     }
 
-    // Remove sample points that fall outside two standard deviations of the
-    // data in each column.
-    double threshold = 5.0;
-    std::vector<double> rejectedTimePoints;
-    auto rejectTimePoints = [threshold, &settings](
-            const TimeSeriesTable& table,
-            std::vector<double>& rejectedTimePoints) {
-        const auto& times = table.getIndependentColumn();
-        int increment = settings.numSamplesPerFrame + 1;
-        int numOriginalTimes = (int)table.getNumRows() / increment;
-        for (const auto& label : table.getColumnLabels()) {
-            SimTK::Vector column = table.getDependentColumn(label);
+    // Mark every row holding an outlier, screening one sampling frame at a
+    // time.
+    std::vector<bool> outlierRows(numRows, false);
+    auto markBlockOutliers = [&](const TimeSeriesTable& table,
+                                     double tolerance) {
+        const auto& data = table.getMatrix();
+        const int blockSize = settings.numSamplesPerFrame + 1;
 
-            SimTK::Vector std(numOriginalTimes, 0.0);
-            for (int i = 0; i < numOriginalTimes; ++i) {
-                // Compute the mean and standard deviation segments of the
-                // column segment.
-                SimTK::Vector segment = column.block(i*increment, 0,
-                        increment, 1).getAsVector();
-                double mean = segment.sum() / segment.size();
-                segment.elementwiseSubtractFromScalarInPlace(mean);
-                std[i] = std::sqrt(segment.normSqr() / segment.size());
-            }
+        for (int start = 0; start < data.nrow(); start += blockSize) {
+            const int count = std::min(blockSize, data.nrow() - start);
+            const auto block = data.block(start, 0, count, data.ncol());
 
-            // Compute the average standard deviation.
-            double avgStd = std.sum() / std.size();
-
-            // Find the time points that deviate too far from the nominal
-            // values.
-            int currentNominalIndex = 0;
-            for (int i = 0; i < column.size(); ++i) {
-                double nominal = column[currentNominalIndex];
-                if (std::abs(column[i] - nominal) > threshold * avgStd) {
-                    rejectedTimePoints.push_back(times[i]);
-                }
-                if ((i + 1) % increment == 0 &&
-                        currentNominalIndex + increment < column.size()) {
-                    currentNominalIndex += increment;
-                }
+            for (const auto& element : TableUtilities::hampel(block,
+                         std::max(1, count - 1), settings.outlierThreshold,
+                         tolerance)) {
+                outlierRows[start + element.second] = true;
             }
         }
     };
-    rejectTimePoints(pathLengths, rejectedTimePoints);
-    rejectTimePoints(momentArms, rejectedTimePoints);
+    markBlockOutliers(pathLengths, settings.pathLengthTolerance);
+    markBlockOutliers(momentArms, settings.momentArmTolerance);
 
-    // Remove duplicate time points.
-    std::sort(rejectedTimePoints.begin(), rejectedTimePoints.end());
-    rejectedTimePoints.erase(std::unique(rejectedTimePoints.begin(),
-            rejectedTimePoints.end()), rejectedTimePoints.end());
-
-    // Remove the rejected time points.
-    if (!rejectedTimePoints.empty()) {
-        double percentTotal = 100.0 * (int)rejectedTimePoints.size() /
-                                      (int)coordinateValues.getNumRows();
-        log_info("Removing {} samples ({:1.1f}% of total) that are larger than "
-                 "{} standard deviations from nominal values...",
-                rejectedTimePoints.size(), percentTotal, threshold);
-        for (double time : rejectedTimePoints) {
-            coordinateValues.removeRow(time);
-            pathLengths.removeRow(time);
-            momentArms.removeRow(time);
-        }
+    std::vector<bool> remove(numRows, false);
+    for (int i = 0; i < numRows; ++i) {
+        remove[i] = nonFiniteRows[i] || outlierRows[i];
     }
+
+    // Report how many samples were removed.
+    const int numRemove =
+            static_cast<int>(std::count(remove.begin(), remove.end(), true));
+    log_info("Removed {} of {} samples with non-finite or outlier path lengths "
+             "or moment arms.", numRemove, numRows);
+    OPENSIM_THROW_IF(numRemove == numRows, Exception,
+            "All sampled coordinate values were rejected during filtering. "
+            "Check that the original model produces path lengths and moment "
+            "arms that are free of discontinuities.");
+
+    coordinateValues.removeRows(remove);
+    pathLengths.removeRows(remove);
+    momentArms.removeRows(remove);
 }
 
 // Fit to the path length and moment arm samples using all possible
