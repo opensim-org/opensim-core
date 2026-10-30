@@ -152,6 +152,63 @@ TEST_CASE("Number of rows less than the number of threads") {
         "Expected the number of time points in the coordinate values table"));
 }
 
+TEST_CASE("Sampling respects a one-sided coordinate range") {
+    std::filesystem::path tmp = "one_sided_coordinate_range";
+
+    Model model;
+    model.setName("one_sided");
+    model.set_gravity(SimTK::Vec3(9.81, 0, 0));
+    auto* body = new Body("body", 0.5, SimTK::Vec3(0), SimTK::Inertia(0));
+    model.addComponent(body);
+
+    auto* joint = new SliderJoint("joint", model.getGround(), *body);
+    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord.setName("height");
+    coord.set_clamped(true);
+    coord.setRangeMin(0.0);
+    coord.setRangeMax(SimTK::Infinity);
+    model.addComponent(joint);
+
+    auto* actu = new DeGrooteFregly2016Muscle();
+    actu->setName("muscle");
+    actu->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
+    actu->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
+    model.addForce(actu);
+    model.finalizeConnections();
+
+    // The nominal values sit just above the lower limit, so the sampling
+    // bounds reach well below it.
+    const int numRows = 20;
+    std::vector<double> times;
+    times.reserve(numRows);
+    SimTK::Vector values(numRows, 0.01);
+    for (int irow = 0; irow < numRows; ++irow) {
+        times.push_back(0.01 * irow);
+    }
+    TimeSeriesTable table(times);
+    table.appendColumn("/joint/height/value", values);
+    table.addTableMetaData<std::string>("inDegrees", "no");
+
+    PolynomialPathFitter fitter;
+    fitter.setModel(ModelProcessor(model));
+    fitter.setCoordinateValues(TableProcessor(table));
+    fitter.setOutputDirectory(tmp.string());
+    fitter.setNumParallelThreads(1);
+    fitter.run();
+
+    TimeSeriesTable sampled(
+        (tmp / "one_sided_coordinate_values_sampled.sto").string());
+    REQUIRE(sampled.getNumRows() > 0);
+    for (int icol = 0; icol < (int)sampled.getNumColumns(); ++icol) {
+        const auto column = sampled.getDependentColumnAtIndex(icol);
+        for (int irow = 0; irow < column.size(); ++irow) {
+            REQUIRE(column[irow] >= 0.0);
+        }
+    }
+
+    std::filesystem::remove_all(tmp);
+}
+
 TEST_CASE("Using one thread does not segfault") {
     int numThreads = 1;
     int numRows = 5;

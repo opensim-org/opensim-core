@@ -56,6 +56,7 @@ The property `moment_arm_threshold` has been removed, and the methods `get/setMo
   machine, so `MocoStudy.solve()` failed with "Plugin 'ipopt' is not found" on any macOS machine
   without GCC installed at that prefix (#4447).
 - Added `TableUtilities::findNonFiniteElements()` and `TableUtilities::hampel()` for locating the non-finite and outlying elements of a `TimeSeriesTable`, and `DataTable::removeRows()` for removing a set of rows simultaneously. (#4477)
+- `PolynomialPathFitter` now screens the sampled path lengths and moment arms for non-finite values and for outliers, applying a Hampel filter to the samples drawn around each time point, replacing the inconsistent standard deviation approach. In addition, samples near coordinate bounds are now reflected back into the acceptable range, avoiding unnecessary sample rejection by the Hampel filter. (#4478)
 
 
 v4.6
