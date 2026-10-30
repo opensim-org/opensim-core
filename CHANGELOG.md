@@ -10,6 +10,7 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 v4.6.1
 ======
 - Added `CantileverFreeBeamJoint`, a joint type providing a lightweight way for modeling flexible structures (e.g., the bending of the spinal column in a human or animal skeleton). (#4227)
+- Added the `mirror_axis` property to `EllipsoidJoint`, which mirrors the joint about the plane normal to the given axis ('x', 'y', or 'z') of the parent frame. This is useful for constructing a left-side joint from the description of its right-side counterpart (or vice versa). The property is omitted from serialized models when the joint is not mirrored.
 - Added `ExponentialCoordinateLimitForce`, a force element for enforcing coordinate limits using exponential spring functions. (#4231)
 - Added `CoordinateLinearStopForce`, a force element for enforcing coordinate limits using a
 linear spring force and Hunt and Crossley-like damping. (#4329)

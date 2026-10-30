@@ -73,7 +73,9 @@
 
 #include <catch2/catch_all.hpp>
 
+#include <fstream>
 #include <memory>
+#include <sstream>
 
 using namespace OpenSim;
 using namespace std;
@@ -1081,6 +1083,127 @@ TEST_CASE("testEllipsoidJoint") {
     }
 
 } // end testEllipsoidJoint
+
+/// Compare a mirrored OpenSim EllipsoidJoint against an equivalent mirrored
+/// SimTK::MobilizedBody::Ellipsoid, and exercise the 'mirror_axis' property.
+TEST_CASE("testMirroredEllipsoidJoint") {
+    using namespace SimTK;
+
+    const Vec3 ellipsoidRadii(0.5, 0.33, 0.25);
+    const CoordinateAxis mirrorAxis = CoordinateAxis::YCoordinateAxis();
+
+    // Build a double pendulum with an ellipsoid hip and a pin knee. Pass an
+    // empty 'axisName' for an unmirrored hip.
+    auto buildModel = [&](const std::string& axisName) {
+        Model model;
+        auto* thigh = new OpenSim::Body("thigh", femurMass.getMass(),
+                femurMass.getMassCenter(), femurMass.getInertia());
+        EllipsoidJoint* hip = axisName.empty()
+                ? new EllipsoidJoint("hip", model.getGround(), hipInPelvis,
+                        Vec3(0), *thigh, hipInFemur, Vec3(0), ellipsoidRadii)
+                : new EllipsoidJoint("hip", model.getGround(), hipInPelvis,
+                        Vec3(0), *thigh, hipInFemur, Vec3(0), ellipsoidRadii,
+                        axisName);
+        for (int i = 0; i < hip->numCoordinates(); ++i) {
+            hip->upd_coordinates(i).setName("hip_q" + std::to_string(i));
+        }
+        model.addBody(thigh);
+        model.addJoint(hip);
+
+        auto* shank = new OpenSim::Body("shank", tibiaMass.getMass(),
+                tibiaMass.getMassCenter(), tibiaMass.getInertia());
+        model.addBody(shank);
+        model.addJoint(new PinJoint("knee", *thigh, kneeInFemur, Vec3(0),
+                *shank, kneeInTibia, Vec3(0)));
+
+        model.setGravity(gravity_vec);
+        model.finalizeConnections();
+        return model;
+    };
+
+    SECTION("Matches an equivalent Simbody system") {
+
+        // Define the equivalent Simbody system, mirroring the hip about the
+        // parent frame's Y axis.
+        MultibodySystem system;
+        SimbodyMatterSubsystem matter(system);
+        GeneralForceSubsystem forces(system);
+        SimTK::Force::UniformGravity gravity(forces, matter, gravity_vec);
+
+        MobilizedBody::Ellipsoid thigh(matter.Ground(),
+                SimTK::Transform(hipInPelvis), SimTK::Body::Rigid(femurMass),
+                SimTK::Transform(hipInFemur), ellipsoidRadii, mirrorAxis);
+        MobilizedBody::Pin shank(thigh, SimTK::Transform(kneeInFemur),
+                SimTK::Body::Rigid(tibiaMass), SimTK::Transform(kneeInTibia));
+
+        REQUIRE(thigh.isMirrored());
+        REQUIRE(int(thigh.getMirrorAxis()) == int(mirrorAxis));
+
+        system.realizeTopology();
+        State state = system.getDefaultState();
+        matter.setUseEulerAngles(state, true);
+        system.realizeModel(state);
+
+        Model osimModel = buildModel("y");
+        SimTK::State osim_state = osimModel.initSystem();
+
+        // The OpenSim joint must produce a mirrored underlying mobilizer.
+        const auto& hip =
+                osimModel.getComponent<EllipsoidJoint>("/jointset/hip");
+        const auto& mobod = MobilizedBody::Ellipsoid::downcast(
+                hip.getChildFrame().getMobilizedBody());
+        REQUIRE(mobod.isMirrored());
+        REQUIRE(int(mobod.getMirrorAxis()) == int(mirrorAxis));
+
+        // Compare Simbody system and OpenSim model simulations.
+        compareSimulations(system, state, &osimModel, osim_state,
+                "testMirroredEllipsoidJoint FAILED\n");
+    }
+
+    SECTION("Serialization and deserializations") {
+        buildModel("y").print("testMirroredEllipsoidJoint.osim");
+
+        Model roundTripped("testMirroredEllipsoidJoint.osim");
+        const auto& hip =
+                roundTripped.getComponent<EllipsoidJoint>("/jointset/hip");
+        CHECK_FALSE(hip.getProperty_mirror_axis().empty());
+        CHECK(hip.get_mirror_axis() == "y");
+    }
+
+    SECTION("Property mirror_axis is omitted for an unmirrored joint") {
+        buildModel("").print("testUnmirroredEllipsoidJoint.osim");
+
+        Model roundTripped("testUnmirroredEllipsoidJoint.osim");
+        const auto& hip =
+                roundTripped.getComponent<EllipsoidJoint>("/jointset/hip");
+        CHECK(hip.getProperty_mirror_axis().empty());
+
+        // The reloaded joint must build an unmirrored mobilizer.
+        roundTripped.initSystem();
+        CHECK_FALSE(MobilizedBody::Ellipsoid::downcast(
+                hip.getChildFrame().getMobilizedBody()).isMirrored());
+    }
+
+    SECTION("An invalid mirror_axis is rejected") {
+        // Any value that does not name a coordinate axis is rejected, including
+        // an empty string: the unmirrored state is an *unset* property, not a
+        // set-but-empty one.
+        const auto badValue = GENERATE(as<std::string>{},
+                "X-axis", "xy", "w", "0", " x", " ", "");
+
+        Model osimModel = buildModel("y");
+        auto& hip = osimModel.updComponent<EllipsoidJoint>("/jointset/hip");
+        hip.set_mirror_axis(badValue);
+
+        INFO("mirror_axis = '" << badValue << "'");
+        // The value is validated when the model is finalized, so a bad value in
+        // an .osim file is reported on load rather than deep in system
+        // construction.
+        CHECK_THROWS_AS(osimModel.finalizeFromProperties(), OpenSim::Exception);
+        CHECK_THROWS_AS(osimModel.initSystem(), OpenSim::Exception);
+    }
+
+}
 
 // Compare behavior of a double pendulum (1) with welded foot and toes
 TEST_CASE("testWeldJoint unrandomized") {

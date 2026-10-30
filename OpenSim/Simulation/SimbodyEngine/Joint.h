@@ -369,9 +369,16 @@ protected:
         internally, and to specify their joint (mobilizer) transforms use:
         @see createMobilizedBody(MobilizedBody& inboard,
                         const SimTK::Transform& inboardTransform,
-                            ...).  following this method. */
-    template <typename T>
-    T createMobilizedBody(SimTK::MultibodySystem& mbs) const
+                            ...).  following this method.
+
+        Any additional arguments are forwarded to the MobilizedBody
+        constructor, immediately before its SimTK::MobilizedBody::Direction
+        argument. This supports MobilizedBody types whose configuration can
+        only be specified on construction (e.g., the mirror axis of a
+        SimTK::MobilizedBody::Ellipsoid). */
+    template <typename T, typename... Args>
+    T createMobilizedBody(SimTK::MultibodySystem& mbs,
+                          const Args&... args) const
     {
         SimTK::MobilizedBody inb;
         const SimTK::Body* outb = &getChildInternalRigidBody();
@@ -402,7 +409,8 @@ protected:
         T simtkBody = createMobilizedBody<T>(inb, inbX,
                                              *outb, outbX,
                                              startingCoordinateIndex,
-                                             associatedFrame);
+                                             associatedFrame,
+                                             args...);
 
         return simtkBody;
     }
@@ -437,19 +445,25 @@ protected:
     @param[in] physicalFrame     (optional) the PhysicalFrame associated with
                                  the MobilizeBody. The MobilizedBody index is
                                  assigned to the associated Body.
+    @param[in] args              (optional) additional arguments forwarded to
+                                 the MobilizedBody constructor, immediately
+                                 before its SimTK::MobilizedBody::Direction
+                                 argument.
     */
-    template <typename T>
+    template <typename T, typename... Args>
     T createMobilizedBody(SimTK::MobilizedBody& inboard,
                           const SimTK::Transform& inboardTransform,
                           const SimTK::Body& outboard,
                           const SimTK::Transform& outboardTransform,
                           int& startingCoordinateIndex,
-                          const PhysicalFrame* physicalFrame = nullptr) const {
+                          const PhysicalFrame* physicalFrame = nullptr,
+                          const Args&... args) const {
         // CREATE MOBILIZED BODY
         SimTK::MobilizedBody::Direction dir =
             SimTK::MobilizedBody::Direction(isReversed);
 
-        T simtkBody(inboard, inboardTransform, outboard, outboardTransform, dir);
+        T simtkBody(inboard, inboardTransform, outboard, outboardTransform,
+                    args..., dir);
 
         startingCoordinateIndex = assignSystemIndicesToBodyAndCoordinates(simtkBody,
             physicalFrame,
