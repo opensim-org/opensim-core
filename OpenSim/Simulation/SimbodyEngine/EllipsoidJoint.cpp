@@ -23,6 +23,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "EllipsoidJoint.h"
+#include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include "simbody/internal/MobilizedBody_Ellipsoid.h"
 
@@ -44,11 +45,11 @@ EllipsoidJoint::EllipsoidJoint(const std::string& name,
 
 EllipsoidJoint::EllipsoidJoint(const std::string& name,
         const PhysicalFrame& parent, const PhysicalFrame& child,
-        const SimTK::Vec3& radii, const std::string& mirrorAxis) :
+        const SimTK::Vec3& radii, const SimTK::CoordinateAxis& mirrorAxis) :
         Super(name, parent, child) {
     constructProperties();
     set_radii_x_y_z(radii);
-    set_mirror_axis(mirrorAxis);
+    setMirrorAxis(mirrorAxis);
 }
 
 EllipsoidJoint::EllipsoidJoint(const std::string& name,
@@ -67,12 +68,12 @@ EllipsoidJoint::EllipsoidJoint(const std::string& name,
         const SimTK::Vec3& orientationInParent, const PhysicalFrame& child,
         const SimTK::Vec3& locationInChild,
         const SimTK::Vec3& orientationInChild, const SimTK::Vec3& radii,
-        const std::string& mirrorAxis) :
+        const SimTK::CoordinateAxis& mirrorAxis) :
         Super(name, parent, locationInParent, orientationInParent,
               child, locationInChild, orientationInChild) {
     constructProperties();
     set_radii_x_y_z(radii);
-    set_mirror_axis(mirrorAxis);
+    setMirrorAxis(mirrorAxis);
 }
 
 void EllipsoidJoint::constructProperties() {
@@ -93,21 +94,36 @@ void EllipsoidJoint::setEllipsoidRadii(const SimTK::Vec3& radii) {
     set_radii_x_y_z(radii);
 }
 
+void EllipsoidJoint::setMirrorAxis(const SimTK::CoordinateAxis& mirrorAxis) {
+    set_mirror_axis(getCoordinateAxisName(mirrorAxis));
+}
+
+void EllipsoidJoint::clearMirrorAxis() {
+    updProperty_mirror_axis().clear();
+}
+
+bool EllipsoidJoint::isMirrored() const {
+    return !getProperty_mirror_axis().empty();
+}
+
+SimTK::CoordinateAxis EllipsoidJoint::getMirrorAxis() const {
+    const auto mirrorAxis = findMirrorAxis();
+    OPENSIM_THROW_IF_FRMOBJ(!mirrorAxis, Exception,
+        "This joint is not mirrored; use isMirrored() to check if the joint "
+        "is mirrored before calling getMirrorAxis().");
+    return *mirrorAxis;
+}
+
 std::optional<SimTK::CoordinateAxis> EllipsoidJoint::findMirrorAxis() const {
     if (getProperty_mirror_axis().empty()) return std::nullopt;
 
-    const std::string& axis = get_mirror_axis();
-    if (axis.size() == 1) {
-        switch (axis[0]) {
-        case 'x': case 'X': return SimTK::CoordinateAxis::XCoordinateAxis();
-        case 'y': case 'Y': return SimTK::CoordinateAxis::YCoordinateAxis();
-        case 'z': case 'Z': return SimTK::CoordinateAxis::ZCoordinateAxis();
-        default: break;
-        }
+    const std::string& axisName = get_mirror_axis();
+    if (const auto axis = parseCoordinateAxis(axisName)) {
+        return axis;
     }
     OPENSIM_THROW_FRMOBJ(Exception,
         "Expected 'mirror_axis' to be 'x', 'y', or 'z', but it was '"
-        + axis + "'.");
+        + axisName + "'.");
 }
 
 //==============================================================================

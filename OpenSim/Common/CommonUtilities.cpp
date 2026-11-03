@@ -26,6 +26,7 @@
 #include "PiecewiseLinearFunction.h"
 #include "STOFileAdapter.h"
 #include "TimeSeriesTable.h"
+#include <array>
 #include <chrono>
 #include <cstdint>
 #include <ctime>
@@ -370,4 +371,19 @@ int OpenSim::choose(int n, int k) {
     OPENSIM_THROW_IF(result > std::numeric_limits<int>::max(), Exception,
             "Binomial coefficient exceeds int range.");
     return static_cast<int>(result);
+}
+
+std::optional<SimTK::CoordinateAxis> OpenSim::parseCoordinateAxis(
+        const std::string& axisName) {
+    if (axisName.size() != 1) { return std::nullopt; }
+    switch (axisName.front()) {
+    case 'x': case 'X': return SimTK::CoordinateAxis::XCoordinateAxis();
+    case 'y': case 'Y': return SimTK::CoordinateAxis::YCoordinateAxis();
+    case 'z': case 'Z': return SimTK::CoordinateAxis::ZCoordinateAxis();
+    default: return std::nullopt;
+    }
+}
+
+std::string OpenSim::getCoordinateAxisName(SimTK::CoordinateAxis axis) {
+    return std::string(1, std::array<char, 3>{'x', 'y', 'z'}.at(axis));
 }

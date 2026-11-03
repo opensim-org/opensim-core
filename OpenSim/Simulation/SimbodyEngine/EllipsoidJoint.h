@@ -182,12 +182,13 @@ public:
      * @param[in] parent the parent PhysicalFrame to which this joint connects
      * @param[in] child  the child PhysicalFrame to which this joint connects
      * @param[in] radii  the radii of the ellipsoid
-     * @param[in] mirrorAxis the coordinate axis whose normal plane the joint
-     *                       is mirrored about
+     * @param[in] mirrorAxis the parent frame's coordinate axis (e.g.,
+     *                       SimTK::YAxis) whose normal plane the joint is
+     *                       mirrored about
      */
     EllipsoidJoint(const std::string& name, const PhysicalFrame& parent,
             const PhysicalFrame& child, const SimTK::Vec3& radii,
-            const std::string& mirrorAxis);
+            const SimTK::CoordinateAxis& mirrorAxis);
 
     /**
      * Convenience constructor. Construct an EllipsoidJoint where the parent and
@@ -239,15 +240,16 @@ public:
      *                                 of the joint frame orientation in the
      *                                 child frame.
      * @param[in] radii the radii of the ellipsoid
-     * @param[in] mirrorAxis the coordinate axis whose normal plane the joint
-     *                       is mirrored about
+     * @param[in] mirrorAxis the parent frame's coordinate axis (e.g.,
+     *                       SimTK::YAxis) whose normal plane the joint is
+     *                       mirrored about
      */
     EllipsoidJoint(const std::string& name, const PhysicalFrame& parent,
             const SimTK::Vec3& locationInParent,
             const SimTK::Vec3& orientationInParent, const PhysicalFrame& child,
             const SimTK::Vec3& locationInChild,
             const SimTK::Vec3& orientationInChild, const SimTK::Vec3& radii,
-            const std::string& mirrorAxis);
+            const SimTK::CoordinateAxis& mirrorAxis);
 
     /**
      * Exposes getCoordinate() method defined in base class (overloaded below).
@@ -285,6 +287,39 @@ public:
      * recreated (e.g., `Model::initSystem()`).
      */
     void setEllipsoidRadii(const SimTK::Vec3& radii);
+
+    /**
+     * Mirror this joint about the plane normal to the given axis of the
+     * parent frame (see \ref ellipsoid_mirroring).
+     *
+     * This method internally sets the `mirror_axis` property value. Therefore,
+     * the change will only take effect in the joint after the system is
+     * recreated (e.g., `Model::initSystem()`).
+     */
+    void setMirrorAxis(const SimTK::CoordinateAxis& mirrorAxis);
+
+    /**
+     * Undo joint mirroring, if any.
+     *
+     * This method internally clears the `mirror_axis` property value.
+     * Therefore, the change will only take effect in the joint after the
+     * system is recreated (e.g., `Model::initSystem()`).
+     */
+    void clearMirrorAxis();
+
+    /**
+     * Whether this joint is mirrored, that is, whether the `mirror_axis`
+     * property is set.
+     */
+    bool isMirrored() const;
+
+    /**
+     * Get the axis of the parent frame about which this joint is mirrored.
+     *
+     * @throws Exception if this joint is not mirrored; use isMirrored() to
+     *         check first.
+     */
+    SimTK::CoordinateAxis getMirrorAxis() const;
 
     /**
      * Set whether the ellipsoid surface is drawn by generateDecorations().

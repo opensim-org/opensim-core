@@ -24,6 +24,7 @@
 #include "StationDefinedFrame.h"
 
 #include <OpenSim/Common/Assertion.h>
+#include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Logger.h>
 #include <OpenSim/Common/Property.h>
@@ -33,6 +34,7 @@
 #include <Simbody.h>
 
 #include <array>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -63,31 +65,8 @@ namespace {
     {
         std::string rv;
         rv += dir.getDirection() > 0 ? '+' : '-';
-        rv += std::array<char, 3>{'x', 'y', 'z'}.at(dir.getAxis());
+        rv += OpenSim::getCoordinateAxisName(dir.getAxis());
         return rv;
-    }
-
-    // helper: tries to parse a given character as a designator for an axis of a 3D coordinate
-    //
-    // returns `true` if `out` was updated by the parser, or `false` if the character couldn't be parsed
-    bool TryParseAsCoordinateAxis(std::string::value_type c, SimTK::CoordinateAxis& out)
-    {
-        switch (c) {
-        case 'x':
-        case 'X':
-            out = SimTK::CoordinateAxis::XCoordinateAxis{};
-            return true;
-        case 'y':
-        case 'Y':
-            out = SimTK::CoordinateAxis::YCoordinateAxis{};
-            return true;
-        case 'z':
-        case 'Z':
-            out = SimTK::CoordinateAxis::ZCoordinateAxis{};
-            return true;
-        default:
-            return false;
-        }
     }
 
     // helper: tries to parse the given string as a potentially-signed representation of a
@@ -111,12 +90,13 @@ namespace {
         }
 
         // handle axis suffix
-        SimTK::CoordinateAxis axis = SimTK::CoordinateAxis::XCoordinateAxis();
-        if (!TryParseAsCoordinateAxis(s.front(), axis)) {
+        const std::optional<SimTK::CoordinateAxis> axis =
+            OpenSim::parseCoordinateAxis(s);
+        if (!axis) {
             return false;
         }
 
-        out = SimTK::CoordinateDirection{axis, isNegated ? -1 : 1};
+        out = SimTK::CoordinateDirection{*axis, isNegated ? -1 : 1};
         return true;
     }
 

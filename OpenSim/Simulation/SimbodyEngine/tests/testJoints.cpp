@@ -73,9 +73,8 @@
 
 #include <catch2/catch_all.hpp>
 
-#include <fstream>
 #include <memory>
-#include <sstream>
+#include <optional>
 
 using namespace OpenSim;
 using namespace std;
@@ -1092,18 +1091,18 @@ TEST_CASE("testMirroredEllipsoidJoint") {
     const Vec3 ellipsoidRadii(0.5, 0.33, 0.25);
     const CoordinateAxis mirrorAxis = CoordinateAxis::YCoordinateAxis();
 
-    // Build a double pendulum with an ellipsoid hip and a pin knee. Pass an
-    // empty 'axisName' for an unmirrored hip.
-    auto buildModel = [&](const std::string& axisName) {
+    // Build a double pendulum with an ellipsoid hip and a pin knee. Pass
+    // std::nullopt for an unmirrored hip.
+    auto buildModel = [&](const std::optional<CoordinateAxis>& axis) {
         Model model;
         auto* thigh = new OpenSim::Body("thigh", femurMass.getMass(),
                 femurMass.getMassCenter(), femurMass.getInertia());
-        EllipsoidJoint* hip = axisName.empty()
+        EllipsoidJoint* hip = !axis
                 ? new EllipsoidJoint("hip", model.getGround(), hipInPelvis,
                         Vec3(0), *thigh, hipInFemur, Vec3(0), ellipsoidRadii)
                 : new EllipsoidJoint("hip", model.getGround(), hipInPelvis,
                         Vec3(0), *thigh, hipInFemur, Vec3(0), ellipsoidRadii,
-                        axisName);
+                        *axis);
         for (int i = 0; i < hip->numCoordinates(); ++i) {
             hip->upd_coordinates(i).setName("hip_q" + std::to_string(i));
         }
@@ -1144,7 +1143,7 @@ TEST_CASE("testMirroredEllipsoidJoint") {
         matter.setUseEulerAngles(state, true);
         system.realizeModel(state);
 
-        Model osimModel = buildModel("y");
+        Model osimModel = buildModel(mirrorAxis);
         SimTK::State osim_state = osimModel.initSystem();
 
         // The OpenSim joint must produce a mirrored underlying mobilizer.
@@ -1161,7 +1160,7 @@ TEST_CASE("testMirroredEllipsoidJoint") {
     }
 
     SECTION("Serialization and deserializations") {
-        buildModel("y").print("testMirroredEllipsoidJoint.osim");
+        buildModel(mirrorAxis).print("testMirroredEllipsoidJoint.osim");
 
         Model roundTripped("testMirroredEllipsoidJoint.osim");
         const auto& hip =
@@ -1171,7 +1170,7 @@ TEST_CASE("testMirroredEllipsoidJoint") {
     }
 
     SECTION("Property mirror_axis is omitted for an unmirrored joint") {
-        buildModel("").print("testUnmirroredEllipsoidJoint.osim");
+        buildModel(std::nullopt).print("testUnmirroredEllipsoidJoint.osim");
 
         Model roundTripped("testUnmirroredEllipsoidJoint.osim");
         const auto& hip =
@@ -1184,6 +1183,32 @@ TEST_CASE("testMirroredEllipsoidJoint") {
                 hip.getChildFrame().getMobilizedBody()).isMirrored());
     }
 
+    SECTION("Mirror axis accessors") {
+        Model model = buildModel(std::nullopt);
+        auto& hip = model.updComponent<EllipsoidJoint>("/jointset/hip");
+        CHECK_FALSE(hip.isMirrored());
+        CHECK_THROWS_AS(hip.getMirrorAxis(), OpenSim::Exception);
+
+        hip.setMirrorAxis(mirrorAxis);
+        CHECK(hip.isMirrored());
+        CHECK(hip.get_mirror_axis() == "y");
+        CHECK(int(hip.getMirrorAxis()) == int(mirrorAxis));
+
+        // The property change takes effect once the system is recreated.
+        model.initSystem();
+        CHECK(MobilizedBody::Ellipsoid::downcast(
+                hip.getChildFrame().getMobilizedBody()).isMirrored());
+
+        hip.clearMirrorAxis();
+        CHECK_FALSE(hip.isMirrored());
+        CHECK(hip.getProperty_mirror_axis().empty());
+        CHECK_THROWS_AS(hip.getMirrorAxis(), OpenSim::Exception);
+
+        model.initSystem();
+        CHECK_FALSE(MobilizedBody::Ellipsoid::downcast(
+                hip.getChildFrame().getMobilizedBody()).isMirrored());
+    }
+
     SECTION("An invalid mirror_axis is rejected") {
         // Any value that does not name a coordinate axis is rejected, including
         // an empty string: the unmirrored state is an *unset* property, not a
@@ -1191,7 +1216,7 @@ TEST_CASE("testMirroredEllipsoidJoint") {
         const auto badValue = GENERATE(as<std::string>{},
                 "X-axis", "xy", "w", "0", " x", " ", "");
 
-        Model osimModel = buildModel("y");
+        Model osimModel = buildModel(mirrorAxis);
         auto& hip = osimModel.updComponent<EllipsoidJoint>("/jointset/hip");
         hip.set_mirror_axis(badValue);
 
