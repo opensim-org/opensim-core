@@ -73,25 +73,24 @@ TimeSeriesTable createSineTable() {
 } // namespace
 
 TEST_CASE("findNonFiniteElements") {
-    const TimeSeriesTable original = createSineTable();
-    TimeSeriesTable table = original;
+    TimeSeriesTable table = createSineTable();
     const int numRows = (int)table.getNumRows();
     const std::vector<std::pair<int, int>> expected = {
-        {0, 3}, {1, 5}, {1, 40}, {2, 17}, {3, numRows - 1}};
+        {3, 0}, {5, 1}, {17, 2}, {40, 1}, {numRows - 1, 3}};
 
     SECTION("A table of finite values has no non-finite elements") {
         CHECK(TableUtilities::findNonFiniteElements(table).empty());
     }
 
     SECTION("NaN values are found at the expected locations") {
-        for (const auto& [icol, irow] : expected) {
+        for (const auto& [irow, icol] : expected) {
             table.updDependentColumnAtIndex(icol)[irow] = SimTK::NaN;
         }
         CHECK(TableUtilities::findNonFiniteElements(table) == expected);
     }
 
     SECTION("Infinite values are found at the expected locations") {
-        for (const auto& [icol, irow] : expected) {
+        for (const auto& [irow, icol] : expected) {
             table.updDependentColumnAtIndex(icol)[irow] =
                     irow % 2 ? SimTK::Infinity : -SimTK::Infinity;
         }
@@ -101,10 +100,9 @@ TEST_CASE("findNonFiniteElements") {
 
 TEST_CASE("hampel") {
     const double numStandardDeviations = 5.0;
-    const TimeSeriesTable original = createSineTable();
-    TimeSeriesTable table = original;
+    TimeSeriesTable table = createSineTable();;
     const int numRows = (int)table.getNumRows();
-    const int numAdjacentSamples = 10;
+    const int numAdjacentSamples = 3;
     const double outlierOffset = 100.0;
 
     SECTION("A table of smooth curves has no outliers") {
@@ -114,8 +112,8 @@ TEST_CASE("hampel") {
 
     SECTION("Outliers are found at the expected locations") {
         const std::vector<std::pair<int, int>> expected = {
-                {0, 7}, {1, 100}, {3, 2}, {3, numRows - 3}};
-        for (const auto& [icol, irow] : expected) {
+                {2, 3}, {7, 0}, {100, 1}, {numRows - 3, 3}};
+        for (const auto& [irow, icol] : expected) {
             table.updDependentColumnAtIndex(icol)[irow] += outlierOffset;
         }
         CHECK(TableUtilities::hampel(table, numAdjacentSamples,
@@ -128,7 +126,7 @@ TEST_CASE("hampel") {
         table.updDependentColumnAtIndex(0)[6] += outlierOffset;
 
         const std::vector<std::pair<int, int>> expected = {
-                {0, 4}, {0, 6}, {0, 9}};
+                {4, 0}, {6, 0}, {9, 0}};
         CHECK(TableUtilities::hampel(table, numAdjacentSamples,
                       numStandardDeviations) == expected);
     }
@@ -137,10 +135,10 @@ TEST_CASE("hampel") {
         std::vector<std::pair<int, int>> expected;
         for (int irow = 1; irow < 25; irow += 2) {
             table.updDependentColumnAtIndex(0)[irow] = SimTK::Infinity;
-            expected.emplace_back(0, irow);
+            expected.emplace_back(irow, 0);
         }
         table.updDependentColumnAtIndex(0)[22] += outlierOffset;
-        expected.emplace_back(0, 22);
+        expected.emplace_back(22, 0);
         std::sort(expected.begin(), expected.end());
 
         CHECK(TableUtilities::hampel(table, numAdjacentSamples,
@@ -161,9 +159,38 @@ TEST_CASE("hampel") {
         }
         table.updDependentColumnAtIndex(1)[200] = 0.376;
 
-        const std::vector<std::pair<int, int>> expected = {{1, 200}};
+        const std::vector<std::pair<int, int>> expected = {{200, 1}};
         CHECK(TableUtilities::hampel(table, numAdjacentSamples,
                       numStandardDeviations) == expected);
+    }
+
+    SECTION("An element is screened against the scaled MAD of its window") {
+        // The column [0, 0, 0, -1, -1, 1, 1, -2, 2, 2] has a median of 0 and a
+        // MAD of 1.0, and any added value with magnitude greater than 2 will
+        // not change the median or MAD. Test that adding a value just above the
+        // threshold is reported as an outlier, and adding a value just below
+        // the threshold is not reported.
+        const double madScaleFactor = 1.482602218505602;
+        const double threshold = numStandardDeviations * madScaleFactor;
+        auto screen = [&](double value) {
+            const std::vector<double> values = {0.0, 0.0, 0.0, -1.0, -1.0, 1.0,
+                    1.0, -2.0, 2.0, 2.0, value};
+            const int numValues = (int)values.size();
+            SimTK::Matrix column(numValues, 1, 0.0);
+            for (int irow = 0; irow < numValues; ++irow) {
+                column(irow, 0) = values[irow];
+            }
+            return TableUtilities::hampel(
+                    column, numValues - 1, numStandardDeviations);
+        };
+
+        // Test a value just above the threshold.
+        // std::nextafter(threshold, value) returns the next representable value
+        // (one ULP) after 'threshold' in the direction of 'value'.
+        const std::vector<std::pair<int, int>> expected = {{10, 0}};
+        CHECK(screen(std::nextafter(threshold, SimTK::Infinity)) == expected);
+        // Test a value just below the threshold.
+        CHECK(screen(std::nextafter(threshold, 0.0)).empty());
     }
 
     SECTION("Nearly constant columns reject nothing when a floor is given") {
@@ -191,7 +218,7 @@ TEST_CASE("hampel") {
 
     SECTION("The floor does not suppress genuine outliers") {
         table.updDependentColumnAtIndex(2)[150] += outlierOffset;
-        const std::vector<std::pair<int, int>> expected = {{2, 150}};
+        const std::vector<std::pair<int, int>> expected = {{150, 2}};
         CHECK(TableUtilities::hampel(table, numAdjacentSamples,
                       numStandardDeviations, 1e-4) == expected);
     }
@@ -205,14 +232,14 @@ TEST_CASE("hampel") {
         const auto block = data.block(
                 blockSize, 0, blockSize, (int)table.getNumColumns());
 
-        const std::vector<std::pair<int, int>> expected = {{1, 8}};
+        const std::vector<std::pair<int, int>> expected = {{8, 1}};
         CHECK(TableUtilities::hampel(block, blockSize - 1,
                       numStandardDeviations) == expected);
 
         // Screening the whole table instead reports the same element at its
         // row within the table.
         const std::vector<std::pair<int, int>> expectedWhole = {
-                {1, blockSize + 8}};
+                {blockSize + 8, 1}};
         CHECK(TableUtilities::hampel(table, numAdjacentSamples,
                       numStandardDeviations) == expectedWhole);
     }
@@ -227,5 +254,19 @@ TEST_CASE("hampel") {
         CHECK_THROWS_WITH(
                 TableUtilities::hampel(table, numAdjacentSamples, 3.0, -1.0),
                 Catch::Matchers::ContainsSubstring("'minimumDeviation'"));
+    }
+
+    SECTION("Non-finite arguments throw") {
+        for (const double value : {SimTK::NaN, SimTK::Infinity,
+                     -SimTK::Infinity}) {
+            CHECK_THROWS_WITH(
+                    TableUtilities::hampel(table, numAdjacentSamples, value),
+                    Catch::Matchers::ContainsSubstring(
+                            "'numStandardDeviations'"));
+            CHECK_THROWS_WITH(TableUtilities::hampel(table,
+                                      numAdjacentSamples,
+                                      numStandardDeviations, value),
+                    Catch::Matchers::ContainsSubstring("'minimumDeviation'"));
+        }
     }
 }

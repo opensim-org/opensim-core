@@ -187,8 +187,8 @@ public:
 
     /// Find the elements of a table that are non-finite (NaN or infinite).
     ///
-    /// The result holds the (column, row) index of each non-finite element,
-    /// ordered by column and then by row.
+    /// The result holds the (row, column) index of each non-finite element,
+    /// ordered by row and then by column.
     static std::vector<std::pair<int, int>> findNonFiniteElements(
             const TimeSeriesTable& table);
 
@@ -207,10 +207,11 @@ public:
     /// deviating from their window median by less than `minimumDeviation` are
     /// not reported.
     ///
-    /// @returns the (column, row) index of each outlying element, ordered by
-    ///          column and then by row.
+    /// @returns the (row, column) index of each outlying element, ordered by
+    ///          row and then by column.
     /// @throws Exception if `numAdjacentSamples` is not positive, or if
-    ///         `numStandardDeviations` or `minimumDeviation` is negative.
+    ///         `numStandardDeviations` or `minimumDeviation` is negative or
+    ///         non-finite.
     static std::vector<std::pair<int, int>> hampel(
             const TimeSeriesTable& table, int numAdjacentSamples = 3,
             double numStandardDeviations = 3.0,

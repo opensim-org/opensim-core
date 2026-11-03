@@ -321,12 +321,12 @@ std::vector<std::pair<int, int>> TableUtilities::findNonFiniteElements(
         const TimeSeriesTable& table) {
     const int numRows = static_cast<int>(table.getNumRows());
     const int numColumns = static_cast<int>(table.getNumColumns());
+    const auto& data = table.getMatrix();
     std::vector<std::pair<int, int>> nonFiniteElements;
-    for (int icol = 0; icol < numColumns; ++icol) {
-        const SimTK::VectorView column = table.getDependentColumnAtIndex(icol);
-        for (int irow = 0; irow < numRows; ++irow) {
-            if (!SimTK::isFinite(column[irow])) {
-                nonFiniteElements.emplace_back(icol, irow);
+    for (int irow = 0; irow < numRows; ++irow) {
+        for (int icol = 0; icol < numColumns; ++icol) {
+            if (!SimTK::isFinite(data.getElt(irow, icol))) {
+                nonFiniteElements.emplace_back(irow, icol);
             }
         }
     }
@@ -348,12 +348,17 @@ std::vector<std::pair<int, int>> TableUtilities::hampel(
     OPENSIM_THROW_IF(numAdjacentSamples < 1, Exception,
             "Expected 'numAdjacentSamples' to be positive, but received {}.",
             numAdjacentSamples);
-    OPENSIM_THROW_IF(numStandardDeviations < 0, Exception,
-            "Expected 'numStandardDeviations' to be non-negative, but received "
-            "{}.", numStandardDeviations);
-    OPENSIM_THROW_IF(minimumDeviation < 0, Exception,
-            "Expected 'minimumDeviation' to be non-negative, but received {}.",
-            minimumDeviation);
+    OPENSIM_THROW_IF(
+            !SimTK::isFinite(numStandardDeviations) ||
+                    numStandardDeviations < 0,
+            Exception,
+            "Expected 'numStandardDeviations' to be finite and non-negative, "
+            "but received {}.", numStandardDeviations);
+    OPENSIM_THROW_IF(
+            !SimTK::isFinite(minimumDeviation) || minimumDeviation < 0,
+            Exception,
+            "Expected 'minimumDeviation' to be finite and non-negative, but "
+            "received {}.", minimumDeviation);
     const double madScaleFactor = 1.482602218505602;
 
     // Computes the median of `values`, reordering its contents. `values` must
@@ -391,7 +396,7 @@ std::vector<std::pair<int, int>> TableUtilities::hampel(
                 }
             }
             if (window.empty()) {
-                outliers.emplace_back(icol, irow);
+                outliers.emplace_back(irow, icol);
                 continue;
             }
 
@@ -408,10 +413,14 @@ std::vector<std::pair<int, int>> TableUtilities::hampel(
             const double bound = std::max(
                     numStandardDeviations * sigma, minimumDeviation);
             if (!(std::abs(column[irow] - center) <= bound)) {
-                outliers.emplace_back(icol, irow);
+                outliers.emplace_back(irow, icol);
             }
         }
     }
+
+    // The elements are found column by column, since a window spans a single
+    // column, so sort them into the row-major order that is returned.
+    std::sort(outliers.begin(), outliers.end());
 
     return outliers;
 }
