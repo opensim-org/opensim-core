@@ -9,8 +9,9 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2026 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
+ * Contributor(s): Nicholas Bianco                                            *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,57 +24,100 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-// INCLUDE
 #include "Joint.h"
+
+#include <optional>
 
 namespace OpenSim {
 
-//=============================================================================
-//=============================================================================
 /**
-
-A class implementing a Ellipsoid joint. The underlying implementation
-in Simbody is a SimTK::MobilizedBody::Ellipsoid. An Ellipsoid joint provides three
-mobilities – coordinated rotation and translation along the surface of an ellipsoid
- fixed to the parent body. The ellipsoid surface is determined by an input Vec3 which
-describes the ellipsoid radius. Generalized speeds are equal to the computed angular
-velocities (\f$\vec{u} = \vec{\omega}\f$), not a differentiation of
-position (\f$\vec{u} \neq \dot{\vec{q}}\f$)
-
-\image html ellipsoid.gif
-
-@author Ajay Seth
-*/
+ * A class implementing a Ellipsoid joint. The underlying implementation
+ * in Simbody is a SimTK::MobilizedBody::Ellipsoid.
+ *
+ * An Ellipsoid joint provides three mobilities: coordinated rotation and
+ * translation along the surface of an ellipsoid fixed to the parent body. The
+ * three generalized speeds u for this mobilizer are also the same as a
+ * BallJoint, that is the three measure numbers of the angular velocity vector
+ * w_FM (unless the mobilizer is mirrored, see \ref ellipsoid_mirroring below),
+ * the relative angular velocity of the joint's child frame (M) in the joint's
+ * parent frame (F), expressed in the F frame. Note that qdot != u for this
+ * joint.
+ *
+ * \section ellipsoid_mirroring Mirroring
+ *
+ * This mobilizer can optionally be mirrored about the plane normal to one of
+ * the axes of the joint's parent frame using the `mirror_axis` property, which
+ * is useful for building a left/right pair of joints (e.g., a pair of
+ * shoulders) that are driven by the same coordinates.
+ *
+ * We define S as the reflection that reverses an axis k, that is, s[k] = -1 and
+ * s[i] = 1 otherwise. For example, if mirroring about the Y-axis then
+ * s = [1 -1 1] and S = diag(s):
+ *
+ * <pre>
+ *         [ 1  0  0 ]
+ *     S = [ 0 -1  0 ]
+ *         [ 0  0  1 ]
+ * </pre>
+ *
+ * Mirroring about F's axis k replaces the cross-mobilizer position p_FM with
+ * S*p_FM and the cross joint rotation R_FM with S*R_FM*S. Therefore, the
+ * mirrored cross-mobilizer transform is defined as:
+ *
+ * <pre>
+ *                     [              |        ]
+ *     X_FM_mirrored = [   S*R_FM*S   | S*p_FM ]
+ *                     [..............|........]
+ *                     [ 0    0    0      1    ]
+ * </pre>
+ *
+ * The generalized coordinates parameterize an unmirrored rotation, and the
+ * generalized speeds are the angular velocity of the unmirrored joint, so that
+ * N(q) and thus qdot=N(q)*u are the same for a mirrored mobilizer as for an
+ * unmirrored one. In exchange, this means that u is no longer equal to w_FM for
+ * a mirrored mobilizer, but rather:
+ *
+ * <pre>
+ *     w_FM = -S u
+ * </pre>
+ *
+ * In general, angular quantities are mirrored via w' = -S*w and linear
+ * quantities via v' = S*v.
+ *
+ * See the documentation of SimTK::MobilizedBody::Ellipsoid for more details
+ * about how mirroring affects the internal mobilizer calculations.
+ */
 class OSIMSIMULATION_API EllipsoidJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(EllipsoidJoint, Joint);
 
 public:
-    /** Indices of Coordinates for use as arguments to getCoordinate() and
-        updCoordinate().
-
-        <b>C++ example</b>
-        \code{.cpp}
-        const auto& rx = myEllipsoidJoint.
-                         getCoordinate(EllipsoidJoint::Coord::Rotation1X);
-        \endcode
-
-        <b>Python example</b>
-        \code{.py}
-        import opensim
-        rx = myEllipsoidJoint.getCoordinate(opensim.EllipsoidJoint.Coord_Rotation1X)
-        \endcode
-
-        <b>Java example</b>
-        \code{.java}
-        rx = myEllipsoidJoint.getCoordinate(EllipsoidJoint.Coord.Rotation1X);
-        \endcode
-
-        <b>MATLAB example</b>
-        \code{.m}
-        rx = myEllipsoidJoint.get_coordinates(0);
-        \endcode
-    */
-    enum class Coord: unsigned {
+    /**
+     * Indices of Coordinates for use as arguments to getCoordinate() and
+     * updCoordinate().
+     *
+     * <b>C++ example</b>
+     * \code{.cpp}
+     * const auto& rx = myEllipsoidJoint.
+     *                  getCoordinate(EllipsoidJoint::Coord::Rotation1X);
+     * \endcode
+     *
+     * <b>Python example</b>
+     * \code{.py}
+     * import opensim as osim
+     * rx = myEllipsoidJoint.getCoordinate(osim.EllipsoidJoint.Coord_Rotation1X)
+     * \endcode
+     *
+     * <b>Java example</b>
+     * \code{.java}
+     * rx = myEllipsoidJoint.getCoordinate(EllipsoidJoint.Coord.Rotation1X);
+     * \endcode
+     *
+     * <b>MATLAB example</b>
+     * \code{.m}
+     * rx = myEllipsoidJoint.get_coordinates(0);
+     * \endcode
+     */
+    enum class Coord : unsigned {
         Rotation1X = 0u, ///< 0
         Rotation2Y = 1u, ///< 1
         Rotation3Z = 2u  ///< 2
@@ -83,7 +127,9 @@ public:
         "Default appearance attributes for this EllipsoidJoint");
 
 private:
-    /** Specify the Coordinates of the EllipsoidJoint */
+    /**
+     * Specify the Coordinates of the EllipsoidJoint.
+     */
     CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational,
                                    static_cast<unsigned>(Coord::Rotation1X)) };
     CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational,
@@ -98,80 +144,210 @@ public:
     OpenSim_DECLARE_PROPERTY(radii_x_y_z, SimTK::Vec3,
         "Radii of the ellipsoid fixed to the parent frame, "
         "specified as a Vec3(rX, rY, rZ).");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(mirror_axis, std::string,
+        "The axis of the parent frame about which this joint is mirrored, "
+        "specified as 'x', 'y', or 'z'. Omit this property (the default) if "
+        "the joint should not be mirrored.");
 
-//=============================================================================
+//==============================================================================
 // METHODS
-//=============================================================================
-    // CONSTRUCTION
+//==============================================================================
+
+    /**
+     * Default constructor.
+     */
     EllipsoidJoint();
-    /** Convenience Joint like Constructor */
-    EllipsoidJoint(const std::string&    name,
-                   const PhysicalFrame&  parent,
-                   const PhysicalFrame&  child,
-                   const SimTK::Vec3&    ellipsoidRadii);
 
-    /** Deprecated Joint Constructor*/
-    EllipsoidJoint(const std::string&    name,
-                   const PhysicalFrame&  parent,
-                   const SimTK::Vec3&    locationInParent,
-                   const SimTK::Vec3&    orientationInParent,
-                   const PhysicalFrame&  child,
-                   const SimTK::Vec3&    locationInChild,
-                   const SimTK::Vec3&    orientationInChild,
-                   const SimTK::Vec3&    ellipsoidRadii);
+    /**
+     * Convenience constructor. Create an EllipsoidJoint by specifying
+     * the parent and child frames and the ellipsoid radii.
+     *
+     * @param[in] name   the name associated with this joint (should be unique
+     *                   from other joints in the same model)
+     * @param[in] parent the parent PhysicalFrame to which this joint connects
+     * @param[in] child  the child PhysicalFrame to which this joint connects
+     * @param[in] radii  the radii of the ellipsoid
+     */
+    EllipsoidJoint(const std::string& name, const PhysicalFrame& parent,
+            const PhysicalFrame& child, const SimTK::Vec3& radii);
 
-    //Set properties
+    /**
+     * Convenience constructor for a joint that is mirrored about the plane
+     * normal to a specified coordinate axis. Create an EllipsoidJoint by
+     * specifying the parent and child frames, the ellipsoid radii, and the
+     * mirror axis.
+     *
+     * @param[in] name   the name associated with this joint (should be unique
+     *                   from other joints in the same model)
+     * @param[in] parent the parent PhysicalFrame to which this joint connects
+     * @param[in] child  the child PhysicalFrame to which this joint connects
+     * @param[in] radii  the radii of the ellipsoid
+     * @param[in] mirrorAxis the parent frame's coordinate axis (e.g.,
+     *                       SimTK::YAxis) whose normal plane the joint is
+     *                       mirrored about
+     */
+    EllipsoidJoint(const std::string& name, const PhysicalFrame& parent,
+            const PhysicalFrame& child, const SimTK::Vec3& radii,
+            const SimTK::CoordinateAxis& mirrorAxis);
+
+    /**
+     * Convenience constructor. Construct an EllipsoidJoint where the parent and
+     * child frames are specified as well as the location and orientation of the
+     * parent and child frames in their respective physical frames. Also,
+     * specify the ellipsoid radii.
+     *
+     * @param[in] name    the name associated with this joint (should be unique
+     *                    from other joints in the same model)
+     * @param[in] parent  the parent PhysicalFrame to which this joint connects
+     * @param[in] locationInParent     Vec3 of the location of the joint in the
+     *                                 parent frame.
+     * @param[in] orientationInParent  Vec3 of the XYZ body-fixed Euler angles
+     *                                 of the joint frame orientation in the
+     *                                 parent frame.
+     * @param[in] child  the child PhysicalFrame to which this joint connects
+     * @param[in] locationInChild      Vec3 of the location of the joint in the
+     *                                 child frame.
+     * @param[in] orientationInChild   Vec3 of the XYZ body-fixed Euler angles
+     *                                 of the joint frame orientation in the
+     *                                 child frame.
+     * @param[in] radii the radii of the ellipsoid
+     */
+    EllipsoidJoint(const std::string& name, const PhysicalFrame& parent,
+            const SimTK::Vec3& locationInParent,
+            const SimTK::Vec3& orientationInParent, const PhysicalFrame& child,
+            const SimTK::Vec3& locationInChild,
+            const SimTK::Vec3& orientationInChild, const SimTK::Vec3& radii);
+
+    /**
+     * Convenience constructor for a joint that is mirrored about the plane
+     * normal to a specified coordinate axis. Construct an EllipsoidJoint where
+     * the parent and child frames are specified as well as the location and
+     * orientation of the parent and child frames in their respective physical
+     * frames. Also, specify the ellipsoid radii and the mirror axis.
+     *
+     * @param[in] name    the name associated with this joint (should be unique
+     *                    from other joints in the same model)
+     * @param[in] parent  the parent PhysicalFrame to which this joint connects
+     * @param[in] locationInParent     Vec3 of the location of the joint in the
+     *                                 parent frame.
+     * @param[in] orientationInParent  Vec3 of the XYZ body-fixed Euler angles
+     *                                 of the joint frame orientation in the
+     *                                 parent frame.
+     * @param[in] child  the child PhysicalFrame to which this joint connects
+     * @param[in] locationInChild      Vec3 of the location of the joint in the
+     *                                 child frame.
+     * @param[in] orientationInChild   Vec3 of the XYZ body-fixed Euler angles
+     *                                 of the joint frame orientation in the
+     *                                 child frame.
+     * @param[in] radii the radii of the ellipsoid
+     * @param[in] mirrorAxis the parent frame's coordinate axis (e.g.,
+     *                       SimTK::YAxis) whose normal plane the joint is
+     *                       mirrored about
+     */
+    EllipsoidJoint(const std::string& name, const PhysicalFrame& parent,
+            const SimTK::Vec3& locationInParent,
+            const SimTK::Vec3& orientationInParent, const PhysicalFrame& child,
+            const SimTK::Vec3& locationInChild,
+            const SimTK::Vec3& orientationInChild, const SimTK::Vec3& radii,
+            const SimTK::CoordinateAxis& mirrorAxis);
+
+    /**
+     * Exposes getCoordinate() method defined in base class (overloaded below).
+     * @see Joint
+     */
+    using Joint::getCoordinate;
+
+    /**
+     * Exposes updCoordinate() method defined in base class (overloaded below).
+     * @see Joint
+     */
+    using Joint::updCoordinate;
+
+    /**
+     * Get a const reference to a Coordinate associated with this Joint.
+     * @see Coord
+     */
+    const Coordinate& getCoordinate(Coord idx) const {
+        return get_coordinates(static_cast<unsigned>(idx));
+    }
+
+    /**
+     * Get a writable reference to a Coordinate associated with this Joint.
+     * @see Coord
+     */
+    Coordinate& updCoordinate(Coord idx) {
+        return upd_coordinates(static_cast<unsigned>(idx));
+    }
+
+    /**
+     * Set the ellipsoid radii.
+     *
+     * This method internally sets the `radii_x_y_z` property value. Therefore,
+     * the change will only take effect in the joint after the system is
+     * recreated (e.g., `Model::initSystem()`).
+     */
     void setEllipsoidRadii(const SimTK::Vec3& radii);
 
-    /** Turn on/off the ellipsoid drawn by generateDecorations(). */
+    /**
+     * Mirror this joint about the plane normal to the given axis of the
+     * parent frame (see \ref ellipsoid_mirroring).
+     *
+     * This method internally sets the `mirror_axis` property value. Therefore,
+     * the change will only take effect in the joint after the system is
+     * recreated (e.g., `Model::initSystem()`).
+     */
+    void setMirrorAxis(const SimTK::CoordinateAxis& mirrorAxis);
+
+    /**
+     * Undo joint mirroring, if any.
+     *
+     * This method internally clears the `mirror_axis` property value.
+     * Therefore, the change will only take effect in the joint after the
+     * system is recreated (e.g., `Model::initSystem()`).
+     */
+    void clearMirrorAxis();
+
+    /**
+     * Whether this joint is mirrored, that is, whether the `mirror_axis`
+     * property is set.
+     */
+    bool isMirrored() const;
+
+    /**
+     * Get the axis of the parent frame about which this joint is mirrored.
+     *
+     * @throws Exception if this joint is not mirrored; use isMirrored() to
+     *         check first.
+     */
+    SimTK::CoordinateAxis getMirrorAxis() const;
+
+    /**
+     * Set whether the ellipsoid surface is drawn by generateDecorations().
+     */
     void setEllipsoidVisible(bool visible) {
         upd_Appearance().set_visible(visible);
     };
 
-    /** Exposes getCoordinate() method defined in base class (overloaded below).
-        @see Joint */
-    using Joint::getCoordinate;
-
-    /** Exposes updCoordinate() method defined in base class (overloaded below).
-        @see Joint */
-    using Joint::updCoordinate;
-
-    /** Get a const reference to a Coordinate associated with this Joint.
-        @see Coord */
-    const Coordinate& getCoordinate(Coord idx) const {
-        return get_coordinates( static_cast<unsigned>(idx) );
-    }
-
-    /** Get a writable reference to a Coordinate associated with this Joint.
-        @see Coord */
-    Coordinate& updCoordinate(Coord idx) {
-        return upd_coordinates( static_cast<unsigned>(idx) );
-    }
-
-    // SCALE
+    // SCALING INTERFACE
     void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
 protected:
-    // ModelComponent interface.
+    // MODEL COMPONENT INTERFACE
+    void extendFinalizeFromProperties() override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendInitStateFromProperties(SimTK::State& s) const override;
     void extendSetPropertiesFromState(const SimTK::State& state) override;
 
-    // Visual support in SimTK visualizer
-    void generateDecorations(
-        bool fixed,
-        const ModelDisplayHints&                    hints,
-        const SimTK::State&                         state,
-        SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const override;
+    // COMPONENT INTERFACE
+    void generateDecorations(bool, const ModelDisplayHints&,
+        const SimTK::State&,
+        SimTK::Array_<SimTK::DecorativeGeometry>&) const override;
 
 private:
     void constructProperties();
+    std::optional<SimTK::CoordinateAxis> findMirrorAxis() const;
+};
 
-//=============================================================================
-};  // END of class EllipsoidJoint
-//=============================================================================
-//=============================================================================
-
-} // end of namespace OpenSim
+} // namespace OpenSim
 
 #endif // OPENSIM_ELLIPSOID_JOINT_H_

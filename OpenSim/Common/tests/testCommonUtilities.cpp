@@ -25,6 +25,7 @@
 #include <OpenSim/Common/Exception.h>
 
 #include <algorithm> // std::transform
+#include <optional>
 #include <limits> // std::numeric_limits
 #include <vector>
 #include <numeric> // std::iota
@@ -348,5 +349,39 @@ TEST_CASE("choose") {
     SECTION("Overflow checking") {
         CHECK_THROWS_WITH(choose(150, 100), ContainsSubstring("overflow"));
         CHECK_THROWS_WITH(choose(1000, 500), ContainsSubstring("overflow"));
+    }
+}
+
+TEST_CASE("parseCoordinateAxis and getCoordinateAxisName") {
+
+    SECTION("Valid axis names") {
+        CHECK(parseCoordinateAxis("x") == SimTK::XAxis);
+        CHECK(parseCoordinateAxis("X") == SimTK::XAxis);
+        CHECK(parseCoordinateAxis("y") == SimTK::YAxis);
+        CHECK(parseCoordinateAxis("Y") == SimTK::YAxis);
+        CHECK(parseCoordinateAxis("z") == SimTK::ZAxis);
+        CHECK(parseCoordinateAxis("Z") == SimTK::ZAxis);
+    }
+
+    SECTION("Invalid axis names") {
+        const auto axisName = GENERATE(as<std::string>{},
+                "", " ", " x", "x ", "xy", "w", "0", "+x", "-x", "X-axis");
+        INFO("axisName = '" << axisName << "'");
+        CHECK(parseCoordinateAxis(axisName) == std::nullopt);
+    }
+
+    SECTION("Axis names") {
+        CHECK(getCoordinateAxisName(SimTK::XAxis) == "x");
+        CHECK(getCoordinateAxisName(SimTK::YAxis) == "y");
+        CHECK(getCoordinateAxisName(SimTK::ZAxis) == "z");
+    }
+
+    SECTION("Round trip") {
+        for (const SimTK::CoordinateAxis& axis :
+                {SimTK::CoordinateAxis(SimTK::XAxis),
+                 SimTK::CoordinateAxis(SimTK::YAxis),
+                 SimTK::CoordinateAxis(SimTK::ZAxis)}) {
+            CHECK(parseCoordinateAxis(getCoordinateAxisName(axis)) == axis);
+        }
     }
 }

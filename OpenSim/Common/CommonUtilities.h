@@ -29,6 +29,7 @@
 #include <OpenSim/Common/Property.h>
 
 #include <SimTKcommon/internal/BigMatrix.h>
+#include <SimTKcommon/internal/CoordinateAxis.h>
 
 #include <algorithm>
 #include <cmath>
@@ -38,7 +39,9 @@
 #include <memory>
 #include <mutex>
 #include <numeric>
+#include <optional>
 #include <stack>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -346,6 +349,22 @@ OSIMCOMMON_API double factorizeMatrixNonNegative(const SimTK::Matrix& A,
  * of `n` total elements.
  */
 OSIMCOMMON_API int choose(int n, int k);
+
+#ifndef SWIG // std::optional is not supported by the scripting interfaces.
+/// Convert a string naming a coordinate axis into a SimTK::CoordinateAxis.
+/// The string must be a single character: "x" or "X" for the X axis, "y" or
+/// "Y" for the Y axis, and "z" or "Z" for the Z axis.
+/// @returns the matching coordinate axis, or std::nullopt if `axisName` does
+///     not name a coordinate axis.
+/// @ingroup commonutil
+OSIMCOMMON_API std::optional<SimTK::CoordinateAxis> parseCoordinateAxis(
+        const std::string& axisName);
+#endif
+
+/// Convert a SimTK::CoordinateAxis into its lowercase name: "x", "y", or "z".
+/// This is the inverse of parseCoordinateAxis().
+/// @ingroup commonutil
+OSIMCOMMON_API std::string getCoordinateAxisName(SimTK::CoordinateAxis axis);
 
 namespace detail {
 /**

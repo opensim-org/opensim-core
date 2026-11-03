@@ -496,7 +496,7 @@ getKA(int aWhich) const
 void CMC_Task::
 setDirection_0(const SimTK::Vec3& aR)
 {
-    _r0 = aR; _r0.normalize();
+    _r0 = aR.normalize();
 }
 //_____________________________________________________________________________
 /**
@@ -522,7 +522,7 @@ getDirection_0(SimTK::Vec3& rR) const
 void CMC_Task::
 setDirection_1(const SimTK::Vec3& aR)
 {
-    _r1=aR; _r1.normalize();
+    _r1 = aR.normalize();
 }
 //_____________________________________________________________________________
 /**

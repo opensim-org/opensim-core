@@ -240,8 +240,7 @@ void SpatialTransform::constructIndependentAxes(int nAxes, int startIndex)
     SimTK::Vec3 v2 = getTransformAxis(1+startIndex).getAxis();
     SimTK::Vec3 v3 = getTransformAxis(2+startIndex).getAxis();
     if (nAxes ==2){ // Easy, make third axis the cross of the first 2.
-        SimTK::Vec3 cross= (v1 % v2);
-        cross.normalize();
+        SimTK::Vec3 cross = (v1 % v2).normalize();
         updTransformAxis(2+startIndex).setAxis(cross);
     } else {
         // only v1 was specified, check if v2 is collinear if so, exchange v2,
@@ -250,8 +249,7 @@ void SpatialTransform::constructIndependentAxes(int nAxes, int startIndex)
             updTransformAxis(1+startIndex).setAxis(v3);
         }
         v2 = getTransformAxis(1+startIndex).getAxis();
-        SimTK::Vec3 cross= (v2 % v1);
-        cross.normalize();
+        SimTK::Vec3 cross = (v2 % v1).normalize();
         updTransformAxis(2+startIndex).setAxis(cross);
     }
 }
