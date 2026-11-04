@@ -30,12 +30,12 @@
 #include "IO.h"
 
 #include "Logger.h"
-#include <climits>
+
+#include <charconv>
 #include <filesystem>
 #include <limits>
 #include <math.h>
 #include <string>
-#include <sstream>
 #include <time.h>
 #if defined(__linux__) || defined(__APPLE__)
     #include <sys/stat.h>
@@ -494,23 +494,26 @@ OpenOutputFile(const string &aFileName,ios_base::openmode mode)
     return(fs);
 }
 
-double IO::
-stod(const std::string& __str, std::size_t* __idx)
-{ 
-    std::istringstream iss(__str);
-
+double IO::stod(const std::string& __str, std::size_t* __idx) {
     // Always parse numbers with "C" locale, which uses a period character
     // for the decimal place. Otherwise, Finns, Dutch, and other locales
     // that use comma characters as a decimal place will encounter parsing
     // issues (#3943, #3924).
-    iss.imbue(std::locale::classic());
 
     double result;
-    iss >> result;
-    if (iss.fail()) {
+    const auto format = std::chars_format::general;
+    const auto strData = __str.data();
+    const auto [ptr, ec] =
+            std::from_chars(strData, strData + __str.size(), result, format);
+    if (ec != std::errc()) {
+        log_debug("Encountered error parsing string value: {} ; parsed "
+                  "value:{} ; error code: {}",
+                __str, result, std::make_error_code(ec).message());
         result = std::numeric_limits<double>::quiet_NaN();
-        log_debug("Encountered non-numeric string value: {} ; parsed value:{}",__str, result);
     }
+    // Set the number of successfully parsed bytes
+    if (__idx) { *__idx = static_cast<std::size_t>(ptr - strData); }
+
     return result;
 }
 //_____________________________________________________________________________
