@@ -807,6 +807,39 @@ public:
         return removeRowAtIndex((int)std::distance(_indData.cbegin(), iter));
     }
 
+    /** Remove the rows marked `true` in `rowsToRemove`, which must have one
+    entry per row. The surviving rows keep their order, and the column labels
+    and table metadata are unchanged.
+
+    This is linear in the number of rows, whereas removing rows one at a time
+    with removeRowAtIndex() is quadratic, since each removal shifts every row
+    that follows it.
+
+    \throws IncorrectNumRows If `rowsToRemove` does not have one entry per row.
+                                                                              */
+    void removeRows(const std::vector<bool>& rowsToRemove) {
+        OPENSIM_THROW_IF(rowsToRemove.size() != getNumRows(),
+                         IncorrectNumRows,
+                         static_cast<size_t>(getNumRows()),
+                         rowsToRemove.size());
+
+        // Compact the surviving rows toward the front. A row is only ever
+        // moved to an index at or before the one it is read from, so a write
+        // never clobbers a row that has yet to be read.
+        size_t irowKeep = 0;
+        for (size_t irow = 0; irow < rowsToRemove.size(); ++irow) {
+            if (rowsToRemove[irow]) { continue; }
+            if (irow != irowKeep) {
+                _indData[irowKeep] = _indData[irow];
+                _depData.updRow((int)irowKeep) = _depData.row((int)irow);
+            }
+            ++irowKeep;
+        }
+
+        _indData.resize(irowKeep);
+        _depData.resizeKeep((int)irowKeep, _depData.ncol());
+    }
+
     /// @} End of Row accessors/mutators.
 
     /// @name Dependent and Independent column accessors/mutators.
