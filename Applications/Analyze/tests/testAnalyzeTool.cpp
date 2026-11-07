@@ -23,6 +23,7 @@
 
 // INCLUDE
 #include <OpenSim/Common/CSVFileAdapter.h>
+#include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
@@ -32,6 +33,7 @@
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
 #include <OpenSim/Analyses/BodyKinematics.h>
+#include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
 #include <OpenSim/Analyses/IMUDataReporter.h>
 #include <OpenSim/Actuators/ModelFactory.h>
@@ -545,4 +547,213 @@ TEST_CASE("testMuscleAnalysisSerialization") {
     // Check deserialization and copying
     roundTrip = MuscleAnalysis("manalysis.xml");
     OPENSIM_ASSERT_ALWAYS(!roundTrip.getComputeMoments());
+}
+
+TEST_CASE("AnalyzeTool optionally resamples filtered coordinates",
+        "[filtered-coordinate-sampling]") {
+    const bool fromFile = GENERATE(false, true);
+    const bool inDegrees = GENERATE(false, true);
+    const bool resample = GENERATE(false, true);
+    const bool uniform = GENERATE(false, true);
+    CAPTURE(fromFile, inDegrees, resample, uniform);
+    Model model = ModelFactory::createPendulum();
+    auto* kinematics = new Kinematics(&model);
+    kinematics->setInDegrees(false);
+    model.addAnalysis(kinematics);
+    SimTK::State& state = model.initSystem();
+
+    Storage coordinates;
+    Array<string> labels;
+    labels.append("time");
+    labels.append("q0");
+    coordinates.setColumnLabels(labels);
+    coordinates.setInDegrees(inDegrees);
+    const auto append = [&](double time) {
+        double value = 0.2 + 0.1 * sin(4 * SimTK::Pi * time) +
+                0.01 * sin(240 * SimTK::Pi * time);
+        if (inDegrees) value *= 180 / SimTK::Pi;
+        coordinates.append(time, 1, &value);
+    };
+    for (int i = 0; i <= 400; ++i) {
+        append(0.5 + 0.005 * i +
+                (!uniform && i > 0 && i < 400 ? 0.001 * (i % 2) : 0));
+    }
+
+    AnalyzeTool analyze(model);
+    analyze.setInitialTime(coordinates.getFirstTime());
+    analyze.setFinalTime(coordinates.getLastTime());
+    analyze.setPrintResultFiles(false);
+    Storage filtered(coordinates);
+    if (!fromFile && !inDegrees) {
+        model.getSimbodyEngine().convertRadiansToDegrees(filtered);
+    }
+    filtered.pad(filtered.getSize() / 2);
+    filtered.lowpassIIR(6);
+    analyze.setStatesFromMotion(state, filtered, true);
+    const Storage referenceStates(analyze.getStatesStorage());
+    REQUIRE(analyze.run());
+    const Storage referenceAcceleration(*kinematics->getAccelerationStorage());
+
+    analyze.setLowpassCutoffFrequency(6);
+    analyze.setResampleFilteredCoordinates(resample);
+    if (fromFile) {
+        const int precision = IO::GetPrecision();
+        IO::SetPrecision(17);
+        coordinates.print("testAnalyzeTool_sampling_coordinates.sto");
+        IO::SetPrecision(precision);
+        analyze.setCoordinatesFileName(
+                "testAnalyzeTool_sampling_coordinates.sto");
+        analyze.loadStatesFromFile(state);
+    } else {
+        analyze.setStatesFromMotion(state, coordinates, inDegrees);
+    }
+    const Storage& states = analyze.getStatesStorage();
+    if (!resample) {
+        REQUIRE(states.getSize() == referenceStates.getSize());
+        for (int i = 0; i < states.getSize(); ++i) {
+            CHECK_THAT(states.getStateVector(i)->getTime(),
+                    Catch::Matchers::WithinAbs(
+                            referenceStates.getStateVector(i)->getTime(), 1e-12));
+            for (int j = 0; j < states.getSmallestNumberOfStates(); ++j) {
+                CHECK_THAT(states.getStateVector(i)->getData()[j],
+                        Catch::Matchers::WithinAbs(
+                                referenceStates.getStateVector(i)->getData()[j],
+                                1e-9));
+            }
+        }
+        return;
+    }
+
+    REQUIRE(analyze.run());
+    const Storage& positions = *kinematics->getPositionStorage();
+    const Storage& speeds = *kinematics->getVelocityStorage();
+    const Storage& accelerations = *kinematics->getAccelerationStorage();
+    REQUIRE(positions.getSize() == coordinates.getSize());
+    REQUIRE(speeds.getSize() == coordinates.getSize());
+    REQUIRE(accelerations.getSize() == coordinates.getSize());
+    CHECK(states.getFirstTime() < coordinates.getFirstTime());
+    CHECK(states.getLastTime() > coordinates.getLastTime());
+    CHECK(!positions.isInDegrees());
+    const double first = coordinates.getFirstTime();
+    const double last = coordinates.getLastTime();
+    const double dt = (last - first) / (coordinates.getSize() - 1);
+    CHECK_THAT(positions.getFirstTime(), Catch::Matchers::WithinAbs(first, 1e-12));
+    CHECK_THAT(positions.getLastTime(), Catch::Matchers::WithinAbs(last, 1e-12));
+    const GCVSplineSet referenceSplines(5, &referenceStates);
+    for (int i = 0; i < positions.getSize(); ++i) {
+        const double time = positions.getStateVector(i)->getTime();
+        CHECK_THAT(time, Catch::Matchers::WithinAbs(first + i * dt, 1e-12));
+        const SimTK::Vector argument(1, time);
+        CHECK_THAT(positions.getStateVector(i)->getData()[0],
+                Catch::Matchers::WithinAbs(
+                        referenceSplines.get(0).calcValue(argument), 1e-8));
+        CHECK_THAT(speeds.getStateVector(i)->getData()[0],
+                Catch::Matchers::WithinAbs(
+                        referenceSplines.get(1).calcValue(argument), 2e-3));
+        Array<double> acceleration(0.0, 1);
+        referenceAcceleration.getDataAtTime(time, 1, acceleration);
+        CHECK_THAT(accelerations.getStateVector(i)->getData()[0],
+                Catch::Matchers::WithinAbs(acceleration[0], 2e-3));
+    }
+}
+
+TEST_CASE("AnalyzeTool resampling is ignored without filtering",
+        "[filtered-coordinate-sampling]") {
+    const bool resample = GENERATE(false, true);
+    const double cutoff = GENERATE(-1.0, SimTK::NaN);
+    Model model = ModelFactory::createPendulum();
+    SimTK::State& state = model.initSystem();
+    Storage coordinates;
+    Array<string> labels;
+    labels.append("time");
+    labels.append("q0");
+    coordinates.setColumnLabels(labels);
+    coordinates.setInDegrees(false);
+    for (const double time : {0.0, 0.1, 0.11, 0.3, 0.6, 1.0}) {
+        const double value = 0.2 + 0.1 * time;
+        coordinates.append(time, 1, &value);
+    }
+    AnalyzeTool analyze(model);
+    analyze.setResampleFilteredCoordinates(resample);
+    analyze.setLowpassCutoffFrequency(cutoff);
+    analyze.setStatesFromMotion(state, coordinates, false);
+    const Storage& states = analyze.getStatesStorage();
+    REQUIRE(states.getSize() == coordinates.getSize());
+    for (int i = 0; i < states.getSize(); ++i) {
+        CHECK(states.getStateVector(i)->getTime() ==
+                coordinates.getStateVector(i)->getTime());
+        CHECK_THAT(states.getStateVector(i)->getData()[0],
+                Catch::Matchers::WithinAbs(
+                        coordinates.getStateVector(i)->getData()[0], 1e-12));
+    }
+}
+
+TEST_CASE("AnalyzeTool resampling option survives copying and serialization",
+        "[filtered-coordinate-sampling]") {
+    AnalyzeTool analyze;
+    CHECK_FALSE(analyze.getResampleFilteredCoordinates());
+    const bool resample = GENERATE(false, true);
+    analyze.setResampleFilteredCoordinates(resample);
+    CHECK(AnalyzeTool(analyze).getResampleFilteredCoordinates() == resample);
+    AnalyzeTool assigned;
+    assigned = analyze;
+    CHECK(assigned.getResampleFilteredCoordinates() == resample);
+    analyze.print("testAnalyzeTool_sampling.xml");
+    AnalyzeTool roundTrip("testAnalyzeTool_sampling.xml", false);
+    CHECK(roundTrip.getResampleFilteredCoordinates() == resample);
+}
+
+TEST_CASE("AnalyzeTool resampling requires a usable output grid",
+        "[filtered-coordinate-sampling]") {
+    const auto times = GENERATE(Catch::Generators::values<std::vector<double>>({
+            {}, {678}, {678, 678.01}, {678, 678.01, 678.02},
+            {678, 678.01, 678.02, 678.03},
+            {678, 678.01, 678.02, 678.03, 678.04, 678.05, 678.05 + 1e-10},
+            {0, 1, 1 + 1e-7, 1 + 2e-7},
+            {0, 1, 2, 3, 3 + 1e-7, 3 + 2e-7, 3 + 3e-7},
+            {0, 1.0 / 3 - 2e-8, 1.0 / 3 - 1e-8, 1},
+            {0.0063619323302788189, 95.518532568693587,
+                    95.518532568693601, 143.27461788687526}}));
+    const int count = static_cast<int>(times.size());
+    CAPTURE(times);
+    Model model = ModelFactory::createPendulum();
+    auto* kinematics = new Kinematics(&model);
+    model.addAnalysis(kinematics);
+    SimTK::State& state = model.initSystem();
+    Storage coordinates;
+    Array<string> labels;
+    labels.append("time");
+    labels.append("q0");
+    coordinates.setColumnLabels(labels);
+    coordinates.setInDegrees(true);
+    const double value = 10;
+    for (const double time : times) {
+        coordinates.append(time, 1, &value);
+    }
+    AnalyzeTool analyze(model);
+    analyze.setResampleFilteredCoordinates(true);
+    analyze.setLowpassCutoffFrequency(6);
+    if (count < 4) {
+        REQUIRE_THROWS_WITH(
+                analyze.setStatesFromMotion(state, coordinates, true),
+                Catch::Matchers::ContainsSubstring("resampling filtered"));
+    } else {
+        REQUIRE_NOTHROW(analyze.setStatesFromMotion(state, coordinates, true));
+        analyze.setInitialTime(coordinates.getFirstTime());
+        analyze.setFinalTime(coordinates.getLastTime());
+        analyze.setPrintResultFiles(false);
+        REQUIRE(analyze.run());
+        const Storage& positions = *kinematics->getPositionStorage();
+        CHECK(positions.getSize() == count);
+        CHECK_THAT(positions.getFirstTime(), Catch::Matchers::WithinAbs(
+                coordinates.getFirstTime(), 1e-12));
+        CHECK_THAT(positions.getLastTime(), Catch::Matchers::WithinAbs(
+                coordinates.getLastTime(), 1e-12));
+        const double dt = (times.back() - times.front()) / (count - 1);
+        for (int i = 0; i < positions.getSize(); ++i) {
+            CHECK_THAT(positions.getStateVector(i)->getTime(),
+                    Catch::Matchers::WithinAbs(times.front() + i * dt, 1e-12));
+            CHECK(std::isfinite(positions.getStateVector(i)->getData()[0]));
+        }
+    }
 }

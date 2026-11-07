@@ -69,6 +69,9 @@ private:
     PropertyDbl _lowpassCutoffFrequencyProp;
     double &_lowpassCutoffFrequency;
 
+    PropertyBool _resampleFilteredCoordinatesProp;
+    bool& _resampleFilteredCoordinates;
+
     /** Storage for the model states. */
     Storage *_statesStore;
 
@@ -94,6 +97,7 @@ private:
     void setNull();
     void setupProperties();
     void constructCorrectiveSprings();
+    void filterCoordinates(Storage& coordinates) const;
 
     //--------------------------------------------------------------------------
     // OPERATORS
@@ -119,6 +123,12 @@ public:
     void setSpeedsFileName(const std::string &aFileName) { _speedsFileName = aFileName; }
     double getLowpassCutoffFrequency() const { return _lowpassCutoffFrequency; }
     void setLowpassCutoffFrequency(double aLowpassCutoffFrequency) { _lowpassCutoffFrequency = aLowpassCutoffFrequency; }
+    bool getResampleFilteredCoordinates() const {
+        return _resampleFilteredCoordinates;
+    }
+    void setResampleFilteredCoordinates(bool resample) {
+        _resampleFilteredCoordinates = resample;
+    }
     bool getLoadModelAndInput() const { return _loadModelAndInput; }
     void setLoadModelAndInput(bool b) { _loadModelAndInput = b; }
 

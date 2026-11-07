@@ -9,6 +9,8 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.6.1
 ======
+- Added an opt-in `resample_filtered_coordinates` option to `AnalyzeTool` to
+  preserve the original sample count and time range after filtering. (#4126)
 - Added `CantileverFreeBeamJoint`, a joint type providing a lightweight way for modeling flexible structures (e.g., the bending of the spinal column in a human or animal skeleton). (#4227)
 - Added `ExponentialCoordinateLimitForce`, a force element for enforcing coordinate limits using exponential spring functions. (#4231)
 - Added `CoordinateLinearStopForce`, a force element for enforcing coordinate limits using a
