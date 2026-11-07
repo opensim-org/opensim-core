@@ -52,17 +52,6 @@ namespace OpenSim {
 class OSIMTOOLS_API AnalyzeTool : public AbstractTool {
 OpenSim_DECLARE_CONCRETE_OBJECT(AnalyzeTool, AbstractTool);
 
-public:
-    /** Sampling of coordinates after low-pass filtering. */
-    enum class FilteredCoordinateSampling {
-        /** Use uniformly spaced samples with the original count and endpoints.
-        The original, possibly irregular timestamps are not preserved. */
-        UniformInputCount,
-        /** Retain the filtering grid, including any increase in sample
-        count. */
-        FilterGrid
-    };
-
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -80,8 +69,8 @@ private:
     PropertyDbl _lowpassCutoffFrequencyProp;
     double &_lowpassCutoffFrequency;
 
-    PropertyStr _filteredCoordinateSamplingProp;
-    std::string& _filteredCoordinateSampling;
+    PropertyBool _resampleFilteredCoordinatesProp;
+    bool& _resampleFilteredCoordinates;
 
     /** Storage for the model states. */
     Storage *_statesStore;
@@ -134,22 +123,12 @@ public:
     void setSpeedsFileName(const std::string &aFileName) { _speedsFileName = aFileName; }
     double getLowpassCutoffFrequency() const { return _lowpassCutoffFrequency; }
     void setLowpassCutoffFrequency(double aLowpassCutoffFrequency) { _lowpassCutoffFrequency = aLowpassCutoffFrequency; }
-    /** Get the sampling policy used when coordinate filtering is enabled. */
-    FilteredCoordinateSampling getFilteredCoordinateSampling() const
-            SWIG_DECLARE_EXCEPTION;
-    /** Set the sampling policy (default: UniformInputCount).
-    UniformInputCount uses interval (lastTime - firstTime) / (count - 1),
-    retaining padding outside the original interval for differentiation.
-    It requires at least four input samples so that the padded data can
-    support quintic interpolation and differentiation.
-    The cutoff must be below the resulting Nyquist frequency. Choose it with
-    sufficient attenuation above that frequency: interpolation does not apply
-    an additional anti-aliasing filter. FilterGrid retains the previous
-    behavior. This setting does not affect states files or disable analysis
-    step intervals.
-    */
-    void setFilteredCoordinateSampling(FilteredCoordinateSampling sampling)
-            SWIG_DECLARE_EXCEPTION;
+    bool getResampleFilteredCoordinates() const {
+        return _resampleFilteredCoordinates;
+    }
+    void setResampleFilteredCoordinates(bool resample) {
+        _resampleFilteredCoordinates = resample;
+    }
     bool getLoadModelAndInput() const { return _loadModelAndInput; }
     void setLoadModelAndInput(bool b) { _loadModelAndInput = b; }
 

@@ -548,78 +548,13 @@ TEST_CASE("testMuscleAnalysisSerialization") {
     OPENSIM_ASSERT_ALWAYS(!roundTrip.getComputeMoments());
 }
 
-TEST_CASE("AnalyzeTool preserves filtered coordinate count and time range",
+TEST_CASE("AnalyzeTool optionally resamples filtered coordinates",
         "[filtered-coordinate-sampling]") {
     const bool fromFile = GENERATE(false, true);
-    const bool nearDuplicate = GENERATE(false, true);
-    const double start = GENERATE(0.0, 678.0);
-    CAPTURE(fromFile, nearDuplicate, start);
-
-    Model model = ModelFactory::createPendulum();
-    auto* kinematics = new Kinematics(&model);
-    kinematics->setInDegrees(false);
-    model.addAnalysis(kinematics);
-    SimTK::State& state = model.initSystem();
-
-    Storage coordinates;
-    Array<string> labels;
-    labels.append("time");
-    labels.append(model.getCoordinateSet().get(0).getName());
-    coordinates.setColumnLabels(labels);
-    coordinates.setInDegrees(false);
-    for (int i = 0; i <= 100; ++i) {
-        const double time = start + 0.01 * i;
-        const double value = 0.2 + 0.1 * (time - start);
-        coordinates.append(time, 1, &value);
-        if (!nearDuplicate && i == 50) {
-            const double extraTime = time + 0.0005;
-            const double extraValue = 0.2 + 0.1 * (extraTime - start);
-            coordinates.append(extraTime, 1, &extraValue);
-        }
-    }
-    if (nearDuplicate) {
-        const double time = start + 1.0 + 1e-10;
-        const double value = 0.2 + 0.1 * (time - start);
-        coordinates.append(time, 1, &value);
-    }
-
-    AnalyzeTool analyze(model);
-    analyze.setLowpassCutoffFrequency(6.0);
-    analyze.setInitialTime(coordinates.getFirstTime());
-    analyze.setFinalTime(coordinates.getLastTime());
-    analyze.setPrintResultFiles(false);
-    if (fromFile) {
-        const int precision = IO::GetPrecision();
-        IO::SetPrecision(17);
-        coordinates.print("testAnalyzeTool_sampling_coordinates.sto");
-        IO::SetPrecision(precision);
-        analyze.setCoordinatesFileName(
-                "testAnalyzeTool_sampling_coordinates.sto");
-        analyze.loadStatesFromFile(state);
-    } else {
-        analyze.setStatesFromMotion(state, coordinates, false);
-    }
-    REQUIRE(analyze.run());
-
-    const Storage& output = *kinematics->getPositionStorage();
-    REQUIRE(output.getSize() == coordinates.getSize());
-    const double first = coordinates.getFirstTime();
-    const double last = coordinates.getLastTime();
-    CHECK_THAT(output.getFirstTime(), Catch::Matchers::WithinAbs(first, 1e-12));
-    CHECK_THAT(output.getLastTime(), Catch::Matchers::WithinAbs(last, 1e-12));
-    const double dt = (last - first) / (coordinates.getSize() - 1);
-    for (int i = 0; i < output.getSize(); ++i) {
-        CHECK_THAT(output.getStateVector(i)->getTime(),
-                Catch::Matchers::WithinAbs(first + i * dt, 1e-12));
-    }
-}
-
-TEST_CASE("AnalyzeTool sampling preserves filtered numerical results",
-        "[filtered-coordinate-sampling]") {
-    using Sampling = AnalyzeTool::FilteredCoordinateSampling;
-    const bool uniform = GENERATE(false, true);
     const bool inDegrees = GENERATE(false, true);
-    CAPTURE(uniform, inDegrees);
+    const bool resample = GENERATE(false, true);
+    const bool uniform = GENERATE(false, true);
+    CAPTURE(fromFile, inDegrees, resample, uniform);
     Model model = ModelFactory::createPendulum();
     auto* kinematics = new Kinematics(&model);
     kinematics->setInDegrees(false);
@@ -632,93 +567,99 @@ TEST_CASE("AnalyzeTool sampling preserves filtered numerical results",
     labels.append("q0");
     coordinates.setColumnLabels(labels);
     coordinates.setInDegrees(inDegrees);
-    for (int i = 0; i <= 400; ++i) {
-        const double time = 0.005 * i +
-                (!uniform && i > 0 && i < 400 ? 0.001 * (i % 2) : 0);
-        // A 2 Hz signal with 120 Hz noise; cutoff = 6 Hz, output rate = 200 Hz.
+    const auto append = [&](double time) {
         double value = 0.2 + 0.1 * sin(4 * SimTK::Pi * time) +
                 0.01 * sin(240 * SimTK::Pi * time);
         if (inDegrees) value *= 180 / SimTK::Pi;
         coordinates.append(time, 1, &value);
+    };
+    for (int i = 0; i <= 400; ++i) {
+        append(0.5 + 0.005 * i +
+                (!uniform && i > 0 && i < 400 ? 0.001 * (i % 2) : 0));
     }
 
     AnalyzeTool analyze(model);
-    analyze.setLowpassCutoffFrequency(6);
-    analyze.setInitialTime(0);
-    analyze.setFinalTime(2);
+    analyze.setInitialTime(coordinates.getFirstTime());
+    analyze.setFinalTime(coordinates.getLastTime());
     analyze.setPrintResultFiles(false);
-    analyze.setFilteredCoordinateSampling(Sampling::FilterGrid);
-    analyze.setStatesFromMotion(state, coordinates, inDegrees);
-    const Storage denseStates(analyze.getStatesStorage());
+    Storage filtered(coordinates);
+    if (!fromFile && !inDegrees) {
+        model.getSimbodyEngine().convertRadiansToDegrees(filtered);
+    }
+    filtered.pad(filtered.getSize() / 2);
+    filtered.lowpassIIR(6);
+    analyze.setStatesFromMotion(state, filtered, true);
+    const Storage referenceStates(analyze.getStatesStorage());
     REQUIRE(analyze.run());
-    const Storage denseAcceleration(*kinematics->getAccelerationStorage());
+    const Storage referenceAcceleration(*kinematics->getAccelerationStorage());
 
-    // This is the pre-change implementation, independent of the policy helper.
-    Storage oldCoordinates(coordinates);
-    oldCoordinates.pad(oldCoordinates.getSize() / 2);
-    oldCoordinates.lowpassIIR(6);
-    analyze.setLowpassCutoffFrequency(-1);
-    analyze.setStatesFromMotion(state, oldCoordinates, inDegrees);
-    const Storage& oldStates = analyze.getStatesStorage();
-    REQUIRE(oldStates.getSize() == denseStates.getSize());
-    for (int i = 0; i < oldStates.getSize(); ++i) {
-        CHECK_THAT(oldStates.getStateVector(i)->getTime(),
-                Catch::Matchers::WithinAbs(
-                        denseStates.getStateVector(i)->getTime(), 1e-12));
-        for (int j = 0; j < oldStates.getSmallestNumberOfStates(); ++j) {
-            CHECK_THAT(oldStates.getStateVector(i)->getData()[j],
+    analyze.setLowpassCutoffFrequency(6);
+    analyze.setResampleFilteredCoordinates(resample);
+    if (fromFile) {
+        const int precision = IO::GetPrecision();
+        IO::SetPrecision(17);
+        coordinates.print("testAnalyzeTool_sampling_coordinates.sto");
+        IO::SetPrecision(precision);
+        analyze.setCoordinatesFileName(
+                "testAnalyzeTool_sampling_coordinates.sto");
+        analyze.loadStatesFromFile(state);
+    } else {
+        analyze.setStatesFromMotion(state, coordinates, inDegrees);
+    }
+    const Storage& states = analyze.getStatesStorage();
+    if (!resample) {
+        REQUIRE(states.getSize() == referenceStates.getSize());
+        for (int i = 0; i < states.getSize(); ++i) {
+            CHECK_THAT(states.getStateVector(i)->getTime(),
                     Catch::Matchers::WithinAbs(
-                            denseStates.getStateVector(i)->getData()[j], 1e-9));
+                            referenceStates.getStateVector(i)->getTime(), 1e-12));
+            for (int j = 0; j < states.getSmallestNumberOfStates(); ++j) {
+                CHECK_THAT(states.getStateVector(i)->getData()[j],
+                        Catch::Matchers::WithinAbs(
+                                referenceStates.getStateVector(i)->getData()[j],
+                                1e-9));
+            }
         }
+        return;
     }
 
-    analyze.setLowpassCutoffFrequency(6);
-    analyze.setFilteredCoordinateSampling(Sampling::UniformInputCount);
-    analyze.setStatesFromMotion(state, coordinates, inDegrees);
     REQUIRE(analyze.run());
-    const Storage& states = analyze.getStatesStorage();
     const Storage& positions = *kinematics->getPositionStorage();
     const Storage& speeds = *kinematics->getVelocityStorage();
     const Storage& accelerations = *kinematics->getAccelerationStorage();
-    const GCVSplineSet referenceSplines(5, &denseStates);
     REQUIRE(positions.getSize() == coordinates.getSize());
     REQUIRE(speeds.getSize() == coordinates.getSize());
     REQUIRE(accelerations.getSize() == coordinates.getSize());
     CHECK(states.getFirstTime() < coordinates.getFirstTime());
     CHECK(states.getLastTime() > coordinates.getLastTime());
     CHECK(!positions.isInDegrees());
+    const double first = coordinates.getFirstTime();
+    const double last = coordinates.getLastTime();
+    const double dt = (last - first) / (coordinates.getSize() - 1);
+    CHECK_THAT(positions.getFirstTime(), Catch::Matchers::WithinAbs(first, 1e-12));
+    CHECK_THAT(positions.getLastTime(), Catch::Matchers::WithinAbs(last, 1e-12));
+    const GCVSplineSet referenceSplines(5, &referenceStates);
     for (int i = 0; i < positions.getSize(); ++i) {
         const double time = positions.getStateVector(i)->getTime();
-        Array<double> reference(0.0, 2), actual(0.0, 2);
-        // Evaluate the dense reference smoothly at common timestamps; linear
-        // interpolation of the reference would add its own slope error.
+        CHECK_THAT(time, Catch::Matchers::WithinAbs(first + i * dt, 1e-12));
         const SimTK::Vector argument(1, time);
-        reference[0] = referenceSplines.get(0).calcValue(argument);
-        reference[1] = referenceSplines.get(1).calcValue(argument);
-        states.getDataAtTime(time, 2, actual);
-        // Position in radians and speed in radians/s, including the endpoints.
-        CHECK_THAT(actual[0], Catch::Matchers::WithinAbs(reference[0], 1e-8));
-        CHECK_THAT(actual[1], Catch::Matchers::WithinAbs(reference[1], 2e-3));
+        CHECK_THAT(positions.getStateVector(i)->getData()[0],
+                Catch::Matchers::WithinAbs(
+                        referenceSplines.get(0).calcValue(argument), 1e-8));
+        CHECK_THAT(speeds.getStateVector(i)->getData()[0],
+                Catch::Matchers::WithinAbs(
+                        referenceSplines.get(1).calcValue(argument), 2e-3));
         Array<double> acceleration(0.0, 1);
-        denseAcceleration.getDataAtTime(time, 1, acceleration);
+        referenceAcceleration.getDataAtTime(time, 1, acceleration);
         CHECK_THAT(accelerations.getStateVector(i)->getData()[0],
                 Catch::Matchers::WithinAbs(acceleration[0], 2e-3));
-        if (time > 0.25 && time < 1.75) {
-            CHECK_THAT(positions.getStateVector(i)->getData()[0],
-                    Catch::Matchers::WithinAbs(
-                            0.2 + 0.1 * sin(4 * SimTK::Pi * time), 5e-4));
-            CHECK_THAT(speeds.getStateVector(i)->getData()[0],
-                    Catch::Matchers::WithinAbs(
-                            0.4 * SimTK::Pi * cos(4 * SimTK::Pi * time), 5e-3));
-        }
     }
 }
 
-TEST_CASE("AnalyzeTool sampling policy does not change unfiltered coordinates",
+TEST_CASE("AnalyzeTool resampling is ignored without filtering",
         "[filtered-coordinate-sampling]") {
-    using Sampling = AnalyzeTool::FilteredCoordinateSampling;
-    const auto sampling = GENERATE(
-            Sampling::UniformInputCount, Sampling::FilterGrid);
+    const bool resample = GENERATE(false, true);
+    const double cutoff = GENERATE(-1.0, SimTK::NaN);
     Model model = ModelFactory::createPendulum();
     SimTK::State& state = model.initSystem();
     Storage coordinates;
@@ -732,7 +673,8 @@ TEST_CASE("AnalyzeTool sampling policy does not change unfiltered coordinates",
         coordinates.append(time, 1, &value);
     }
     AnalyzeTool analyze(model);
-    analyze.setFilteredCoordinateSampling(sampling);
+    analyze.setResampleFilteredCoordinates(resample);
+    analyze.setLowpassCutoffFrequency(cutoff);
     analyze.setStatesFromMotion(state, coordinates, false);
     const Storage& states = analyze.getStatesStorage();
     REQUIRE(states.getSize() == coordinates.getSize());
@@ -745,53 +687,37 @@ TEST_CASE("AnalyzeTool sampling policy does not change unfiltered coordinates",
     }
 }
 
-TEST_CASE("AnalyzeTool filter-grid policy skips a NaN cutoff",
-        "[filtered-coordinate-sampling][filter-grid-compatibility]") {
-    using Sampling = AnalyzeTool::FilteredCoordinateSampling;
-    Model model = ModelFactory::createPendulum();
-    SimTK::State& state = model.initSystem();
-    Storage coordinates;
-    Array<string> labels;
-    labels.append("time");
-    labels.append("q0");
-    coordinates.setColumnLabels(labels);
-    coordinates.setInDegrees(true);
-    for (int i = 0; i <= 100; ++i) {
-        const double time = i * 0.01;
-        const double value = 10.0 + time;
-        coordinates.append(time, 1, &value);
-    }
-
-    // The original cutoff >= 0 guard skips filtering for NaN.
-    AnalyzeTool analyze(model);
-    analyze.setStatesFromMotion(state, coordinates, true);
-    const Storage expected(analyze.getStatesStorage());
-    REQUIRE(expected.getSize() > 0);
-
-    analyze.setFilteredCoordinateSampling(Sampling::FilterGrid);
-    analyze.setLowpassCutoffFrequency(SimTK::NaN);
-    REQUIRE_NOTHROW(analyze.setStatesFromMotion(state, coordinates, true));
-    const Storage& actual = analyze.getStatesStorage();
-    REQUIRE(actual.getSize() == expected.getSize());
-    for (int i = 0; i < actual.getSize(); ++i) {
-        CHECK(actual.getStateVector(i)->getTime() ==
-                expected.getStateVector(i)->getTime());
-        for (int j = 0; j < expected.getSmallestNumberOfStates(); ++j) {
-            CHECK_THAT(actual.getStateVector(i)->getData()[j],
-                    Catch::Matchers::WithinAbs(
-                            expected.getStateVector(i)->getData()[j], 1e-12));
-        }
-    }
-    analyze.setFilteredCoordinateSampling(Sampling::UniformInputCount);
-    REQUIRE_THROWS_AS(analyze.setStatesFromMotion(state, coordinates, true),
-            Exception);
+TEST_CASE("AnalyzeTool resampling option survives copying and serialization",
+        "[filtered-coordinate-sampling]") {
+    AnalyzeTool analyze;
+    CHECK_FALSE(analyze.getResampleFilteredCoordinates());
+    const bool resample = GENERATE(false, true);
+    analyze.setResampleFilteredCoordinates(resample);
+    CHECK(AnalyzeTool(analyze).getResampleFilteredCoordinates() == resample);
+    AnalyzeTool assigned;
+    assigned = analyze;
+    CHECK(assigned.getResampleFilteredCoordinates() == resample);
+    analyze.print("testAnalyzeTool_sampling.xml");
+    AnalyzeTool roundTrip("testAnalyzeTool_sampling.xml", false);
+    CHECK(roundTrip.getResampleFilteredCoordinates() == resample);
 }
 
-TEST_CASE("AnalyzeTool validates short filtered coordinate inputs",
-        "[filtered-coordinate-sampling][short-filtered-input]") {
-    const int count = GENERATE(2, 3, 4);
-    CAPTURE(count);
+TEST_CASE("AnalyzeTool resampling requires a usable output grid",
+        "[filtered-coordinate-sampling]") {
+    const auto times = GENERATE(Catch::Generators::values<std::vector<double>>({
+            {}, {678}, {678, 678.01}, {678, 678.01, 678.02},
+            {678, 678.01, 678.02, 678.03},
+            {678, 678.01, 678.02, 678.03, 678.04, 678.05, 678.05 + 1e-10},
+            {0, 1, 1 + 1e-7, 1 + 2e-7},
+            {0, 1, 2, 3, 3 + 1e-7, 3 + 2e-7, 3 + 3e-7},
+            {0, 1.0 / 3 - 2e-8, 1.0 / 3 - 1e-8, 1},
+            {0.0063619323302788189, 95.518532568693587,
+                    95.518532568693601, 143.27461788687526}}));
+    const int count = static_cast<int>(times.size());
+    CAPTURE(times);
     Model model = ModelFactory::createPendulum();
+    auto* kinematics = new Kinematics(&model);
+    model.addAnalysis(kinematics);
     SimTK::State& state = model.initSystem();
     Storage coordinates;
     Array<string> labels;
@@ -799,144 +725,34 @@ TEST_CASE("AnalyzeTool validates short filtered coordinate inputs",
     labels.append("q0");
     coordinates.setColumnLabels(labels);
     coordinates.setInDegrees(true);
-    const double value = 10.0;
-    for (int i = 0; i < count; ++i) {
-        coordinates.append(i * 0.01, 1, &value);
+    const double value = 10;
+    for (const double time : times) {
+        coordinates.append(time, 1, &value);
     }
     AnalyzeTool analyze(model);
+    analyze.setResampleFilteredCoordinates(true);
     analyze.setLowpassCutoffFrequency(6);
     if (count < 4) {
         REQUIRE_THROWS_WITH(
                 analyze.setStatesFromMotion(state, coordinates, true),
-                Catch::Matchers::ContainsSubstring("at least four samples"));
+                Catch::Matchers::ContainsSubstring("resampling filtered"));
     } else {
         REQUIRE_NOTHROW(analyze.setStatesFromMotion(state, coordinates, true));
-        CHECK(analyze.getStatesStorage().getSize() >= 6);
-    }
-}
-
-TEST_CASE("AnalyzeTool sampling policy serialization and validation",
-        "[filtered-coordinate-sampling]") {
-    using Sampling = AnalyzeTool::FilteredCoordinateSampling;
-    AnalyzeTool analyze;
-    CHECK(analyze.getFilteredCoordinateSampling() ==
-            Sampling::UniformInputCount);
-    const auto sampling = GENERATE(
-            Sampling::UniformInputCount, Sampling::FilterGrid);
-    analyze.setFilteredCoordinateSampling(sampling);
-    CHECK(AnalyzeTool(analyze).getFilteredCoordinateSampling() == sampling);
-    AnalyzeTool assigned;
-    assigned = analyze;
-    CHECK(assigned.getFilteredCoordinateSampling() == sampling);
-    analyze.print("testAnalyzeTool_sampling.xml");
-    AnalyzeTool roundTrip("testAnalyzeTool_sampling.xml", false);
-    CHECK(roundTrip.getFilteredCoordinateSampling() == sampling);
-    REQUIRE_THROWS_AS(analyze.setFilteredCoordinateSampling(
-            static_cast<Sampling>(-1)), Exception);
-    analyze.getPropertySet().get("filtered_coordinate_sampling")
-            ->setValue(string("unsupported"));
-    REQUIRE_THROWS_WITH(analyze.getFilteredCoordinateSampling(),
-            Catch::Matchers::ContainsSubstring("uniform_input_count or"));
-    analyze.print("testAnalyzeTool_sampling_invalid.xml");
-    REQUIRE_THROWS_WITH(
-            AnalyzeTool("testAnalyzeTool_sampling_invalid.xml", false),
-            Catch::Matchers::ContainsSubstring("filtered_coordinate_sampling"));
-}
-
-TEST_CASE("AnalyzeTool sampling respects explicit speeds and states files",
-        "[filtered-coordinate-sampling]") {
-    Model model = ModelFactory::createPendulum();
-    SimTK::State& state = model.initSystem();
-    Storage coordinates;
-    Array<string> labels;
-    labels.append("time");
-    labels.append("q0");
-    coordinates.setColumnLabels(labels);
-    coordinates.setInDegrees(false);
-    const double position = 0.2;
-    for (int i = 0; i <= 100; ++i) {
-        coordinates.append(i * 0.01, 1, &position);
-    }
-    AnalyzeTool analyze(model);
-    analyze.setLowpassCutoffFrequency(6);
-    analyze.setStatesFromMotion(state, coordinates, false);
-    const Storage expected(analyze.getStatesStorage());
-
-    SECTION("states_file bypasses coordinate filtering") {
-        expected.print("testAnalyzeTool_sampling_states.sto");
-        analyze.setStatesFileName("testAnalyzeTool_sampling_states.sto");
-        // This would be rejected if coordinate filtering were applied.
-        analyze.setLowpassCutoffFrequency(1000);
-        analyze.loadStatesFromFile(state);
-        const Storage& actual = analyze.getStatesStorage();
-        REQUIRE(actual.getSize() == expected.getSize());
-        for (int i = 0; i < actual.getSize(); ++i) {
-            CHECK_THAT(actual.getStateVector(i)->getTime(),
-                    Catch::Matchers::WithinAbs(
-                            expected.getStateVector(i)->getTime(), 1e-8));
+        analyze.setInitialTime(coordinates.getFirstTime());
+        analyze.setFinalTime(coordinates.getLastTime());
+        analyze.setPrintResultFiles(false);
+        REQUIRE(analyze.run());
+        const Storage& positions = *kinematics->getPositionStorage();
+        CHECK(positions.getSize() == count);
+        CHECK_THAT(positions.getFirstTime(), Catch::Matchers::WithinAbs(
+                coordinates.getFirstTime(), 1e-12));
+        CHECK_THAT(positions.getLastTime(), Catch::Matchers::WithinAbs(
+                coordinates.getLastTime(), 1e-12));
+        const double dt = (times.back() - times.front()) / (count - 1);
+        for (int i = 0; i < positions.getSize(); ++i) {
+            CHECK_THAT(positions.getStateVector(i)->getTime(),
+                    Catch::Matchers::WithinAbs(times.front() + i * dt, 1e-12));
+            CHECK(std::isfinite(positions.getStateVector(i)->getData()[0]));
         }
     }
-    SECTION("speeds_file still overrides differentiated coordinates") {
-        coordinates.print("testAnalyzeTool_sampling_override.sto");
-        analyze.setCoordinatesFileName("testAnalyzeTool_sampling_override.sto");
-        analyze.loadStatesFromFile(state);
-        const Storage fileStates(analyze.getStatesStorage());
-        Storage speeds;
-        labels[1] = model.getCoordinateSet().get(0).getSpeedName();
-        speeds.setColumnLabels(labels);
-        speeds.setInDegrees(false);
-        const double speed = 0.7;
-        for (int i = 0; i < fileStates.getSize(); ++i) {
-            speeds.append(fileStates.getStateVector(i)->getTime(), 1, &speed);
-        }
-        const int precision = IO::GetPrecision();
-        IO::SetPrecision(17);
-        speeds.print("testAnalyzeTool_sampling_speeds.sto");
-        IO::SetPrecision(precision);
-        analyze.setSpeedsFileName("testAnalyzeTool_sampling_speeds.sto");
-        analyze.loadStatesFromFile(state);
-        const Storage& actual = analyze.getStatesStorage();
-        REQUIRE(actual.getSize() == fileStates.getSize());
-        for (int i = 0; i < actual.getSize(); ++i) {
-            CHECK_THAT(actual.getStateVector(i)->getData()[1],
-                    Catch::Matchers::WithinAbs(speed, 1e-12));
-        }
-    }
-}
-
-TEST_CASE("AnalyzeTool rejects invalid filtered coordinate sampling",
-        "[filtered-coordinate-sampling]") {
-    Model model = ModelFactory::createPendulum();
-    SimTK::State& state = model.initSystem();
-    Storage coordinates;
-    Array<string> labels;
-    labels.append("time");
-    labels.append("q0");
-    coordinates.setColumnLabels(labels);
-    coordinates.setInDegrees(false);
-    const double value = 0.2;
-    for (int i = 0; i <= 100; ++i) coordinates.append(i * 0.01, 1, &value);
-    AnalyzeTool analyze(model);
-    analyze.setLowpassCutoffFrequency(6);
-    SECTION("empty") {
-        coordinates.purge();
-    }
-    SECTION("one sample") {
-        coordinates.purge();
-        coordinates.append(0.0, 1, &value);
-    }
-    SECTION("non-increasing timestamps") {
-        coordinates.append(0.5, 1, &value, false);
-    }
-    SECTION("non-finite timestamp") {
-        coordinates.append(SimTK::NaN, 1, &value, false);
-    }
-    SECTION("non-finite cutoff") {
-        analyze.setLowpassCutoffFrequency(SimTK::NaN);
-    }
-    SECTION("cutoff at the output Nyquist frequency") {
-        analyze.setLowpassCutoffFrequency(50);
-    }
-    REQUIRE_THROWS_AS(analyze.setStatesFromMotion(state, coordinates, false),
-            Exception);
 }
