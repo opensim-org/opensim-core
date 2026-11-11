@@ -147,6 +147,10 @@ protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     /**@}**/
 
+    /** Invalidate the cached location, velocity, and acceleration of this
+    Point in Ground. */
+    void invalidateCache(const SimTK::State& state) const;
+
 private:
 
     mutable CacheVariable<SimTK::Vec3> _locationCV;

@@ -81,6 +81,9 @@ void OpenSim::PathWrapPoint::setLocation(const SimTK::State& s, const SimTK::Vec
 {
     updCacheVariableValue(s, _location) = loc;
     markCacheVariableValid(s, _location);
+    // The location in the parent frame has changed, so we must invalidate the
+    // Point's cached ground-frame quantities.
+    invalidateCache(s);
 }
 
 SimTK::Vec3 OpenSim::PathWrapPoint::getdPointdQ(const SimTK::State& s) const

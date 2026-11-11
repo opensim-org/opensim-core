@@ -255,9 +255,7 @@ TEST_CASE("Test IMUDataReporter for gait") {
     // Create the coordinates table (in radians).
     auto tableProcessor =
             TableProcessor("subject_walk_armless_coordinates.mot") |
-            // Trimming to the original time range increases the acceleration
-            // error slightly, so we disable it here.
-            TabOpLowPassFilter(6, false) |
+            TabOpLowPassFilter(6) |
             TabOpUseAbsoluteStateNames();
     auto coordinatesRadians = tableProcessor.processAndConvertToRadians(model);
     for (const auto& label : coordinatesRadians.getColumnLabels()) {
@@ -390,6 +388,5 @@ TEST_CASE("Test IMUDataReporter for gait") {
     auto integratedSumSquaredErrorAnalyze = timeInterval / 2.0 *
                (sumSquaredErrorAnalyze.sum() +
                 sumSquaredErrorAnalyze(1, numTimes - 2).sum());
-    // TODO The error when using AnalyzeTool is slightly larger.
-    SimTK_TEST_EQ_TOL(integratedSumSquaredErrorAnalyze, 0.0, 1e-3);
+    SimTK_TEST_EQ_TOL(integratedSumSquaredErrorAnalyze, 0.0, 1e-4);
 }
