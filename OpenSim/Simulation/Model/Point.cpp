@@ -95,6 +95,13 @@ const SimTK::Vec3& Point::getAccelerationInGround(const SimTK::State& s) const
     return acceleration;
 }
 
+void Point::invalidateCache(const SimTK::State& s) const
+{
+    markCacheVariableInvalid(s, _locationCV);
+    markCacheVariableInvalid(s, _velocityCV);
+    markCacheVariableInvalid(s, _accelerationCV);
+}
+
 //=============================================================================
 // Helpful Point Calculations
 //=============================================================================

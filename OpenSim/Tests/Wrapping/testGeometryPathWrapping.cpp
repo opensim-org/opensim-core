@@ -462,6 +462,55 @@ TEST_CASE("WrapEllipsoid") {
     }
 }
 
+TEST_CASE("GeometryPath with multiple wrap objects") {
+    // The medial gastrocnemius paths in this model wrap over two cylinders,
+    // so GeometryPath::applyWrapObjects() iterates over the wrap objects and
+    // updates the wrap point locations multiple times.
+    Model model("subject_walk_armless_18musc.osim");
+    model.initSystem();
+
+    TableProcessor tableProcessor =
+            TableProcessor("subject_walk_armless_coordinates.mot") |
+            TabOpUseAbsoluteStateNames();
+    TimeSeriesTable coordinates =
+            tableProcessor.processAndConvertToRadians(model);
+    auto statesTraj = StatesTrajectory::createFromStatesTable(
+            model, coordinates, true, true, true);
+
+    const auto& muscle = model.getComponent<Muscle>("/forceset/med_gas_r");
+    const auto& path = muscle.getGeometryPath();
+
+    SECTION("Ground locations of path points match their local locations") {
+        for (const auto& state : statesTraj) {
+            model.realizePosition(state);
+            const auto& currentPath = path.getCurrentPath(state);
+            for (int i = 0; i < currentPath.getSize(); ++i) {
+                const auto& point = *currentPath[i];
+                const SimTK::Vec3 expected =
+                        point.getParentFrame().getTransformInGround(state) *
+                        point.getLocation(state);
+                CHECK_THAT((point.getLocationInGround(state) - expected).norm(),
+                        WithinAbs(0.0, 1e-12));
+            }
+        }
+    }
+
+    SECTION("Moment arms about pelvis coordinates are zero") {
+        // The path does not cross the ground-pelvis joint, so its length does
+        // not depend on the pelvis coordinates.
+        const std::vector<std::string> pelvisCoordNames = {"pelvis_tilt",
+                "pelvis_list", "pelvis_rotation", "pelvis_tx", "pelvis_ty",
+                "pelvis_tz"};
+        for (const auto& state : statesTraj) {
+            for (const auto& coordName : pelvisCoordNames) {
+                const auto& coord = model.getCoordinateSet().get(coordName);
+                const double momentArm = path.computeMomentArm(state, coord);
+                CHECK_THAT(momentArm, WithinAbs(0.0, 1e-10));
+            }
+        }
+    }
+}
+
 TEST_CASE("findIndependentCoordinates") {
     Model model("walk_gait1018_subject01.osim");
     SimTK::State state = model.initSystem();
