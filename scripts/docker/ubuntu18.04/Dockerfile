@@ -39,7 +39,7 @@ RUN echo ""
 # Install dependencies from package manager.
 RUN echo "LOG: INSTALLING DEPENDENCIES..."
 RUN apt-get update && apt-get install --yes build-essential cmake autotools-dev autoconf pkg-config automake libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen python3 python3-dev python3-numpy python3-setuptools git byacc libssl-dev libpcre3 libpcre3-dev libtool gfortran ninja-build patchelf openjdk-8-jdk p7zip-full wget || ( echo "Installation of dependencies using apt-get failed." && exit )
-RUN echo 
+RUN echo
 
 # Create workspace folder.
 RUN mkdir ~/opensim-workspace || true
@@ -59,14 +59,14 @@ RUN wget -nc -q --show-progress https://github.com/Kitware/CMake/releases/downlo
 RUN source ~/.bashrc && cmake --version
 RUN echo
 
-# Download and install SWIG 4.1.1.
+# Download and install SWIG 4.4.1.
 RUN mkdir -p ~/opensim-workspace/swig-source || true
 WORKDIR ~/opensim-workspace/swig-source
-RUN wget -nc -q --show-progress https://github.com/swig/swig/archive/refs/tags/v4.1.1.tar.gz
-RUN tar xzf v4.1.1.tar.gz
-WORKDIR ./swig-4.1.1
+RUN wget -nc -q --show-progress https://github.com/swig/swig/archive/refs/tags/v4.4.1.tar.gz
+RUN tar xzf v4.4.1.tar.gz
+WORKDIR ./swig-4.4.1
 RUN ./autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
-RUN make && make -j$NUM_JOBS install  
+RUN make && make -j$NUM_JOBS install
 
 # Get opensim-core.
 RUN echo "LOG: CLONING OPENSIM-CORE..."
