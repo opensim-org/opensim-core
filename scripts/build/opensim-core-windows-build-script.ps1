@@ -73,12 +73,12 @@ choco install git.install -y
 # Install dependencies of opensim-core
 choco install python3  -y
 choco install jdk8  -y
-choco install swig  -y --version 4.1.1
+choco install swig  -y --version 4.4.1
 choco install nsis  -y
 py -m pip install numpy
 
 # Refresh choco environment so we can use tools from terminal now.
-$env:ChocolateyInstall = Convert-Path "$((Get-Command choco).Path)\..\.."   
+$env:ChocolateyInstall = Convert-Path "$((Get-Command choco).Path)\..\.."
 Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
 refreshenv
 

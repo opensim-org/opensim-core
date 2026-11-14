@@ -79,17 +79,17 @@ brew tap homebrew/cask-versions
 brew install --cask temurin8
 export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
 echo $JAVA_HOME
- 
+
 # Create workspace folder.
 mkdir ~/opensim-workspace || true
 
-# Download and install SWIG 4.1.1.
-echo "LOG: INSTALLING SWIG 4.1.1..."
+# Download and install SWIG 4.4.1.
+echo "LOG: INSTALLING SWIG 4.4.1..."
 mkdir -p ~/opensim-workspace/swig-source || true && cd ~/opensim-workspace/swig-source
-wget -nc -q --show-progress https://github.com/swig/swig/archive/refs/tags/v4.1.1.tar.gz
-tar xzf v4.1.1.tar.gz && cd swig-4.1.1
+wget -nc -q --show-progress https://github.com/swig/swig/archive/refs/tags/v4.4.1.tar.gz
+tar xzf v4.4.1.tar.gz && cd swig-4.4.1
 sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
-make && make -j$NUM_JOBS install  
+make && make -j$NUM_JOBS install
 echo
 
 # Get opensim-core.

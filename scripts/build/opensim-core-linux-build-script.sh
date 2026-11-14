@@ -81,7 +81,7 @@ echo
 # Install dependencies from package manager.
 echo "LOG: INSTALLING DEPENDENCIES..."
 sudo apt-get update && sudo apt-get install --yes build-essential cmake autotools-dev autoconf pkg-config automake libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen python3 python3-dev python3-numpy python3-setuptools git libssl-dev libpcre3 libpcre3-dev libpcre2-dev libtool gfortran ninja-build patchelf || ( echo "Installation of dependencies using apt-get failed." && exit )
-echo 
+echo
 
 # If byacc available, install it (issue #3578)
 if apt-cache show byacc &> /dev/null; then
@@ -132,7 +132,7 @@ cmake_minor_less=$(( ${cmake_version_split[1]} < ${min_cmake_version_split[1]} )
 if [[ $cmake_major_less == 1 ]] || $( [[ $cmake_major_equal == 1 ]] && [[ $cmake_minor_less == 1 ]] ); then
     mkdir ~/opensim-workspace/cmake-3.23.3-source || true
     cd ~/opensim-workspace/cmake-3.23.3-source
-    wget -nc -q --show-progress https://github.com/Kitware/CMake/releases/download/v3.23.3/cmake-3.23.3.tar.gz 
+    wget -nc -q --show-progress https://github.com/Kitware/CMake/releases/download/v3.23.3/cmake-3.23.3.tar.gz
     tar -zxvf cmake-3.23.3.tar.gz
     cd ~/opensim-workspace/cmake-3.23.3-source/cmake-3.23.3
     ./bootstrap
@@ -167,13 +167,13 @@ else
 fi
 echo
 
-# Download and install SWIG 4.1.1.
-echo "LOG: INSTALLING SWIG 4.1.1..."
+# Download and install SWIG 4.4.1.
+echo "LOG: INSTALLING SWIG 4.4.1..."
 mkdir -p ~/opensim-workspace/swig-source || true && cd ~/opensim-workspace/swig-source
-wget -nc -q --show-progress https://github.com/swig/swig/archive/refs/tags/v4.1.1.tar.gz
-tar xzf v4.1.1.tar.gz && cd swig-4.1.1
+wget -nc -q --show-progress https://github.com/swig/swig/archive/refs/tags/v4.4.1.tar.gz
+tar xzf v4.4.1.tar.gz && cd swig-4.4.1
 sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
-make && make -j$NUM_JOBS install  
+make && make -j$NUM_JOBS install
 echo
 
 # Get opensim-core.
