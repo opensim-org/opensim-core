@@ -465,8 +465,8 @@ public:
     bool isVisualPath() const override;
 
     /**
-     * Find the list of paths to independent coordinates which fully determine
-     * the kinematic state of this path.
+     * Find the list of paths to the independent coordinates on which the
+     * kinematic state of this path depends.
      *
      * `Scholz2015GeometryPath`'s concrete implementation of this method finds
      * the joints lying between the frames associated with the path's origin and
@@ -474,6 +474,10 @@ public:
      * joints. Locked coordinates, prescribed coordinates, and coordinates
      * dependent on other coordinates via a `CoordinateCouplerConstraint` are
      * excluded from the list.
+     *
+     * @note An Exception is thrown if the joints between the frames associated
+     * with the path's origin and insertion points pass through a kinematic
+     * loop.
      *
      * @note This method uses several passes through the model's topology to
      * form the list of coordinate paths, so avoid repeated calls in performance

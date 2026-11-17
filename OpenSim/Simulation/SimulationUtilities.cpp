@@ -33,6 +33,9 @@
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 
+#include <queue>
+#include <unordered_set>
+
 using namespace OpenSim;
 
 SimTK::State OpenSim::simulate(Model& model,
@@ -569,58 +572,93 @@ OpenSim::findJointsBetweenPhysicalFrames(const Model& model,
     const std::string secondPath =
             secondFrame.findBaseFrame().getAbsolutePathString();
 
-    // Build a map between the model's joints and the base frames of the joint
-    // child frames.
-    std::unordered_map<std::string, const Joint*> childBodyToJoint;
+    // Build an undirected graph of the model's topology, where the nodes are
+    // the base frames of the joints' parent and child frames and the edges are
+    // the joints. The direction of each joint is ignored, since joints may be
+    // reversed when the multibody tree is created.
+    auto getParentBasePath = [](const Joint& joint) {
+        return joint.getParentFrame().findBaseFrame().getAbsolutePathString();
+    };
+    auto getChildBasePath = [](const Joint& joint) {
+        return joint.getChildFrame().findBaseFrame().getAbsolutePathString();
+    };
+    auto getOtherBasePath = [&](const Joint& joint,
+            const std::string& basePath) {
+        const std::string parentBasePath = getParentBasePath(joint);
+        return parentBasePath == basePath ? getChildBasePath(joint)
+                                          : parentBasePath;
+    };
+    std::unordered_map<std::string, std::vector<const Joint*>> frameToJoints;
     for (const auto& joint : model.getComponentList<Joint>()) {
-        const auto& childBase = joint.getChildFrame().findBaseFrame();
-        childBodyToJoint[childBase.getAbsolutePathString()] = &joint;
+        frameToJoints[getParentBasePath(joint)].push_back(&joint);
+        frameToJoints[getChildBasePath(joint)].push_back(&joint);
     }
 
-    // A helper function to trace from a starting frame to a target frame,
-    // populating a list of joints along the way and returning whether the
-    // target frame was found. If the target frame is not found, the list of
-    // joints will contain the path from the starting frame to the ground frame.
-    auto traceTowardGround = [&](const std::string& startBasePath,
-            const std::string& targetBasePath,
-            std::vector<SimTK::ReferencePtr<const Joint>>& joints) -> bool {
-        const Frame* current = &model.getComponent<PhysicalFrame>(startBasePath);
-        while (true) {
-            if (current->getAbsolutePathString() == targetBasePath) {
-                return true;
+    // Search the graph outward from the first frame until the second frame is
+    // found, recording the joint used to reach each base frame.
+    std::unordered_map<std::string, const Joint*> jointTowardFirst;
+    std::unordered_set<std::string> visited = {firstPath};
+    std::queue<std::string> queue;
+    queue.push(firstPath);
+    while (!queue.empty() && !visited.count(secondPath)) {
+        const std::string current = queue.front();
+        queue.pop();
+        for (const auto* joint : frameToJoints[current]) {
+            const std::string other = getOtherBasePath(*joint, current);
+            if (visited.insert(other).second) {
+                jointTowardFirst[other] = joint;
+                queue.push(other);
             }
-            auto it = childBodyToJoint.find(current->getAbsolutePathString());
-            if (it == childBodyToJoint.end()) break; // reached ground
-            joints.emplace_back(it->second);
-            current = &it->second->getParentFrame().findBaseFrame();
+        }
+    }
+    OPENSIM_THROW_IF(!visited.count(secondPath), Exception,
+            "Expected the PhysicalFrames '{}' and '{}' to be connected by "
+            "Joints, but they are not.",
+            firstFramePath, secondFramePath);
+
+    // Trace from the second frame back to the first frame, and reverse the
+    // list so that the joints are ordered from the first frame to the second
+    // frame.
+    std::vector<const Joint*> ordered;
+    for (std::string current = secondPath; current != firstPath;) {
+        const Joint* joint = jointTowardFirst.at(current);
+        ordered.push_back(joint);
+        current = getOtherBasePath(*joint, current);
+    }
+    std::reverse(ordered.begin(), ordered.end());
+
+    // A joint is part of a kinematic loop if its parent and child frames are
+    // still connected when the joint is removed from the graph.
+    auto isInLoop = [&](const Joint* removed) {
+        const std::string start = getParentBasePath(*removed);
+        const std::string target = getChildBasePath(*removed);
+        std::unordered_set<std::string> reached = {start};
+        std::queue<std::string> toVisit;
+        toVisit.push(start);
+        while (!toVisit.empty()) {
+            const std::string current = toVisit.front();
+            toVisit.pop();
+            for (const auto* joint : frameToJoints[current]) {
+                if (joint == removed) continue;
+                const std::string other = getOtherBasePath(*joint, current);
+                if (other == target) return true;
+                if (reached.insert(other).second) toVisit.push(other);
+            }
         }
         return false;
     };
-
-    std::vector<SimTK::ReferencePtr<const Joint>> firstJoints;
-    bool firstFoundTarget = traceTowardGround(firstPath, secondPath, firstJoints);
-    if (firstFoundTarget) {
-        // Reverse the order of the joints so they are returned in root-to-leaf
-        // order.
-        std::reverse(firstJoints.begin(), firstJoints.end());
-        return firstJoints;
+    std::vector<SimTK::ReferencePtr<const Joint>> joints;
+    joints.reserve(ordered.size());
+    for (const auto* joint : ordered) {
+        OPENSIM_THROW_IF(isInLoop(joint), Exception,
+                "Expected the joints between PhysicalFrames '{}' and '{}' to "
+                "not pass through a kinematic loop, but Joint '{}' is part of "
+                "a kinematic loop. Kinematic loops formed by Joints are not "
+                "supported.",
+                firstFramePath, secondFramePath,
+                joint->getAbsolutePathString());
+        joints.emplace_back(joint);
     }
 
-    std::vector<SimTK::ReferencePtr<const Joint>> secondJoints;
-    bool secondFoundTarget = traceTowardGround(secondPath, firstPath, secondJoints);
-    if (secondFoundTarget) {
-        // Reverse the order of the joints so they are returned in root-to-leaf
-        // order.
-        std::reverse(secondJoints.begin(), secondJoints.end());
-        return secondJoints;
-    }
-
-    // Combine the first list of joints with the reverse of the second list of
-    // joints.
-    std::reverse(secondJoints.begin(), secondJoints.end());
-    for (const auto& joint : secondJoints) {
-        firstJoints.emplace_back(joint.get());
-    }
-
-    return firstJoints;
+    return joints;
 }

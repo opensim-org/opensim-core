@@ -15,7 +15,9 @@ v4.6.1
 linear spring force and Hunt and Crossley-like damping. (#4329)
 - Updated `ExponentialCoordinateLimitForce` to use `Socket` to define the connection to a particular `Coordinate`. (#4329)
 - Added `SimulationUtilities::findJointsBetweenPhysicalFrames`, a utility function for finding the set of
-joints that lie between two frames based on a model's topology. (#4301)
+joints that lie between two frames based on a model's topology. The joints are ordered from the first frame to
+the second frame, and an exception is thrown if the joints between the frames pass through a kinematic loop
+formed by joints. (#4301, #4488)
 - Added `AbstractGeometryPath::findIndependentCoordinates()`, a utility method for finding the list of
 coordinate paths associated with a path element. Derived classes provide concrete implementations based on
 the model's topology (e.g., `GeometryPath`) or via a user-defined list of coordinates

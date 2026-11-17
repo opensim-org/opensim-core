@@ -161,15 +161,17 @@ public:
     virtual bool isVisualPath() const = 0;
 
     /**
-     * Find the list of paths to independent coordinates which fully determine
-     * the kinematic state of this path.
+     * Find the list of paths to the independent coordinates on which the
+     * kinematic state of this path depends.
      *
      * Internally, this may use a variety of methods to find the list of
      * coordinates. It may search the kinematic tree to find the joints lying
      * between the origin and insertion points of the path, or it may use
      * a user-defined list of coordinates as part of a function-based path
-     * representation. It is up to concrete implementations
-     * (e.g., `GeometryPath`) to provide a relevant implementation.
+     * representation. Coordinates may be excluded if they depend on another
+     * coordinate (e.g., via a `CoordinateCouplerConstraint`). It is up to
+     * concrete implementations (e.g., `GeometryPath`) to provide a relevant
+     * implementation.
      */
     virtual std::vector<ComponentPath>
     findIndependentCoordinates(const SimTK::State&) const = 0;

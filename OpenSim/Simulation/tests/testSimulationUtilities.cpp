@@ -176,8 +176,9 @@ TEST_CASE("findJointsBetweenPhysicalFrames") {
     Model model;
     const auto& ground = model.getGround();
 
-    auto addBranch = [&ground](Model& model, int numLinks, std::string name) {
-        const PhysicalFrame* prevBody = &ground;
+    auto addBranch = [](Model& model, const PhysicalFrame& parent,
+            int numLinks, std::string name) {
+        const PhysicalFrame* prevBody = &parent;
         for (int i = 0; i < numLinks; ++i) {
             const std::string istr = std::to_string(i);
             auto* bi = new OpenSim::Body(std::format("b{}_{}", istr, name),
@@ -195,9 +196,21 @@ TEST_CASE("findJointsBetweenPhysicalFrames") {
         }
     };
 
-    addBranch(model, 3, "l");
-    addBranch(model, 2, "r");
+    addBranch(model, ground, 3, "l");
+    addBranch(model, ground, 2, "r");
+    addBranch(model, model.getComponent<OpenSim::Body>("/bodyset/b0_l"), 2, "m");
     model.finalizeConnections();
+
+    auto checkJoints = [&model](const std::string& first,
+            const std::string& second,
+            const std::vector<std::string>& expected) {
+        const auto joints =
+                findJointsBetweenPhysicalFrames(model, first, second);
+        REQUIRE(joints.size() == expected.size());
+        for (int i = 0; i < static_cast<int>(joints.size()); ++i) {
+            CHECK(joints[i]->getName() == expected[i]);
+        }
+    };
 
     SECTION("Bodies do not exist in the model") {
         CHECK_THROWS_WITH(
@@ -216,80 +229,81 @@ TEST_CASE("findJointsBetweenPhysicalFrames") {
     }
 
     SECTION("Frames on same branch") {
-        auto joints = findJointsBetweenPhysicalFrames(
-                model, "/bodyset/b0_l", "/bodyset/b1_l");
-        CHECK(joints.size() == 1);
-        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j1_l");
-
-        // Joints should be returned in root-to-leaf order.
-        joints = findJointsBetweenPhysicalFrames(
-                model, "/bodyset/b0_l", "/bodyset/b2_l");
-        CHECK(joints.size() == 2);
-        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j1_l");
-        CHECK(joints[1]->getAbsolutePathString() == "/jointset/j2_l");
-
-        // Flipping the order of the frames should produce the same joints.
-        joints = findJointsBetweenPhysicalFrames(
-                model, "/bodyset/b2_l", "/bodyset/b0_l");
-        CHECK(joints.size() == 2);
-        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j1_l");
-        CHECK(joints[1]->getAbsolutePathString() == "/jointset/j2_l");
-
-        joints = findJointsBetweenPhysicalFrames(
-                model, "/bodyset/b1_l", "/bodyset/b2_l");
-        CHECK(joints.size() == 1);
-        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j2_l");
-
-        joints = findJointsBetweenPhysicalFrames(
-                model, "/bodyset/b0_r", "/bodyset/b1_r");
-        CHECK(joints.size() == 1);
-        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j1_r");
+        checkJoints("/bodyset/b0_l", "/bodyset/b1_l", {"j1_l"});
+        checkJoints("/bodyset/b0_l", "/bodyset/b2_l", {"j1_l", "j2_l"});
+        checkJoints("/bodyset/b2_l", "/bodyset/b0_l", {"j2_l", "j1_l"});
+        checkJoints("/bodyset/b1_l", "/bodyset/b2_l", {"j2_l"});
+        checkJoints("/bodyset/b0_r", "/bodyset/b1_r", {"j1_r"});
     }
 
     SECTION("Frames on different branches") {
-        auto joints = findJointsBetweenPhysicalFrames(
-                model, "/bodyset/b0_l", "/bodyset/b0_r");
-        CHECK(joints.size() == 2);
-        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j0_l");
-        CHECK(joints[1]->getAbsolutePathString() == "/jointset/j0_r");
+        checkJoints("/bodyset/b0_l", "/bodyset/b0_r", {"j0_l", "j0_r"});
+        checkJoints("/bodyset/b0_r", "/bodyset/b0_l", {"j0_r", "j0_l"});
+        checkJoints("/bodyset/b2_l", "/bodyset/b1_r",
+                {"j2_l", "j1_l", "j0_l", "j0_r", "j1_r"});
+        checkJoints("/bodyset/b1_r", "/bodyset/b2_l",
+                {"j1_r", "j0_r", "j0_l", "j1_l", "j2_l"});
+    }
 
-        joints = findJointsBetweenPhysicalFrames(
-                model, "/bodyset/b0_r", "/bodyset/b0_l");
-        CHECK(joints.size() == 2);
-        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j0_r");
-        CHECK(joints[1]->getAbsolutePathString() == "/jointset/j0_l");
-
-        joints = findJointsBetweenPhysicalFrames(
-                model, "/bodyset/b2_l", "/bodyset/b1_r");
-        CHECK(joints.size() == 5);
-        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j2_l");
-        CHECK(joints[1]->getAbsolutePathString() == "/jointset/j1_l");
-        CHECK(joints[2]->getAbsolutePathString() == "/jointset/j0_l");
-        CHECK(joints[3]->getAbsolutePathString() == "/jointset/j0_r");
-        CHECK(joints[4]->getAbsolutePathString() == "/jointset/j1_r");
-
-        joints = findJointsBetweenPhysicalFrames(
-                model, "/bodyset/b1_r", "/bodyset/b2_l");
-        CHECK(joints.size() == 5);
-        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j1_r");
-        CHECK(joints[1]->getAbsolutePathString() == "/jointset/j0_r");
-        CHECK(joints[2]->getAbsolutePathString() == "/jointset/j0_l");
-        CHECK(joints[3]->getAbsolutePathString() == "/jointset/j1_l");
-        CHECK(joints[4]->getAbsolutePathString() == "/jointset/j2_l");
+    SECTION("Frames on branches with a common non-ground ancestor") {
+        checkJoints("/bodyset/b1_l", "/bodyset/b1_m", {"j1_l", "j0_m", "j1_m"});
     }
 
     SECTION("One frame is ground") {
-        auto joints = findJointsBetweenPhysicalFrames(
-                model, "/ground", "/bodyset/b2_l");
-        CHECK(joints.size() == 3);
-        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j0_l");
-        CHECK(joints[1]->getAbsolutePathString() == "/jointset/j1_l");
-        CHECK(joints[2]->getAbsolutePathString() == "/jointset/j2_l");
+        checkJoints("/ground", "/bodyset/b2_l", {"j0_l", "j1_l", "j2_l"});
+        checkJoints("/bodyset/b1_r", "/ground", {"j1_r", "j0_r"});
+    }
 
-        joints = findJointsBetweenPhysicalFrames(
-                model, "/bodyset/b1_r", "/ground");
-        CHECK(joints.size() == 2);
-        CHECK(joints[0]->getAbsolutePathString() == "/jointset/j0_r");
-        CHECK(joints[1]->getAbsolutePathString() == "/jointset/j1_r");
+    SECTION("Kinematic loop") {
+        // Add a joint creating a kinematic loop between b1_l and b0_m.
+        auto* loop = new PinJoint("j_loop",
+                model.getComponent<OpenSim::Body>("/bodyset/b1_l"),
+                Vec3(0), Vec3(0),
+                model.getComponent<OpenSim::Body>("/bodyset/b0_m"),
+                Vec3(-1, 0, 0), Vec3(0));
+        loop->updCoordinate().setName("q_loop");
+        model.addJoint(loop);
+        model.finalizeConnections();
+
+        // The joints between these frames pass through the loop.
+        const std::string message = "Expected the joints between "
+                "PhysicalFrames '/bodyset/b1_l' and '/bodyset/b0_m' to not "
+                "pass through a kinematic loop, but Joint '/jointset/j_loop' "
+                "is part of a kinematic loop.";
+        CHECK_THROWS_WITH(
+                findJointsBetweenPhysicalFrames(
+                        model, "/bodyset/b1_l", "/bodyset/b0_m"),
+                Catch::Matchers::ContainsSubstring(message));
+        // Neither frame is the child of more than one joint.
+        CHECK_THROWS_WITH(
+                findJointsBetweenPhysicalFrames(
+                        model, "/bodyset/b0_l", "/bodyset/b1_l"),
+                Catch::Matchers::ContainsSubstring("kinematic loop"));
+        // Neither frame is in the loop.
+        CHECK_THROWS_WITH(
+                findJointsBetweenPhysicalFrames(
+                        model, "/bodyset/b1_r", "/bodyset/b2_l"),
+                Catch::Matchers::ContainsSubstring("kinematic loop"));
+
+        // The joints between these frames do not pass through the loop, even
+        // though one of the frames is in the loop.
+        checkJoints("/bodyset/b0_m", "/bodyset/b1_m", {"j1_m"});
+
+        // The joints between frames elsewhere in the model are unaffected.
+        checkJoints("/bodyset/b1_r", "/bodyset/b0_l", {"j1_r", "j0_r", "j0_l"});
+    }
+
+    SECTION("Reversed joint") {
+        auto* c = new OpenSim::Body("c", 1, Vec3(0), Inertia(1));
+        model.addBody(c);
+        auto* reversed = new PinJoint("j_reversed", *c, Vec3(0), Vec3(0),
+                model.getComponent<OpenSim::Body>("/bodyset/b2_l"),
+                Vec3(0), Vec3(0));
+        reversed->updCoordinate().setName("q_reversed");
+        model.addJoint(reversed);
+        model.finalizeConnections();
+
+        checkJoints("/ground", "/bodyset/b2_l", {"j0_l", "j1_l", "j2_l"});
+        checkJoints("/bodyset/c", "/bodyset/b1_l", {"j_reversed", "j2_l"});
     }
 }
