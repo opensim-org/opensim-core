@@ -61,6 +61,7 @@ The property `moment_arm_threshold` has been removed, and the methods `get/setMo
 - `PolynomialPathFitter` now screens the sampled path lengths and moment arms for non-finite values and for outliers, applying a Hampel filter to the samples drawn around each time point, replacing the inconsistent standard deviation approach. In addition, samples near coordinate bounds are now reflected back into the acceptable range, avoiding unnecessary sample rejection by the Hampel filter. (#4478)
 - `PolynomialPathFitter` now distributes coordinate sampling and polynomial fitting across threads using an atomic work index rather than dividing the work into fixed contiguous blocks to better load balance work. (#4479)
 - Fixed a bug where changes to the parent-frame location of a `PathWrapPoint` parent-frame did not invalidate the point's ground-frame location stored in the `Point` cache. This fixes an issue where a `GeometryPath` with two or more wrapping obstacles could produce moment arms about unexpected coordinates (e.g., pelvis rotational coordinates) due to outdated path point position information. Note: this change also fixes related issues with path length calculations, so muscle paths with two or more wrapping obstacles may see small changes in length. (#4485)
+- Fixed a bug in `DeGrooteFregly2016Muscle` where activation dynamics used the `activation_time_constant`, `deactivation_time_constant`, and `activation_dynamics_smoothing` values of the first muscle evaluated in a process for all muscles, ignoring later changes to these properties. (#4490)
 
 v4.6
 ====
