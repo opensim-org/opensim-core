@@ -35,6 +35,9 @@
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
 
+#include <algorithm>
+#include <cmath>
+
 using namespace OpenSim;
 using namespace std;
 
@@ -59,6 +62,7 @@ AnalyzeTool::AnalyzeTool() :
     _coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
     _speedsFileName(_speedsFileNameProp.getValueStr()),
     _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
+    _resampleFilteredCoordinates(_resampleFilteredCoordinatesProp.getValueBool()),
     _printResultFiles(true),
     _loadModelAndInput(false)
 {
@@ -79,6 +83,7 @@ AnalyzeTool::AnalyzeTool(const string &aFileName, bool aLoadModelAndInput) :
     _coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
     _speedsFileName(_speedsFileNameProp.getValueStr()),
     _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
+    _resampleFilteredCoordinates(_resampleFilteredCoordinatesProp.getValueBool()),
     _printResultFiles(true),
     _loadModelAndInput(aLoadModelAndInput)
 {
@@ -111,6 +116,7 @@ AnalyzeTool::AnalyzeTool(Model& aModel) :
     _coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
     _speedsFileName(_speedsFileNameProp.getValueStr()),
     _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
+    _resampleFilteredCoordinates(_resampleFilteredCoordinatesProp.getValueBool()),
     _printResultFiles(true),
     _loadModelAndInput(false)
 {
@@ -171,6 +177,7 @@ AnalyzeTool(const AnalyzeTool &aTool) :
     _coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
     _speedsFileName(_speedsFileNameProp.getValueStr()),
     _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
+    _resampleFilteredCoordinates(_resampleFilteredCoordinatesProp.getValueBool()),
     _loadModelAndInput(false)
 {
     setNull();
@@ -191,6 +198,7 @@ setNull()
     _coordinatesFileName = "";
     _speedsFileName = "";
     _lowpassCutoffFrequency = -1.0;
+    _resampleFilteredCoordinates = false;
 
     _statesStore = NULL;
 
@@ -236,6 +244,13 @@ void AnalyzeTool::setupProperties()
     _lowpassCutoffFrequencyProp.setName("lowpass_cutoff_frequency_for_coordinates");
     _propertySet.append( &_lowpassCutoffFrequencyProp );
 
+    _resampleFilteredCoordinatesProp.setName("resample_filtered_coordinates");
+    _resampleFilteredCoordinatesProp.setComment(
+            "Resample filtered coordinates to the original sample count and "
+            "time range with uniform spacing, retaining padding for "
+            "differentiation. Default: false. Ignored without filtering. "
+            "No additional anti-aliasing filter is applied.");
+    _propertySet.append(&_resampleFilteredCoordinatesProp);
 }
 
 
@@ -259,9 +274,61 @@ operator=(const AnalyzeTool &aTool)
     _coordinatesFileName = aTool._coordinatesFileName;
     _speedsFileName = aTool._speedsFileName;
     _lowpassCutoffFrequency= aTool._lowpassCutoffFrequency;
+    _resampleFilteredCoordinates = aTool._resampleFilteredCoordinates;
     _statesStore = aTool._statesStore;
     _printResultFiles = aTool._printResultFiles;
     return(*this);
+}
+
+void AnalyzeTool::filterCoordinates(Storage& coordinates) const {
+    if (!(_lowpassCutoffFrequency >= 0)) return;
+
+    const int count = coordinates.getSize();
+    const double first = coordinates.getFirstTime();
+    const double last = coordinates.getLastTime();
+    const double dt = count > 1 ? (last - first) / (count - 1) : 0;
+    if (_resampleFilteredCoordinates &&
+            (count < 4 || !std::isfinite(dt) || dt <= 0)) {
+        throw Exception("AnalyzeTool: resampling filtered coordinates requires "
+                "at least four samples and a finite, positive time range.");
+    }
+
+    const int padding = count / 2;
+    double leftPaddingSteps = 0;
+    double rightPaddingSteps = 0;
+    if (_resampleFilteredCoordinates) {
+        leftPaddingSteps =
+                (coordinates.getStateVector(padding)->getTime() - first) / dt;
+        rightPaddingSteps = (last -
+                coordinates.getStateVector(count - padding - 1)->getTime()) / dt;
+    }
+
+    log_info("Low-pass filtering coordinates data with a cutoff frequency "
+            "of {}...", _lowpassCutoffFrequency);
+    coordinates.pad(padding);
+    coordinates.lowpassIIR(_lowpassCutoffFrequency);
+    if (!_resampleFilteredCoordinates) return;
+
+    const double roundingTolerance = 4 * SimTK::Eps * (count - 1);
+    const int begin = -static_cast<int>(
+            std::floor(leftPaddingSteps + roundingTolerance));
+    const int end = count - 1 + static_cast<int>(
+            std::floor(rightPaddingSteps + roundingTolerance));
+    Storage resampled(coordinates, false);
+    const int width = coordinates.getSmallestNumberOfStates();
+    const GCVSplineSet splines(5, &coordinates);
+    SimTK::Vector argument(1, 0.0);
+    Array<double> values(0.0, width);
+    for (int i = begin; i <= end; ++i) {
+        const double time = i == count - 1 ? last : first + i * dt;
+        argument[0] = std::clamp(time,
+                coordinates.getFirstTime(), coordinates.getLastTime());
+        for (int j = 0; j < width; ++j) {
+            values[j] = splines.get(j).calcValue(argument);
+        }
+        resampled.append(time, values);
+    }
+    coordinates = resampled;
 }
 
 
@@ -388,15 +455,7 @@ loadStatesFromFile(SimTK::State& s)
         log_info("Loading coordinates from file '{}'.", _coordinatesFileName);
         Storage coordinatesStore(_coordinatesFileName);
 
-        if(_lowpassCutoffFrequency>=0) {
-            log_info("Low-pass filtering coordinates data with a cutoff "
-                "frequency of {}...", _lowpassCutoffFrequency);
-            //coordinatesStore.pad(60);
-            //coordinatesStore.lowpassFIR(50,_lowpassCutoffFrequency);
-            //coordinatesStore.smoothSpline(5,_lowpassCutoffFrequency);
-            coordinatesStore.pad(coordinatesStore.getSize()/2);
-            coordinatesStore.lowpassIIR(_lowpassCutoffFrequency);
-        }
+        filterCoordinates(coordinatesStore);
 
         Storage *qStore=NULL, *uStore=NULL;
 
@@ -438,12 +497,7 @@ setStatesFromMotion(const SimTK::State& s, const Storage &aMotion, bool aInDegre
 
     if(!aInDegrees) _model->getSimbodyEngine().convertRadiansToDegrees(motionCopy);
 
-    if(_lowpassCutoffFrequency>=0) {
-        log_info("Low-pass filtering coordinates data with a cutoff frequency "
-            "of {}...", _lowpassCutoffFrequency);
-        motionCopy.pad(motionCopy.getSize()/2);
-        motionCopy.lowpassIIR(_lowpassCutoffFrequency);
-    }
+    filterCoordinates(motionCopy);
 
     Storage *qStore=NULL, *uStore=NULL;
     // qStore and uStore returned are in radians
