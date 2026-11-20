@@ -1145,6 +1145,78 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
     }
 }
 
+TEST_CASE("DeGrooteFregly2016Muscle uses per-muscle time constants values") {
+
+    Model model;
+    model.setName("muscles");
+    auto* body = new Body("body", 0.5, SimTK::Vec3(0), SimTK::Inertia(0));
+    model.addComponent(body);
+    auto* joint = new SliderJoint("joint", model.getGround(), *body);
+    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord.setName("x");
+    model.addComponent(joint);
+    for (const std::string name : {"muscle1", "muscle2"}) {
+        auto* musclePtr = new DeGrooteFregly2016Muscle();
+        musclePtr->set_ignore_tendon_compliance(true);
+        musclePtr->set_fiber_damping(0);
+        musclePtr->setName(name);
+        musclePtr->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
+        musclePtr->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
+        model.addComponent(musclePtr);
+    }
+    auto& muscle1 = model.updComponent<DeGrooteFregly2016Muscle>("muscle1");
+    auto& muscle2 = model.updComponent<DeGrooteFregly2016Muscle>("muscle2");
+
+    muscle1.set_activation_time_constant(0.015);
+    muscle1.set_deactivation_time_constant(0.060);
+    muscle1.set_activation_dynamics_smoothing(0.1);
+    muscle2.set_activation_time_constant(0.045);
+    muscle2.set_deactivation_time_constant(0.090);
+    muscle2.set_activation_dynamics_smoothing(10.0);
+
+    const double activation = 0.2;
+    const double excitation = 0.8;
+
+    auto calcExpectedDerivative = [&](const DeGrooteFregly2016Muscle& muscle) {
+        const double f = 0.5 * tanh(muscle.get_activation_dynamics_smoothing() *
+                                    (excitation - activation));
+        const double z = 0.5 + 1.5 * activation;
+        return ((f + 0.5) / (muscle.get_activation_time_constant() * z) +
+                       (-f + 0.5) * z /
+                               muscle.get_deactivation_time_constant()) *
+               (excitation - activation);
+    };
+
+    auto checkDerivatives = [&]() {
+        SimTK::State state = model.initSystem();
+        coord.setValue(state, muscle1.get_optimal_fiber_length() +
+                                      muscle1.get_tendon_slack_length());
+        coord.setSpeedValue(state, 0.0);
+        muscle1.setActivation(state, activation);
+        muscle2.setActivation(state, activation);
+        model.realizeVelocity(state);
+        SimTK::Vector controls(model.getNumControls(), excitation);
+        model.setControls(state, controls);
+        model.realizeAcceleration(state);
+
+        CHECK(muscle1.getStateVariableDerivativeValue(state, "activation") ==
+                Approx(calcExpectedDerivative(muscle1)));
+        CHECK(muscle2.getStateVariableDerivativeValue(state, "activation") ==
+                Approx(calcExpectedDerivative(muscle2)));
+    };
+
+    // Muscles with different time constants should produce the expected
+    // derivatives.
+    checkDerivatives();
+
+    // Change the properties of the first muscle should not negatively affect
+    // derivative calculations.
+    muscle1.set_activation_time_constant(0.030);
+    muscle1.set_deactivation_time_constant(0.120);
+    muscle1.set_activation_dynamics_smoothing(5.0);
+    checkDerivatives();
+}
+
 TEST_CASE("MeyerFregly2016Muscle basics") {
 
     Model model;

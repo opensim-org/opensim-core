@@ -220,9 +220,9 @@ void DeGrooteFregly2016Muscle::computeStateVariableDerivatives(
     if (!get_ignore_activation_dynamics()) {
         const auto& activation = getActivation(s);
         const auto& excitation = getControl(s);
-        static const double actTimeConst = get_activation_time_constant();
-        static const double deactTimeConst = get_deactivation_time_constant();
-        static const double tanhSteepness = get_activation_dynamics_smoothing();
+        const double actTimeConst = get_activation_time_constant();
+        const double deactTimeConst = get_deactivation_time_constant();
+        const double tanhSteepness = get_activation_dynamics_smoothing();
         //     f = 0.5 tanh(b(e - a))
         //     z = 0.5 + 1.5a
         // da/dt = [(f + 0.5)/(tau_a * z) + (-f + 0.5)*z/tau_d] * (e - a)
