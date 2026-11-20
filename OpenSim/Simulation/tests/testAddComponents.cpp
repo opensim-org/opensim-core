@@ -30,7 +30,10 @@
  */
 //==============================================================================
 //==============================================================================
-#include <OpenSim/OpenSim.h>
+#include <OpenSim/Common/osimCommon.h>
+#include <OpenSim/Simulation/osimSimulation.h>
+#include <OpenSim/Actuators/osimActuators.h>
+#include <OpenSim/Analyses/osimAnalyses.h>
 #include "OpenSim/Common/STOFileAdapter.h"
 
 #include <tests/Testing.h>
@@ -301,28 +304,23 @@ void addComponentsToModel(Model& osimModel)
 }
 
 void compareResultsToStandard() {
-    try {
-        Storage result1("tugOfWar_states.sto"),
-            standard1("std_tugOfWar_states.sto");
+    Storage result1("tugOfWar_states.sto"),
+        standard1("std_tugOfWar_states.sto");
 
-        CHECK_STORAGE_AGAINST_STANDARD(result1, standard1,
-            std::vector<double>(16, 0.02));
-        cout << "testAddComponents::tugOfWar states passed\n";
+    CHECK_STORAGE_AGAINST_STANDARD(result1, standard1,
+        std::vector<double>(16, 0.02));
+    cout << "testAddComponents::tugOfWar states passed\n";
 
-        Storage result2("tugOfWar_forces.sto"),
-            standard2("std_tugOfWar_forces.mot");
+    Storage result2("tugOfWar_forces.sto"),
+        standard2("std_tugOfWar_forces.mot");
 
-        std::vector<double> tols(20, 1.0);
-        // 10N is 1% of the muscles maximum isometric force
-        tols[0] = tols[1] = 10;
+    std::vector<double> tols(20, 1.0);
+    // 10N is 1% of the muscles maximum isometric force
+    tols[0] = tols[1] = 10;
 
-        CHECK_STORAGE_AGAINST_STANDARD(result2, standard2,
-            tols);
-        cout << "testAddComponents::tugOfWar forces passed\n";
-    }
-    catch (const OpenSim::Exception& e) {
-        e.print(cerr);
-    }
+    CHECK_STORAGE_AGAINST_STANDARD(result2, standard2,
+        tols);
+    cout << "testAddComponents::tugOfWar forces passed\n";
 }
 
 }
