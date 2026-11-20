@@ -139,6 +139,25 @@ private:
  * fitter.run();
  * @endcode
  *
+ * # Kinematic loops
+ * `PolynomialPathFitter` does not support fitting functions for paths that
+ * cross joints that form a kinematic loop. A `FunctionBasedPath` produced by
+ * this class requires that the moment arms of a path can be computed by taking
+ * partial derivatives of the path length with respect to its coordinates. When
+ * a kinematic loop is present, the coordinates spanned by the path are no
+ * longer independent: changing one coordinate in the loop requires the other
+ * coordinates in the loop to change to satisfy the loop constraint. Therefore,
+ * a moment arm computed when loops are present (e.g., using `MomentArmSolver`)
+ * is not equal to a partial derivative of the path length, since it depends on
+ * how the other coordinates in the loop move.
+ *
+ * If the joints spanned by any path in the model form a kinematic loop (i.e.,
+ * a closed chain of `Joint`s), an Exception is thrown before any paths are
+ * fitted. Kinematic loops formed by `Constraint`s (other than
+ * `CoordinateCouplerConstraint`s) are not detected, but paths spanning such
+ * loops will not be fitted correctly, since the sampled coordinate values do
+ * not satisfy the constraints.
+ *
  * # Recommendations
  * Information from each step of the path fitting process is logged to the
  * console, provided that you have set the OpenSim::Logger to level "info" or

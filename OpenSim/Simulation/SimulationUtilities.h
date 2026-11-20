@@ -447,10 +447,11 @@ OSIMSIMULATION_API void appendCoordinateValueDerivativesAsSpeeds(
         bool overwriteExistingColumns = true);
 
 /// Find the Joint%s that lie between two PhysicalFrame%s in a Model. The second
-/// frame need not be a descendant of the first frame or vice versa. If the
-/// frames are on different branches of the model, this function will return the
-/// list of joints ordered from the first frame to the second frame. Otherwise,
-/// the list of joints will use a root-to-leaf ordering.
+/// frame need not be a descendant of the first frame or vice versa. The list of
+/// joints (including reversed joints) is ordered from the first frame to the
+/// second frame. An Exception is thrown if a kinematic loop associated with any
+/// joints between the two frames is detected. Loops elsewhere in the model do
+/// not affect the result. Loops formed by Constraint%s are not detected.
 ///
 /// @note This function uses several passes through the model's topology to form
 /// the list of joints, so avoid repeated calls in performance critical
