@@ -1,5 +1,4 @@
 if(BUILD_TESTING)
-    add_subdirectory(Components)
     add_subdirectory(ControllerExample)
     add_subdirectory(CoupledBushingForceExample)
     add_subdirectory(ExampleMain)
