@@ -120,6 +120,9 @@ OpenSimAddTest(NAME testProbes
 OpenSimAddTest(NAME testReportersWithModel
         LINKLIBS ${OSIM_SIMULATION_TEST_LIBS})
 
+OpenSimAddTest(NAME testScholz2015GeometryPath
+        LINKLIBS ${OSIM_SIMULATION_TEST_LIBS})
+
 OpenSimAddTest(NAME testSimulationUtilities
         LINKLIBS ${OSIM_SIMULATION_TEST_LIBS}
         RESOURCES resources/testSimulationUtilities_leg69_IK_stance_pre4.mot
