@@ -1,6 +1,9 @@
 find_package(Catch2 REQUIRED
         HINTS "${OPENSIM_DEPENDENCIES_DIR}/catch2")
 
+OpenSimAddTest(NAME testComponents
+        LINKLIBS osimTools)
+
 OpenSimAddTest(NAME testControllers
         LINKLIBS osimTools
         RESOURCES resources/arm26.osim
