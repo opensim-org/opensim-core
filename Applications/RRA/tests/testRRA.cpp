@@ -63,3 +63,15 @@ TEST_CASE("testRRA") {
     CHECK_STORAGE_AGAINST_STANDARD(result, standard,
         std::vector<double>(24, 0.5));
 }
+
+TEST_CASE("RRATool with muscles does not segfault") {
+    Model model("subject01_simbody.osim");
+    RRATool rra("subject01_Setup_RRA.xml", false);
+    rra.setReplaceForceSet(false);
+    rra.setAdjustCOMToReduceResiduals(false);
+    rra.setResultsDir("ResultsRRAWithMuscles");
+    rra.updateModelForces(model, "subject01_Setup_RRA.xml");
+    rra.setModel(model);
+    REQUIRE(model.getMuscles().getSize() > 0);
+    rra.run();
+}
