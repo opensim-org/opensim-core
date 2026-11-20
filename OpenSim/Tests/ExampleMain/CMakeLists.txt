@@ -21,6 +21,8 @@ file(GLOB TEST_FILES
     ${EXAMPLE_DIR}/*.xml 
     ${EXAMPLE_DIR}/*.sto 
     ${EXAMPLE_DIR}/*.mot
+    ${OPENSIM_TEST_RESOURCES_DIR}/std_tugOfWar_forces.mot
+    ${OPENSIM_TEST_RESOURCES_DIR}/std_tugOfWar_states.sto
     *.obj *.osim *.xml *.sto *.mot)
 
 #

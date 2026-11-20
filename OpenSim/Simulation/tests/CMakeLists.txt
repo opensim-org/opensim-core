@@ -4,6 +4,13 @@ find_package(Catch2 REQUIRED
 set(OSIM_SIMULATION_TEST_LIBS
         osimCommon osimSimulation osimAnalyses osimActuators osimLepton)
 
+OpenSimAddTest(NAME testAddComponents
+        LINKLIBS ${OSIM_SIMULATION_TEST_LIBS}
+        RESOURCES "${OpenSim_SOURCE_DIR}/OpenSim/Examples/ExampleMain/blockMesh.obj"
+                  "${OPENSIM_TEST_RESOURCES_DIR}/std_tugOfWar_forces.mot"
+                  "${OPENSIM_TEST_RESOURCES_DIR}/std_tugOfWar_states.sto"
+        )
+
 OpenSimAddTest(NAME testAssemblySolver
         LINKLIBS ${OSIM_SIMULATION_TEST_LIBS}
         RESOURCES resources/PushUpToesOnGroundExactConstraints.osim

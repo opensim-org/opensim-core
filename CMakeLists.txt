@@ -883,6 +883,10 @@ install(FILES ${VERSION_FILE_PATH} DESTINATION "${CMAKE_INSTALL_SYSCONFDIR}")
 # cmake/OpenSimMacros.cmake.
 set(OPENSIM_SHARED_TEST_FILES_DIR "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared")
 
+# This directory contains resource files (e.g., .osim, .sto) shared by tests
+# across multiple sub-libraries.
+set(OPENSIM_TEST_RESOURCES_DIR "${CMAKE_SOURCE_DIR}/tests/resources")
+
 add_subdirectory(Vendors)
 
 add_subdirectory(tests)
