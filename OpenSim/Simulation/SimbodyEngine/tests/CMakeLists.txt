@@ -1,6 +1,10 @@
 find_package(Catch2 REQUIRED
         HINTS "${OPENSIM_DEPENDENCIES_DIR}/catch2")
 
+OpenSimAddTest(NAME testConstantCurvature
+        LINKLIBS osimSimulation osimCommon osimActuators
+        )
+
 OpenSimAddTest(NAME testConstraints
         LINKLIBS osimSimulation osimCommon osimAnalyses
         RESOURCES resources/testJointConstraints.osim
