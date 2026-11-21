@@ -23,7 +23,7 @@ OpenSimAddLibrary(
     LINKLIBS ${Simbody_LIBRARIES} osimCommon osimLepton
     INCLUDES ${INCLUDES}
     SOURCES ${SOURCES}
-    TESTDIRS SimbodyEngine tests
+    TESTDIRS SimbodyEngine Wrap tests
     INCLUDEDIRS ${SIMULATION_SUBDIRS}
     EXTERNAL_DEPENDENCY_SYMBOL SWIG_PYTHON
     )

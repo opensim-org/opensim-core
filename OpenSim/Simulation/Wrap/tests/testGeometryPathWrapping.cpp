@@ -21,7 +21,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/OpenSim.h>
+#include <OpenSim/Common/osimCommon.h>
+#include <OpenSim/Simulation/osimSimulation.h>
+#include <OpenSim/Actuators/osimActuators.h>
 
 #include <tests/Testing.h>
 
