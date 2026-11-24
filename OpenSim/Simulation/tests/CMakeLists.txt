@@ -62,6 +62,11 @@ OpenSimAddTest(NAME testInitState
 OpenSimAddTest(NAME testInverseKinematicsSolver
         LINKLIBS ${OSIM_SIMULATION_TEST_LIBS})
 
+OpenSimAddTest(NAME testIterators
+        LINKLIBS ${OSIM_SIMULATION_TEST_LIBS}
+        RESOURCES resources/arm26.osim
+        )
+
 OpenSimAddTest(NAME testManager
         LINKLIBS ${OSIM_SIMULATION_TEST_LIBS}
         RESOURCES resources/arm26.osim
@@ -113,6 +118,9 @@ OpenSimAddTest(NAME testProbes
         LINKLIBS ${OSIM_SIMULATION_TEST_LIBS})
 
 OpenSimAddTest(NAME testReportersWithModel
+        LINKLIBS ${OSIM_SIMULATION_TEST_LIBS})
+
+OpenSimAddTest(NAME testScholz2015GeometryPath
         LINKLIBS ${OSIM_SIMULATION_TEST_LIBS})
 
 OpenSimAddTest(NAME testSimulationUtilities
